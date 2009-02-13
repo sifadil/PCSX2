@@ -1,0 +1,26 @@
+#summary Revision Review Etiquette
+#labels Featured
+
+One of the grand benefits of GoogleCode is it's Revision Review feature, which is more or less a fancy term for "user feedback on code changes."
+
+Through Revision Review users and Beta Testers of Pcsx2 are able to leave specific comments regarding a particular change to the repository.  This can be highly useful for developers, and can greatly simplify many troubleshooting tasks that the Pcsx2 devs have to go through.  As such we prefer to leave this feature open to the public, so that public review of changes can be recorded and digested quickly.
+
+== Keeping it real ==
+
+Revision review is not a forum, and is generally _*not*_ for idle chat.  Many of the devs have comments feeding directly into our inboxes, and a bunch of spam for smileys or statements like "make it faster plz" isn't what we consider a good time.  So please be considerate.  Furthermore, Google Code does NOT give us a lot of moderative options.  There is no private message system, so we cannot easily email people who are posting inappropriately, nor can we inform users why we delete posts.
+
+There are a few rules an guidelines that we all need to follow in order for this public feedback system to work:
+
+  * Comments should be relevant to the revision and should contain _useful information_.
+
+  * At the very least comments should be relevant to recent code changes or planned future code changes.
+
+  * If you're having general problems with Pcsx2 and don't really know what revision causes it, please use our Issues section or our Public Forum, so that we can discuss and troubleshoot the issue in depth.
+
+  * Statements like "Please make it faster" or "please fix my game" are not acceptable and will be deleted.
+
+  * Phrasing the statement as a question like "Will this make it faster?" or "Will this fix my game?" is not acceptable either, and will also be deleted.
+
+  * If we delete your post, there was a good reason for it.  Deleting posts without justification would be counter-productive, much the same way that allowing posts with no relevant content would also be counter-productive.
+
+  * If you find yourself thinking that the Pcsx2 Team is some group of irrational dictators who delete posts simply because we don't like your opinion, then you _probably shouldn't be posting._
