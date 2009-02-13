@@ -1,4 +1,4 @@
-#summary Revision Review Etiquette
+#summary ... or "How to post comments without making everyone else not like you."
 #labels Featured
 
 One of the grand benefits of GoogleCode is it's Revision Review feature, which is more or less a fancy term for "user feedback on code changes."
