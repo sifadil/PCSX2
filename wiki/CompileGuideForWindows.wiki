@@ -1,0 +1,47 @@
+#summary Guide to using Visual Studio to compile Pcsx2 and its plugins for Windows.
+
+= Introduction =
+
+This guide will _not_ cover how to check out from our Svn, or the raw fundamentals of compiling things in Windows.  If you need basic help at that level, there are plenty of beginner tutorials across the web waiting for a Google search to find them.  You will need for sure a copy of [http://www.microsoft.com/express/download/ Visual C++ Express 2008] or *Visual Studio 2008 Professional/Team editions* (or newer).
+
+If you want to compile the various plugins, you will also need the latest installations of the [http://msdn.microsoft.com/en-us/directx/aa937788.aspx DirectX SDK].  If you have problems installing DirectX SDK, and getting Visual Studio to find the header files or libraries (which is fairly common), make sure and add the folders manually to your VS Directories settings under Options.
+
+== Quick, Start, Compile! ==
+
+The best starting point is *Pcsx2_Suite_2008.sln*.  It includes most of the plugins which are being actively updated.  Load it into Visual Studio, set the target type to Release/SSE2 (done from a dropdown at the top of the Visual Studio window), hit F6, and wait a while.  Many messages and warnings will be spewed forth, most or all of which are expected and harmless.  You should only be concerned if the compilation reports *Errors.*  If all goes well it'll say something like:
+
+*0 Errors and 33 Warnings*
+
+... the zero being the part that matters. ;)
+
+Pcsx2 has now been built.  All .exe and .dll files are located in the */bin* folder from where you loaded the solution.  Copy over into your Pcsx2 installation site of choice, and enjoy!
+
+From here on it's mostly tips and tricks to improve your compilation experience...
+
+== Removing Unwanted Projects from a Solution ==
+
+If you aren't really interested in ZeroGS or CDVDolio or whate-have-you, then you can easily unload the unwanted projects from your solution.  Right click on the project (or project folder), and go to *Unload.*  The project name will gray out and say _(unloaded)_ beside it.  Unloaded projects won't be loaded and won't be compiled, so it's an easy way to save memory and speed up compilation time.  Best of all, it's a persistent option that won't modify your solution file, and won't conflict with future updates from svn.
+
+== Setting Alternate Target Destinations ==
+
+The Pcsx2 build script supports a _post-build event_ that can optionally copy the compiled .exe and .dll files into any folder of your choice.  Files are copied both as their original filename (ex: pcsx2.exe) and as a revision-tagged filename for easy regression-testing (ex: pcsx2-r605.exe).  Specify your alternate landing site for binaries via the *PCSX2_TARGET_COPY* _Environment Variable_, which is configurable via your System Properties (use the Windows Key+Break shortcut to open it up real quick-like).  See figure below for a diagram of how to do it on Windows XP.  Vista's should be about the same, except all moved around to make it more user friendly or something.
+
+http://code.google.com/p/pcsx2/wiki/CompileGuide/SystemPropertiesXP.png
+
+== Running Pcsx2 from the Visual Studio Debugger ==
+
+Setting up Pcsx2 to run from the debugger is typically very easy.  Just right click on the Pcsx2 project, go to *Properties*, *Debugging*, and fill out the form as shown below:
+
+http://code.google.com/p/pcsx2/wiki/CompileGuide/DebuggingProperties.png
+
+Once you're done there, hit F5 and Pcsx2 should come to life.  Ideally you should select _All Configurations_ from the Configuration dropdown before modifying the form.  Otherwise you'll have to update the forums for each configuration individually.
+
+You can also specify specific plugins on the Pcsx2 command line, which override the configured plugin.  This can be used as the debugging options for specific plugins, and when that plugin is set as the _Start-up Project_, Pcsx2 will know to load it regardless of the selected configuration or target types.  An example of SPU2-X's Debugging form:
+
+http://code.google.com/p/pcsx2/wiki/CompileGuide/DebuggingPropertiesPlugin.png
+
+Notice I use *-spu $(TargetPath)* as the parameter for Pcsx2.  This tells Pcsx2 to load whichever copy of SPU2-X that was just built, whether it be Debug, Devel, or Release.  This saves a trip into the Configuration dialog of Pcsx2 to select the built plugin manually.
+
+== Compiling other Plugins not in the Suite Solution ==
+
+If you would like to compile Peops SPU2, CdvdPeops, or other plugins not in the Suite, just go into the Plugins folder and double click the visual studio project file.  Visual Studio will make a solution for you, which you can save anywhere you please.  The projects for these plugins are old, and we make no promises about how well they work, or where they output files to.  The Pcsx2 Team only provides support for plugins which are being actively updated, and those are located in the Suite.
