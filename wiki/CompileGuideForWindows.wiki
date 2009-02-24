@@ -29,6 +29,8 @@ The Pcsx2 build script supports a _post-build event_ that can optionally copy th
 
 http://pcsx2.googlecode.com/svn/wiki/CompileGuide/SystemPropertiesXP.png
 
+You may have to log out and log back in for the setting to take effect.
+-----
 == Running Pcsx2 from the Visual Studio Debugger ==
 
 Setting up Pcsx2 to run from the debugger is typically very easy.  Just right click on the Pcsx2 project, go to *Properties*, *Debugging*, and fill out the form as shown below:
@@ -42,7 +44,7 @@ You can also specify specific plugins on the Pcsx2 command line, which override 
 http://pcsx2.googlecode.com/svn/wiki/CompileGuide/DebuggingPropertiesPlugin.png
 
 Notice I use *-spu $(TargetPath)* as the parameter for Pcsx2.  This tells Pcsx2 to load whichever copy of SPU2-X that was just built, whether it be Debug, Devel, or Release.  This saves a trip into the Configuration dialog of Pcsx2 to select the built plugin manually.
-
+-----
 == Compiling other Plugins not in the Suite Solution ==
 
 If you would like to compile Peops SPU2, CdvdPeops, or other plugins not in the Suite, just go into the Plugins folder and double click the visual studio project file.  Visual Studio will make a solution for you, which you can save anywhere you please.  The projects for these plugins are old, and we make no promises about how well they work, or where they output files to.  The Pcsx2 Team only provides support for plugins which are being actively updated, and those are located in the Suite.
