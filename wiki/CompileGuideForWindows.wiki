@@ -27,19 +27,19 @@ If you aren't really interested in ZeroGS or CDVDolio or whate-have-you, then yo
 
 The Pcsx2 build script supports a _post-build event_ that can optionally copy the compiled .exe and .dll files into any folder of your choice.  Files are copied both as their original filename (ex: pcsx2.exe) and as a revision-tagged filename for easy regression-testing (ex: pcsx2-r605.exe).  Specify your alternate landing site for binaries via the *PCSX2_TARGET_COPY* _Environment Variable_, which is configurable via your System Properties (use the Windows Key+Break shortcut to open it up real quick-like).  See figure below for a diagram of how to do it on Windows XP.  Vista's should be about the same, except all moved around to make it more user friendly or something.
 
-http://code.google.com/p/pcsx2/wiki/CompileGuide/SystemPropertiesXP.png
+http://pcsx2.googlecode.com/svn/wiki/CompileGuide/SystemPropertiesXP.png
 
 == Running Pcsx2 from the Visual Studio Debugger ==
 
 Setting up Pcsx2 to run from the debugger is typically very easy.  Just right click on the Pcsx2 project, go to *Properties*, *Debugging*, and fill out the form as shown below:
 
-http://code.google.com/p/pcsx2/wiki/CompileGuide/DebuggingProperties.png
+http://pcsx2.googlecode.com/svn/wiki/CompileGuide/DebuggingProperties.png
 
 Once you're done there, hit F5 and Pcsx2 should come to life.  Ideally you should select _All Configurations_ from the Configuration dropdown before modifying the form.  Otherwise you'll have to update the forums for each configuration individually.
 
 You can also specify specific plugins on the Pcsx2 command line, which override the configured plugin.  This can be used as the debugging options for specific plugins, and when that plugin is set as the _Start-up Project_, Pcsx2 will know to load it regardless of the selected configuration or target types.  An example of SPU2-X's Debugging form:
 
-http://code.google.com/p/pcsx2/wiki/CompileGuide/DebuggingPropertiesPlugin.png
+http://pcsx2.googlecode.com/svn/wiki/CompileGuide/DebuggingPropertiesPlugin.png
 
 Notice I use *-spu $(TargetPath)* as the parameter for Pcsx2.  This tells Pcsx2 to load whichever copy of SPU2-X that was just built, whether it be Debug, Devel, or Release.  This saves a trip into the Configuration dialog of Pcsx2 to select the built plugin manually.
 
