@@ -23,13 +23,18 @@ From here on it's mostly tips and tricks to improve your compilation experience.
 
 If you aren't really interested in ZeroGS or CDVDolio or whate-have-you, then you can easily unload the unwanted projects from your solution.  Right click on the project (or project folder), and go to *Unload.*  The project name will gray out and say _(unloaded)_ beside it.  Unloaded projects won't be loaded and won't be compiled, so it's an easy way to save memory and speed up compilation time.  Best of all, it's a persistent option that won't modify your solution file, and won't conflict with future updates from svn.
 
+--------------
 == Setting Alternate Target Destinations ==
+=== ... and how to add revision tags to your binaries! ===
 
-The Pcsx2 build script supports a _post-build event_ that can optionally copy the compiled .exe and .dll files into any folder of your choice.  Files are copied both as their original filename (ex: pcsx2.exe) and as a revision-tagged filename for easy regression-testing (ex: pcsx2-r605.exe).  Specify your alternate landing site for binaries via the *PCSX2_TARGET_COPY* _Environment Variable_, which is configurable via your System Properties (use the Windows Key+Break shortcut to open it up real quick-like).  See figure below for a diagram of how to do it on Windows XP.  Vista's should be about the same, except all moved around to make it more user friendly or something.
+The Pcsx2 build script supports a _post-build event_ that can optionally copy the compiled .exe and .dll files into any folder of your choice.  Files are copied both as their original filename (ex: pcsx2.exe) and as a revision-tagged filename for easy regression-testing (ex: pcsx2-r605.exe).  Specify your alternate landing site for binaries via the *PCSX2_TARGET_COPY* _Environment Variable_, which is configurable via your System Properties (use the Windows Key+Break shortcut to open it up real quick-like).
+
+*Important: You should log out and log back in for the setting to take effect.*  It will "kinda" work without logging out/in, but it will be unreliable.  So even if it _seems_ to work, log out and make sure Windows propagates the new setting to all instances of your user account.
+
+See figure below for a diagram of how to do it on Windows XP.  Vista's should be about the same, except all moved around to make it more user friendly or something.
 
 http://pcsx2.googlecode.com/svn/wiki/CompileGuide/SystemPropertiesXP.png
 
-You may have to log out and log back in for the setting to take effect.
 -----
 == Running Pcsx2 from the Visual Studio Debugger ==
 
