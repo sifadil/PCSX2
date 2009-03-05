@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "GS.h"
 #include "R5900OpcodeTables.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iMMI.h"
 #include "iFPU.h"

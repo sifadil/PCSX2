@@ -19,19 +19,15 @@
 // Micro VU recompiler! - author: cottonvibes(@gmail.com)
 
 #include "PrecompiledHeader.h"
-#ifdef PCSX2_MICROVU
 #include "microVU.h"
+#ifdef PCSX2_MICROVU
 
 //------------------------------------------------------------------
-// Micro VU - Global Variables
+// VU Micro - Global Variables
 //------------------------------------------------------------------
 
 PCSX2_ALIGNED16(microVU microVU0);
 PCSX2_ALIGNED16(microVU microVU1);
-
-PCSX2_ALIGNED16(const u32 mVU_signbit[4])	= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
-PCSX2_ALIGNED16(const u32 mVU_minvals[4])	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-PCSX2_ALIGNED16(const u32 mVU_maxvals[4])	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
 //------------------------------------------------------------------
 // Micro VU - Main Functions
@@ -69,7 +65,7 @@ microVUt(void) mVUreset() {
 	if ( mVU->cache == NULL ) throw Exception::OutOfMemory(fmt_string( "microVU Error: failed to allocate recompiler memory! (addr: 0x%x)", params (u32)mVU->cache));
 
 	// Other Variables
-	memset(&mVU->prog, 0, sizeof(mVU->prog));
+	ZeroMemory(&mVU->prog, sizeof(mVU->prog));
 	mVU->prog.finished = 1;
 	mVU->prog.cleared = 1;
 	mVU->prog.cur = -1;
@@ -81,7 +77,7 @@ microVUt(void) mVUclose() {
 
 	microVU* mVU = mVUx;
 
-	if ( mVU->cache ) { HostSys::Munmap( mVU->cache, mVU->cacheSize ); mVU->cache = NULL; }
+	if ( mVU->cache ) { SysMunmap( mVU->cache, mVU->cacheSize ); mVU->cache = NULL; }
 
 	// Delete Block Managers
 	for (int i; i <= mVU->prog.max; i++) {
@@ -212,7 +208,6 @@ __forceinline void mVUinvalidateBlock(microVU* mVU, u32 addr, u32 size) {
 // Dispatcher Functions
 //------------------------------------------------------------------
 
-#ifdef _MSC_VER
 // Runs VU0 for number of cycles
 __declspec(naked) void __fastcall startVU0(u32 startPC, u32 cycles) {
 	__asm {
@@ -226,7 +221,7 @@ __declspec(naked) void __fastcall startVU0(u32 startPC, u32 cycles) {
 		push edi;
 
 		ldmxcsr g_sseVUMXCSR
-		/* Should set xmmZ? */
+
 		jmp eax
 	}
 }
@@ -266,14 +261,6 @@ __declspec(naked) void __fastcall endVU0(u32 startPC, u32 cycles) {
 		ret
 	}
 }
-#else
-extern "C"
-{
-extern void __fastcall startVU0(u32 startPC, u32 cycles);
-extern void __fastcall startVU1(u32 startPC, u32 cycles);
-extern void __fastcall endVU0(u32 startPC, u32 cycles);
-}
-#endif
 //------------------------------------------------------------------
 // Wrapper Functions - Called by other parts of the Emu
 //------------------------------------------------------------------

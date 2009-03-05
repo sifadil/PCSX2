@@ -1,27 +1,28 @@
 /* SPU2-X, A plugin for Emulating the Sound Processing Unit of the Playstation 2
- * Developed and maintained by the Pcsx2 Development Team.
- * 
- * Original portions from SPU2ghz are (c) 2008 by David Quintana [gigaherz]
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 2.1 of the the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along
- * with this library; if not, write to the Free Software Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+* Developed and maintained by the Pcsx2 Development Team.
+* 
+* Original portions from SPU2ghz are (c) 2008 by David Quintana [gigaherz]
+*
+* This library is free software; you can redistribute it and/or modify it under
+* the terms of the GNU Lesser General Public License as published by the Free 
+* Software Foundation; either version 2.1 of the the License, or (at your
+* option) any later version.
+* 
+* This library is distributed in the hope that it will be useful, but WITHOUT 
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+* for more details.
+* 
+* You should have received a copy of the GNU Lesser General Public License along
+* with this library; if not, write to the Free Software Foundation, Inc., 59
+* Temple Place, Suite 330, Boston, MA  02111-1307  USA
+* 
+*/
 
 
+#include "SPU2.h"
 #include "Dialogs.h"
-#include "../RegTable.h"
+#include "RegTable.h"
 
 
 static bool debugDialogOpen=false;
@@ -102,7 +103,7 @@ void UpdateDebugDialog()
 		if(!hf)
 		{
 			hf = CreateFont( 8, 0, 0, 0, 0, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-				DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Lucida Console" );
+				DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Lucida Console") );
 		}
 
 		SelectObject(hdc,hf);
@@ -123,7 +124,6 @@ void UpdateDebugDialog()
 				{
 					SetDCBrushColor(hdc,RGB(  0,  0,128));
 				}
-				/*
 				else
 				{
 					if(vcd.lastStopReason==1)
@@ -134,7 +134,7 @@ void UpdateDebugDialog()
 					{
 						SetDCBrushColor(hdc,RGB(  0,128,  0));
 					}
-				}*/
+				}
 
 				FillRectangle(hdc,IX,IY,252,30);
 
@@ -163,13 +163,13 @@ void UpdateDebugDialog()
 
 				static wchar_t t[1024];
 
-				swprintf_s(t,L"%06x",vc.StartA);
+				swprintf_s(t,_T("%06x"),vc.StartA);
 				TextOut(hdc,IX+4,IY+3,t,6);
 
-				swprintf_s(t,L"%06x",vc.NextA);
+				swprintf_s(t,_T("%06x"),vc.NextA);
 				TextOut(hdc,IX+4,IY+12,t,6);
 
-				swprintf_s(t,L"%06x",vc.LoopStartA);
+				swprintf_s(t,_T("%06x"),vc.LoopStartA);
 				TextOut(hdc,IX+4,IY+21,t,6);
 
 				vcd.displayPeak = 0;

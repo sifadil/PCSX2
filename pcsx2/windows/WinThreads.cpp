@@ -17,11 +17,11 @@
  */
 
 
-#include "Win32.h"
+#include "PrecompiledHeader.h"
 
 #include "System.h"
 #include "Threading.h"
-#include "ix86/ix86_types.h"
+#include "ix86/ix86.h"
 
 #ifdef _WIN32
 #include "implement.h"		// win32 pthreads implementations.
@@ -58,12 +58,7 @@ namespace Threading
 
 	__forceinline void Timeslice()
 	{
-		::Sleep(0);
-	}
-
-	__forceinline void Sleep( int ms )
-	{
-		::Sleep( ms );
+		Sleep(0);
 	}
 
 	// For use in spin/wait loops,  Acts as a hint to Intel CPUs and should, in theory

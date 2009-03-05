@@ -24,15 +24,8 @@
 #include <sys/mman.h>
 #include "x86/iR5900.h"
 
-void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * );
-void __fastcall InstallLinuxExceptionHandler();
-void __fastcall ReleaseLinuxExceptionHandler();
-
-#define PCSX2_MEM_PROTECT_BEGIN() InstallLinuxExceptionHandler()
-#define PCSX2_MEM_PROTECT_END() ReleaseLinuxExceptionHandler()
-
 extern void StartGui();
-extern void  RefreshMenuSlots();
+extern void CheckSlots();
 
 extern void SignalExit(int sig);
 extern const char* g_pRunGSState;

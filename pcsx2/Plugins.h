@@ -34,7 +34,11 @@ int  OpenPlugins(const char* pTitleFilename);
 void ClosePlugins( bool closegs );
 
 int InitPlugins();
-void ShutdownPlugins();
+
+// Completely shuts down all plugins and re-initializes them. (clean slate)
+// Plugins are not unloaded, so changes to Config.Plugins values will not
+// take effect.  Use a manual set oc alls to ReleasePlugins and LoadPlugins for that.
+void ResetPlugins();
 
 void PluginsResetGS();
 

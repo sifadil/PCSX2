@@ -35,10 +35,13 @@ extern "C" {
 #include <map>
 
 
-extern string s_strIniPath;
-
-GtkWidget *Conf, *Logging, *About;
-GList *fresl, *wresl, *cachesizel, *codecl, *filtersl;
+GtkWidget *Conf;
+GtkWidget *Logging;
+GList *fresl;
+GList *wresl;
+GList *cachesizel;
+GList *codecl;
+GList *filtersl;
 
 static int prevbilinearfilter;
 
@@ -46,7 +49,7 @@ struct confOptsStruct
 {
 	int value;
 	const char *desc;
-} confOpts;
+}confOpts;
 
 static map<string, confOptsStruct> mapConfOpts;
 
@@ -54,6 +57,8 @@ extern void OnKeyboardF5(int);
 extern void OnKeyboardF6(int);
 extern void OnKeyboardF7(int);
 extern void OnKeyboardF9(int);
+
+GtkWidget *About;
 
 void CALLBACK GSkeyEvent(keyEvent *ev)
 {
@@ -191,11 +196,6 @@ void CALLBACK GSconfigure()
 	GtkTreeIter treeiter;
 	GtkTreeViewColumn *treecol;
 
-	char strcurdir[256];
-	getcwd(strcurdir, 256);
-	s_strIniPath = strcurdir;
-	s_strIniPath += "/inis/zerogs.ini";
-	
 	if (!(conf.options & GSOPTION_LOADED)) LoadConfig();
 	Conf = create_Config();
 	

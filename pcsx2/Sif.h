@@ -19,12 +19,16 @@
 #ifndef __SIF_H__
 #define __SIF_H__
 
+#include "Common.h"
+
 struct sifData{
         int     data,
                 words,
                 count,
                 addr;
 };
+
+extern int eeSifTransfer;
 
 extern DMACh *sif0ch;
 extern DMACh *sif1ch;

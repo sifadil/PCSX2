@@ -184,7 +184,7 @@ L("loop");
 		por(xmm4, xmm7);
 	}
 
-	// int fzm = ~(fm == GSVector4i::xffffffff()).ps32(zm == GSVector4i::xffffffff()).mask();
+	// int fzm = ~(fm == GSVector4i::xffffffff()).ps32(zm == GSVector4i::xffffffff()).ps32().mask();
 
 	pcmpeqd(xmm1, xmm1);
 
@@ -267,41 +267,45 @@ L("exit");
 	pop(esi);
 	pop(ebx);
 
-	ret(8);
+	ret();
 }
 
 void GSDrawScanlineCodeGenerator::Init(int params)
 {
 	const int _top = params + 4;
-	const int _v = params + 8;
+	const int _left = params + 8;
+	const int _right = params + 12;
+	const int _v = params + 16;
 
 	// int skip = left & 3;
 
-	mov(ebx, edx);
-	and(edx, 3);
+	mov(eax, dword[esp + _left]);
+	mov(ebx, eax);
+	and(eax, 3);
 
 	// left -= skip;
 
-	sub(ebx, edx);
+	sub(ebx, eax);
 
 	// int steps = right - left - 4;
 
+	mov(ecx, dword[esp + _right]);
 	sub(ecx, ebx);
 	sub(ecx, 4);
 
 	// GSVector4i test = m_test[skip] | m_test[7 + (steps & (steps >> 31))];
 
-	shl(edx, 4);
-
-	movdqa(xmm7, xmmword[edx + (size_t)&m_test[0]]);
-
-	mov(eax, ecx);
-	sar(eax, 31);
-	and(eax, ecx);
 	shl(eax, 4);
 
-	por(xmm7, xmmword[eax + (size_t)&m_test[7]]);
+	movdqa(xmm7, xmmword[eax + (size_t)&m_test[0]]);
 
+	mov(edx, ecx);
+	sar(edx, 31);
+	and(edx, ecx);
+	shl(edx, 4);
+
+	por(xmm7, xmmword[edx + (size_t)&m_test[7]]);
+	
 	// GSVector2i* fza_base = &m_env.fzbr[top];
 
 	mov(esi, dword[esp + _top]);
@@ -315,10 +319,10 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 
 	if(!m_env.sel.sprite && (m_env.sel.fwrite && m_env.sel.fge || m_env.sel.zb) || m_env.sel.fb && (m_env.sel.tfx != TFX_NONE || m_env.sel.iip))
 	{
-		// edx = &m_env.d[skip]
+		// eax = &m_env.d[skip]
 
-		shl(edx, 4);
-		lea(edx, ptr[edx + (size_t)m_env.d]);
+		shl(eax, 4);
+		lea(eax, ptr[eax + (size_t)m_env.d]);
 
 		// ebx = &v
 
@@ -338,7 +342,7 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 				cvttps2dq(xmm1, xmm0);
 				pshufhw(xmm1, xmm1, _MM_SHUFFLE(2, 2, 2, 2));
 				pshufd(xmm1, xmm1, _MM_SHUFFLE(2, 2, 2, 2));
-				paddw(xmm1, xmmword[edx + 16 * 6]);
+				paddw(xmm1, xmmword[eax + 16 * 6]);
 
 				movdqa(xmmword[&m_env.temp.f], xmm1);
 			}
@@ -348,7 +352,7 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 				// z = vp.zzzz() + m_env.d[skip].z;
 
 				shufps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
-				addps(xmm0, xmmword[edx]);
+				addps(xmm0, xmmword[eax]);
 
 				movaps(xmmword[&m_env.temp.z], xmm0);
 			}
@@ -380,11 +384,11 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 				pshufd(xmm2, xmm4, _MM_SHUFFLE(0, 0, 0, 0));
 				pshufd(xmm3, xmm4, _MM_SHUFFLE(1, 1, 1, 1));
 
-				paddd(xmm2, xmmword[edx + 16 * 7]);
+				paddd(xmm2, xmmword[eax + 16 * 7]);
 				
 				if(!m_env.sel.sprite)
 				{
-					paddd(xmm3, xmmword[edx + 16 * 8]);
+					paddd(xmm3, xmmword[eax + 16 * 8]);
 				}
 				else
 				{
@@ -414,9 +418,9 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 				shufps(xmm3, xmm3, _MM_SHUFFLE(1, 1, 1, 1));
 				shufps(xmm4, xmm4, _MM_SHUFFLE(2, 2, 2, 2));
 
-				addps(xmm2, xmmword[edx + 16 * 1]);
-				addps(xmm3, xmmword[edx + 16 * 2]);
-				addps(xmm4, xmmword[edx + 16 * 3]);
+				addps(xmm2, xmmword[eax + 16 * 1]);
+				addps(xmm3, xmmword[eax + 16 * 2]);
+				addps(xmm4, xmmword[eax + 16 * 3]);
 
 				movaps(xmmword[&m_env.temp.s], xmm2);
 				movaps(xmmword[&m_env.temp.t], xmm3);
@@ -447,8 +451,8 @@ void GSDrawScanlineCodeGenerator::Init(int params)
 				pshufd(xmm5, xmm6, _MM_SHUFFLE(0, 0, 0, 0));
 				pshufd(xmm6, xmm6, _MM_SHUFFLE(2, 2, 2, 2));
 
-				paddw(xmm5, xmmword[edx + 16 * 4]);
-				paddw(xmm6, xmmword[edx + 16 * 5]);
+				paddw(xmm5, xmmword[eax + 16 * 4]);
+				paddw(xmm6, xmmword[eax + 16 * 5]);
 
 				movdqa(xmmword[&m_env.temp.rb], xmm5);
 				movdqa(xmmword[&m_env.temp.ga], xmm6);
@@ -1517,8 +1521,6 @@ void GSDrawScanlineCodeGenerator::AlphaBlend()
 /*
 	if(m_env.sel.aa1)
 	{
-		// hmm, the playstation logo does not look good...
-
 		printf("aa1 %016I64x\n", m_env.sel.key);
 
 		if(m_env.sel.fpsm != 1) // TODO: fm == 0xffxxxxxx
@@ -1527,7 +1529,6 @@ void GSDrawScanlineCodeGenerator::AlphaBlend()
 
 			pcmpeqd(xmm0, xmm0);
 			psllw(xmm0, 15);
-			psrlw(xmm0, 8);
 			mix16(xmm6, xmm0, xmm1);
 		}
 

@@ -63,24 +63,6 @@ AC_MSG_RESULT($debug)
 
 AC_CHECK_FUNCS([ _aligned_malloc _aligned_free ], AC_DEFINE(HAVE_ALIGNED_MALLOC))
 
-AC_MSG_CHECKING(turn on memcpy_fast_)
-AC_ARG_ENABLE(memcpyfast, AC_HELP_STRING([--enable-memcpyfast], [Turns on memcpy_fast - EXPERIMENTAL]),
- memcpyfast=$enableval,memcpyfast=no)
-if test "x$memcpyfast" == xyes
-then
- AC_DEFINE(LINUX_USE_FAST_MEMORY,1,[LINUX_USE_FAST_MEMORY])
-fi
-AC_MSG_RESULT($memcpyfast)
-
-#AC_MSG_CHECKING(turn on microVU)
-#AC_ARG_ENABLE(microVU, AC_HELP_STRING([--enable-microVU], [Turns on the currently incomplete microVU files - Not a good idea]),
-# microVU=$enableval,microVU=no)
-#if test "x$microVU" == xyes
-#then
-# AC_DEFINE(PCSX2_MICROVU,1,[PCSX2_MICROVU])
-#fi
-#AC_MSG_RESULT($microVU)
-
 dnl Check for dev build
 AC_MSG_CHECKING(for development build)
 AC_ARG_ENABLE(devbuild, AC_HELP_STRING([--enable-devbuild], [Special Build for developers that simplifies testing and adds extra checks]),
@@ -143,7 +125,7 @@ AC_OUTPUT([
  tinyxml/Makefile
  x86/Makefile
  x86/ix86/Makefile
- ../3rdparty/zlib/Makefile
+ 3rdparty/zlib/Makefile
  ])
 
 dnl bindir = pcsx2exe
@@ -156,5 +138,3 @@ echo "  Force sse3?	           $sse3"
 echo " nls support?   $nls"
 echo " local plugin inis? $localinis"
 echo " custom cflags? $customcflags"
-echo " memcpy_fast? $memcpyfast"
-#echo " microVU? $microVU"

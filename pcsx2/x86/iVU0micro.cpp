@@ -19,6 +19,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "VUmicro.h"
 #include "iVUzerorec.h"

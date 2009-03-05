@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900LoadStore.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 
 // Implemented at the bottom of the module:
@@ -1932,7 +1933,7 @@ void recLQC2( void )
 		dohw = recSetMemLocation(_Rs_, _Imm_, mmregs, 2, 0);
 
 		if( _Ft_ ) {
-			u8* rawreadptr = x86Ptr[0];
+			u8* rawreadptr = x86Ptr;
 
 			if( mmreg >= 0 ) {
 				SSEX_MOVDQARmtoROffset(mmreg, ECX, PS2MEM_BASE_+s_nAddMemOffset);
@@ -1947,7 +1948,7 @@ void recLQC2( void )
 
 				// check if writing to VUs
 				CMP32ItoR(ECX, 0x11000000);
-				JAE8(rawreadptr - (x86Ptr[0]+2));
+				JAE8(rawreadptr - (x86Ptr+2));
 
 				PUSH32I( (int)&VU0.VF[_Ft_].UD[0] );
 				CALLFunc( (int)recMemRead128 );
@@ -2001,7 +2002,7 @@ void recSQC2( void )
 		mmregs = _eePrepareReg(_Rs_);
 		dohw = recSetMemLocation(_Rs_, _Imm_, mmregs, 2, 0);
 
-		rawreadptr = x86Ptr[0];
+		rawreadptr = x86Ptr;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_VFREG, _Ft_, MODE_READ)) >= 0) {
 			SSEX_MOVDQARtoRmOffset(ECX, mmreg, PS2MEM_BASE_+s_nAddMemOffset);
@@ -2041,7 +2042,7 @@ void recSQC2( void )
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);
-			JAE8(rawreadptr - (x86Ptr[0]+2));
+			JAE8(rawreadptr - (x86Ptr+2));
 
 			// some type of hardware write
 			if( (mmreg = _checkXMMreg(XMMTYPE_VFREG, _Ft_, MODE_READ)) >= 0) {
@@ -2080,36 +2081,27 @@ void recLoad64( u32 bits, bool sign )
 	_deleteEEreg(_Rs_, 1);
 	_eeOnLoadWrite(_Rt_);
 
-	EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension
+	EEINST_RESETSIGNEXT(_Rt_); // remove the sign extension -> what does this really do ?
 
 	_deleteEEreg(_Rt_, 0);
 
-	// Load EDX with the destination.
-	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
+	// Load ECX with the source memory address that we're reading from.
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+		ADD32ItoR( ECX, _Imm_ );
 
-	if( _Rt_ )
-		MOV32ItoR(EDX, (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
+	if( bits == 128 )		// force 16 byte alignment on 128 bit reads
+		AND32I8toR(ECX,0xF0);
+
+	// Load EDX with the destination.  64/128 bit modes load the result directly into
+	// the cpuRegs.GPR struct.
+
+	if ( _Rt_ )
+		MOV32ItoR(EDX, (int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] );
 	else
-		MOV32ItoR(EDX, (uptr)&dummyValue[0] );
+		MOV32ItoR(EDX, (int)&dummyValue[0] );
 
-	if( IS_EECONSTREG( _Rs_ ) )
-	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		if( bits == 128 ) srcadr &= ~0x0f;
-		vtlb_DynGenRead64_Const( bits, srcadr );
-	}
-	else
-	{
-		// Load ECX with the source memory address that we're reading from.
-		MOV32MtoR( ECX, (uptr)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		if ( _Imm_ != 0 )
-			ADD32ItoR( ECX, _Imm_ );
-
-		if( bits == 128 )		// force 16 byte alignment on 128 bit reads
-			AND32I8toR(ECX,0xF0);
-
-		vtlb_DynGenRead64(bits);
-	}
+	vtlb_DynGenRead64(bits);
 }
 
 void recLoad32(u32 bits,bool sign)
@@ -2123,26 +2115,40 @@ void recLoad32(u32 bits,bool sign)
 	_eeOnLoadWrite(_Rt_);
 	_deleteEEreg(_Rt_, 0);
 
-	// 8/16/32 bit modes return the loaded value in EAX.
-
-	if( IS_EECONSTREG( _Rs_ ) )
-	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		vtlb_DynGenRead32_Const( bits, sign, srcadr );
-	}
-	else
-	{
-		// Load ECX with the source memory address that we're reading from.
-		MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		if ( _Imm_ != 0 )
-			ADD32ItoR( ECX, _Imm_ );
+	// Load ECX with the source memory address that we're reading from.
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+		ADD32ItoR( ECX, _Imm_ );
 	
-		vtlb_DynGenRead32(bits, sign);
-	}
+	// 8/16/32 bit modes return the loaded value in EAX.
+	//MOV32ItoR(EDX, (int)&dummyValue[0] );
 
-	if( _Rt_ )
+	vtlb_DynGenRead32(bits, sign);
+
+	if ( _Rt_ )
 	{
-		// EAX holds the loaded value, so sign extend as needed:
+		// Perform sign extension if needed
+
+		//MOV32MtoR( EAX, (int)&dummyValue[0] ); //ewww, lame ! movsx /zx has r/m forms too ...
+		/*if (bits==8)
+		{
+			if (sign)
+				//MOVSX32M8toR( EAX, (int)&dummyValue[0] );
+				MOVSX32R8toR( EAX, EAX );
+			//else
+				//MOVZX32M8toR( EAX, (int)&dummyValue[0] );
+				//MOVZX32R8toR( EAX, EAX );
+		}
+		else if (bits==16)
+		{
+			if (sign) 
+				//MOVSX32M16toR( EAX, (int)&dummyValue[0] );
+				MOVSX32R16toR( EAX, EAX );
+			//else
+				//MOVZX32M16toR( EAX, (int)&dummyValue[0] );
+				//MOVZX32R16toR( EAX, EAX );
+		}*/
+
 		if (sign)
 			CDQ();
 		else
@@ -2457,7 +2463,6 @@ void recLQ( void )
 	ADD32ItoR( ESP, 8 );
    */
 }
-
 void recStore(u32 sz)
 {
 	//no int 3? i love to get my hands dirty ;p - Raz
@@ -2465,15 +2470,16 @@ void recStore(u32 sz)
 
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
-
-	// Performance note: Const prop for the store address is good, always.
-	// Constprop for the value being stored is not really worthwhile (better to use register
-	// allocation -- simpler code and just as fast)
-
-
-	// Load EDX first with the value being written, or the address of the value
-	// being written (64/128 bit modes).  TODO: use register allocation, if the
-	// value is allocated to a register.
+	
+	MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
+	if ( _Imm_ != 0 )
+	{
+		ADD32ItoR( ECX, _Imm_);
+	}
+	if (sz==128)
+	{
+		AND32I8toR(ECX,0xF0);
+	}
 
 	if (sz<64)
 	{
@@ -2486,29 +2492,23 @@ void recStore(u32 sz)
 	{
 		MOV32ItoR(EDX,(int)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]);
 	}
+	
+	
+	vtlb_DynGenWrite(sz);
 
-	// Load ECX with the destination address, or issue a direct optimized write
-	// if the address is a constant propagation.
-
-	if( GPR_IS_CONST1( _Rs_ ) )
-	{
-		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		if( sz == 128 ) dstadr &= ~0x0f;
-		vtlb_DynGenWrite_Const( sz, dstadr );
-	}
-	else
-	{
-		MOV32MtoR( ECX, (int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] );
-		if ( _Imm_ != 0 )
-			ADD32ItoR(ECX, _Imm_);
-
-		if (sz==128)
-			AND32I8toR(ECX,0xF0);
-
-		vtlb_DynGenWrite(sz);
-	}
+	/*
+	if (sz==8)
+		CALLFunc( (int)memWrite8 );
+	else if (sz==16)
+		CALLFunc( (int)memWrite16 );
+	else if (sz==32)
+		CALLFunc( (int)memWrite32 );
+	else if (sz==64)
+		CALLFunc( (int)memWrite64 );
+	else if (sz==128)
+		CALLFunc( (int)memWrite128 );
+	*/
 }
-
 ////////////////////////////////////////////////////
 void recSB( void )
 {

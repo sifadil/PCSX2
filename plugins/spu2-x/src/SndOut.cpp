@@ -19,7 +19,7 @@
  * 
  */
 
-#include "Spu2.h"
+#include "spu2.h"
 
 
 StereoOut32 StereoOut32::Empty( 0, 0 );
@@ -60,30 +60,18 @@ public:
 	s32  Init()  { return 0; }
 	void Close() { }
 	s32  Test() const { return 0; }
-#ifdef _MSC_VER
 	void Configure(HWND parent)  { }
-#else
-	void Configure(uptr parent)  { }
-#endif
 	bool Is51Out() const { return false; }
 	int GetEmptySampleCount() const { return 0; }
 	
 	const wchar_t* GetIdent() const
 	{
-		return L"nullout";
+		return _T("nullout");
 	}
 
 	const wchar_t* GetLongName() const
 	{
-		return L"No Sound (Emulate SPU2 only)";
-	}
-
-	void ReadSettings()
-	{
-	}
-
-	void WriteSettings() const
-	{
+		return _T("No Sound (Emulate SPU2 only)");
 	}
 
 } NullOut;
@@ -91,11 +79,9 @@ public:
 SndOutModule* mods[]=
 {
 	&NullOut,
-#ifdef _MSC_VER
 	XAudio2Out,
 	DSoundOut,
 	WaveOut,
-#endif
 	NULL		// signals the end of our list
 };
 
@@ -366,11 +352,7 @@ s32 SndBuffer::Test()
 	return mods[OutputModule]->Test();
 }
 
-#ifdef _MSC_VER
 void SndBuffer::Configure(HWND parent, u32 module )
-#else
-void SndBuffer::Configure(uptr parent, u32 module )
-#endif
 {
 	if( mods[module] == NULL )
 		return;

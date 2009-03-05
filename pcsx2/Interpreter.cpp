@@ -34,19 +34,26 @@ static std::string disOut;
 
 // These macros are used to assemble the repassembler functions
 
+#ifdef PCSX2_DEVBUILD
 static void debugI()
 {
-	if( !IsDevBuild ) return;
-	if( cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1] ) Console::Error("R0 is not zero!!!!");
+	//CPU_LOG("%s\n", disR5900Current.getCString());
+	if (cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1]) Console::Error("R0 is not zero!!!!");
 }
+#else
+static void debugI() {}
+#endif
 
 //long int runs=0;
 
 static void execI()
 {
-	cpuRegs.code = memRead32( cpuRegs.pc );
-	if( IsDebugBuild )
-		debugI();
+#ifdef _DEBUG
+    memRead32(cpuRegs.pc, &cpuRegs.code);
+	debugI();
+#else
+    cpuRegs.code = *(u32 *)PSM(cpuRegs.pc);
+#endif
 
 	const OPCODE& opcode = GetCurrentInstruction();
 	//use this to find out what opcodes your game uses. very slow! (rama)
@@ -56,17 +63,6 @@ static void execI()
 	//		SysPrintf ("Load %s\n",opcode.Name);
 	//	}
 	//}
-
-	// Another method of instruction dumping:
-	/*if( cpuRegs.cycle > 0x4f24d714 )
-	{
-		//CPU_LOG( "%s\n", disR5900Current.getCString());
-		disOut.clear();
-		opcode.disasm( disOut );
-		disOut += '\n';
-		CPU_LOG( disOut.c_str() );
-	}*/
-
 
 	cpuBlockCycles += opcode.cycles;
 	cpuRegs.pc += 4;

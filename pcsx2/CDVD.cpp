@@ -19,6 +19,11 @@
 #include "PrecompiledHeader.h"
 
 #include <ctype.h>
+#include <time.h>
+
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 
 #include "PsxCommon.h"
 #include "CDVDiso.h"
@@ -219,10 +224,11 @@ FILE *_cdvdOpenMechaVer() {
 	char *ptr;
 	int i;
 	char file[g_MaxPath];
+	string Bios;
 	FILE* fd;
 
 	// get the name of the bios file
-	string Bios( Path::Combine( Config.BiosDir, Config.Bios ) );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the mecha ver file
 	// [TODO] : Upgrade this to use std::string!
@@ -263,11 +269,12 @@ s32 cdvdGetMechaVer(u8* ver)
 FILE *_cdvdOpenNVM() {
 	char *ptr;
 	int i;
+	string Bios;
 	char file[g_MaxPath];
 	FILE* fd;
 
 	// get the name of the bios file
-	string Bios( Path::Combine( Config.BiosDir, Config.Bios ) );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 	
 	// use the bios filename to get the name of the nvm file
 	// [TODO] : Upgrade this to use std::string!
@@ -524,10 +531,12 @@ void cdvdReadKey(u8 arg0, u16 arg1, u32 arg2, u8* key) {
 	// Now's a good time to reload the ELF info...
 	if( ElfCRC == 0 )
 	{
+		FreezeMMXRegs(1);
 		ElfCRC = loadElfCRC( str );
 		ElfApplyPatches();
 		LoadGameSpecificSettings();
 		GSsetGameCRC( ElfCRC, 0 );
+		FreezeMMXRegs(0);
 	}
 }
 
@@ -736,6 +745,17 @@ static uint cdvdBlockReadTime( CDVD_MODE_TYPE mode )
 
 void cdvdReset()
 {
+#ifdef _WIN32
+	SYSTEMTIME st;
+    //Get and set the internal clock to time
+	GetSystemTime(&st);
+#else
+    time_t traw;
+    struct tm* ptlocal;
+    time(&traw);
+    ptlocal = localtime(&traw);
+#endif
+
 	memzero_obj(cdvd);
 
 	cdvd.Type = CDVD_TYPE_NODISC;
@@ -754,6 +774,25 @@ void cdvdReset()
     cdvd.RTC.day = 25;
     cdvd.RTC.month = 5;
     cdvd.RTC.year = 7; //2007
+
+#ifndef _DEBUG
+#ifdef _WIN32
+	cdvd.RTC.second = (u8)(st.wSecond);
+	cdvd.RTC.minute = (u8)(st.wMinute);
+	cdvd.RTC.hour = (u8)(st.wHour+1)%24;
+	cdvd.RTC.day = (u8)(st.wDay);
+	cdvd.RTC.month = (u8)(st.wMonth);
+	cdvd.RTC.year = (u8)(st.wYear - 2000);
+#else
+    cdvd.RTC.second = ptlocal->tm_sec;
+    cdvd.RTC.minute = ptlocal->tm_min;
+    cdvd.RTC.hour = ptlocal->tm_hour;
+    cdvd.RTC.day = ptlocal->tm_mday;
+    cdvd.RTC.month = ptlocal->tm_mon;
+    cdvd.RTC.year = ptlocal->tm_year;
+#endif
+#endif
+
 }
 
 struct Freeze_v10Compat
@@ -766,7 +805,17 @@ struct Freeze_v10Compat
 
 void SaveState::cdvdFreeze()
 {
-	Freeze( cdvd );
+	if( GetVersion() <= 0x10 )
+	{
+		// the old cdvd struct didn't save the last few items.
+		FreezeLegacy( cdvd, sizeof(Freeze_v10Compat) );
+		cdvd.SeekToSector = cdvd.Sector;
+		cdvd.Action = cdvdAction_None;
+		cdvd.ReadTime = cdvdBlockReadTime( MODE_DVDROM );
+		cdvd.Spinning = true;
+	}
+	else
+		Freeze( cdvd );
 
 	if( IsLoading() )
 	{
@@ -791,7 +840,7 @@ void cdvdNewDiskCB()
 	}
 }
 
-void mechaDecryptBytes( u32 madr, int size )
+void mechaDecryptBytes(unsigned char* buffer, int size)
 {
 	int i;
 
@@ -799,11 +848,10 @@ void mechaDecryptBytes( u32 madr, int size )
 	int doXor = (cdvd.decSet) & 1;
 	int doShift = (cdvd.decSet) & 2;
 	
-	u8* curval = iopPhysMem( madr );
-	for( i=0; i<size; ++i, ++curval )
+	for (i=0; i<size; i++) 
 	{
-		if( doXor ) *curval ^= cdvd.Key[4];
-		if( doShift ) *curval = (*curval >> shiftAmount) | (*curval << (8-shiftAmount) );
+		if (doXor) buffer[i] ^= cdvd.Key[4];
+		if (doShift) buffer[i] = (buffer[i]>>shiftAmount) | (buffer[i]<<(8-shiftAmount));
 	}
 }
 
@@ -822,12 +870,10 @@ int cdvdReadSector() {
 		return -1;
 	}
 
-	// DMAs use physical addresses (air)
-	u8* mdest = iopPhysMem( HW_DMA3_MADR );
+	const u32 madr = HW_DMA3_MADR;
 
 	// if raw dvd sector 'fill in the blanks'
-	if (cdvd.BlockSize == 2064)
-	{
+	if (cdvd.BlockSize == 2064) {
 		// get info on dvd type and layer1 start
 		u32 layer1Start;
 		s32 dualType;
@@ -836,62 +882,57 @@ int cdvdReadSector() {
 
 		cdvdReadDvdDualInfo(&dualType, &layer1Start);
 		
-		if((dualType == 1) && (lsn >= layer1Start))
-		{
+		if((dualType == 1) && (lsn >= layer1Start)) {
 			// dual layer ptp disc
 			layerNum = 1;
 			lsn = lsn-layer1Start + 0x30000;
-		} else if((dualType == 2) && (lsn >= layer1Start))
-		{
+		} else if((dualType == 2) && (lsn >= layer1Start)) {
 			// dual layer otp disc
 			layerNum = 1;
 			lsn = ~(layer1Start+0x30000 - 1);
-		} else
-		{
+		} else {
 			// single layer disc
 			// or on first layer of dual layer disc
 			layerNum = 0;
 			lsn += 0x30000;
 		} // ENDLONGIF- Assumed the other dualType is 0.
+
+		PSXMu8(madr+0) = 0x20 | layerNum;
+		PSXMu8(madr+1) = (u8)(lsn >> 16);
+		PSXMu8(madr+2) = (u8)(lsn >>  8);
+		PSXMu8(madr+3) = (u8)(lsn      );
 		
-		mdest[0] = 0x20 | layerNum;
-		mdest[1] = (u8)(lsn >> 16);
-		mdest[2] = (u8)(lsn >>  8);
-		mdest[3] = (u8)(lsn      );
-
 		// sector IED (not calculated at present)
-		mdest[4] = 0;
-		mdest[5] = 0;
-
+		PSXMu8(madr+4) = 0;
+		PSXMu8(madr+5) = 0;
+		
 		// sector CPR_MAI (not calculated at present)
-		mdest[6] = 0;
-		mdest[7] = 0;
-		mdest[8] = 0;
-		mdest[9] = 0;
-		mdest[10] = 0;
-		mdest[11] = 0;
-
+		PSXMu8(madr+ 6) = 0;
+		PSXMu8(madr+ 7) = 0;
+		PSXMu8(madr+ 8) = 0;
+		PSXMu8(madr+ 9) = 0;
+		PSXMu8(madr+10) = 0;
+		PSXMu8(madr+11) = 0;
+		
 		// normal 2048 bytes of sector data
-		memcpy_fast( &mdest[12], cdr.pTransfer, 2048);
-
+		memcpy_fast(PSXM(madr+12), cdr.pTransfer, 2048);
+		
 		// 4 bytes of edc (not calculated at present)
-		mdest[2060] = 0;
-		mdest[2061] = 0;
-		mdest[2062] = 0;
-		mdest[2063] = 0;			
+		PSXMu8(madr+2060) = 0;
+		PSXMu8(madr+2061) = 0;
+		PSXMu8(madr+2062) = 0;
+		PSXMu8(madr+2063) = 0;
+	} else {
+		// normal read
+		memcpy_fast((u8*)PSXM(madr), cdr.pTransfer, cdvd.BlockSize);
 	}
-	else
-	{
-		memcpy_fast( mdest, cdr.pTransfer, cdvd.BlockSize);
-	}
-	
 	// decrypt sector's bytes
-	if( cdvd.decSet )
-		mechaDecryptBytes( HW_DMA3_MADR, cdvd.BlockSize );
+	if(cdvd.decSet)
+		mechaDecryptBytes((u8*)PSXM(madr), cdvd.BlockSize);
 
 	// Added a clear after memory write .. never seemed to be necessary before but *should*
 	// be more correct. (air)
-	psxCpu->Clear( HW_DMA3_MADR, cdvd.BlockSize/4 );
+	psxCpu->Clear( madr, cdvd.BlockSize/4);
 
 //	SysPrintf("sector %x;%x;%x\n", PSXMu8(madr+0), PSXMu8(madr+1), PSXMu8(madr+2));
 
@@ -1288,7 +1329,7 @@ static uint cdvdStartSeek( uint newsector )
 	}
 	else
 	{
-		CDR_LOG( "CdSeek Begin > Contiguous block without seek - delta=%d sectors\n", delta );
+		CDR_LOG( "CdSeek Begin > Contigious block without seek - delta=%d sectors\n", delta );
 		
 		// seektime is the time it takes to read to the destination block:
 		seektime = delta * cdvd.ReadTime;
@@ -1378,7 +1419,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
 			// Set the reading block flag.  If a seek is pending then Readed will
-			// take priority in the handler anyway.  If the read is contiguous then
+			// take priority in the handler anyway.  If the read is contigeous then
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 		break;
@@ -1419,7 +1460,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
 			// Set the reading block flag.  If a seek is pending then Readed will
-			// take priority in the handler anyway.  If the read is contiguous then
+			// take priority in the handler anyway.  If the read is contigeous then
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 		break;
@@ -1450,7 +1491,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			cdvd.RErr = CDVDreadTrack( cdvd.SeekToSector, cdvd.ReadMode );
 
 			// Set the reading block flag.  If a seek is pending then Readed will
-			// take priority in the handler anyway.  If the read is contiguous then
+			// take priority in the handler anyway.  If the read is contigeous then
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 		break;
@@ -1462,7 +1503,7 @@ void cdvdWrite04(u8 rt) { // NCOMMAND
 			//{
 			DevCon::WriteLn("CDGetToc Param[0]=%d, Param[1]=%d", params cdvd.Param[0],cdvd.Param[1]);
 			//}
-			cdvdGetToc( iopPhysMem( HW_DMA3_MADR ) );
+			cdvdGetToc( PSXM( HW_DMA3_MADR ) );
 			cdvdSetIrq( (1<<Irq_CommandComplete) ); //| (1<<Irq_DataReady) );
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);

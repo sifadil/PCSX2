@@ -23,10 +23,17 @@ using namespace R5900;
 DIR *dir;
 GtkWidget *FileSel;
 GtkWidget *MsgDlg;
+bool configuringplug = FALSE;
 const char* g_pRunGSState = NULL;
 
 int efile = 0;
 char elfname[g_MaxPath];
+bool Slots[5] = { false, false, false, false, false };
+
+#ifdef PCSX2_DEVBUILD
+TESTRUNARGS g_TestRun;
+#endif
+
 char MAIN_DIR[g_MaxPath];
 
 int main(int argc, char *argv[])
@@ -36,7 +43,7 @@ int main(int argc, char *argv[])
 
 	efile = 0;
 	
-	getcwd(MAIN_DIR, ArraySize(MAIN_DIR)); /* store main dir */
+	getcwd(MAIN_DIR, ARRAYSIZE(MAIN_DIR)); /* store main dir */
 	Console::Notice("MAIN_DIR is %s", params MAIN_DIR);
 #ifdef ENABLE_NLS
 	setlocale(LC_ALL, "");
@@ -139,7 +146,7 @@ int main(int argc, char *argv[])
 	if (!efile) efile = GetPS2ElfName(elfname);
 	loadElfFile(elfname);
 
-	//ExecuteCpu();
+	ExecuteCpu();
 
 	return 0;
 }
@@ -211,27 +218,7 @@ void On_Dialog_Cancelled(GtkButton* button, gpointer user_data)
 	gtk_widget_set_sensitive(MainWindow, TRUE);
 	gtk_main_quit();
 }
-	
-void  RefreshMenuSlots()
-{
-	GtkWidget *Item;
-	char str[g_MaxPath], str2[g_MaxPath];
-		
-	for (int i = 0; i < 5; i++)
-	{
-		sprintf(str, "load_slot_%d", i);
-		sprintf(str2, "save_slot_%d", i);
-		Item = lookup_widget(MainWindow, str);
 
-		if GTK_IS_WIDGET(Item) 
-			gtk_widget_set_sensitive(Item, Slots[i]);
-		else
-			Console::Error("No such widget: %s", params str);
-
-		Item = lookup_widget(MainWindow, str2);
-		gtk_widget_set_sensitive(Item, (ElfCRC != 0));
-	}
-}
 void StartGui()
 {
 	GtkWidget *Menu;
@@ -253,7 +240,7 @@ void StartGui()
 	gtk_box_pack_start(GTK_BOX(lookup_widget(MainWindow, "status_box")), pStatusBar, TRUE, TRUE, 0);
 	gtk_widget_show(pStatusBar);
 
-	HostGui::SetStatusMsg( "F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
+	StatusBar_SetMsg( "F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
 
 	// add all the languages
 	Item = lookup_widget(MainWindow, "GtkMenuItem_Language");
@@ -289,7 +276,7 @@ void StartGui()
 	gtk_widget_destroy(lookup_widget(MainWindow, "GtkMenuItem_Debug"));
 #endif
 	
-	RefreshMenuSlots();
+	CheckSlots();
 	
 	gtk_widget_show_all(MainWindow);
 	gtk_window_activate_focus(GTK_WINDOW(MainWindow));
@@ -308,8 +295,10 @@ int Pcsx2Configure()
 {
 	if (!UseGui) return 0;
 
+	configuringplug = TRUE;
 	MainWindow = NULL;
 	OnConf_Conf(NULL, 0);
+	configuringplug = FALSE;
 
 	return applychanges;
 }
@@ -325,8 +314,9 @@ void OnLanguage(GtkMenuItem *menuitem, gpointer user_data)
 
 void OnFile_RunCD(GtkMenuItem *menuitem, gpointer user_data)
 {
-	SysReset();
-	SysPrepareExecution(NULL);
+	safe_free(g_RecoveryState);
+	ResetPlugins();
+	RunExecute(NULL);
 }
 
 void OnRunElf_Ok(GtkButton* button, gpointer user_data)
@@ -337,7 +327,7 @@ void OnRunElf_Ok(GtkButton* button, gpointer user_data)
 	strcpy(elfname, File);
 	gtk_widget_destroy(FileSel);
 
-	SysPrepareExecution(elfname);
+	RunExecute(elfname);
 }
 
 void OnRunElf_Cancel(GtkButton* button, gpointer user_data)
@@ -414,12 +404,56 @@ void OnFile_Exit(GtkMenuItem *menuitem, gpointer user_data)
 
 void OnEmu_Run(GtkMenuItem *menuitem, gpointer user_data)
 {
-	SysPrepareExecution(NULL, true);	// boots bios if no savestate is to be recovered
+	if (g_EmulationInProgress)
+		ExecuteCpu();
+	else
+		RunExecute(NULL, true);	// boots bios if no savestate is to be recovered
+
 }
 
 void OnEmu_Reset(GtkMenuItem *menuitem, gpointer user_data)
 {
 	SysReset();
+}
+
+void ResetMenuSlots()
+{
+	GtkWidget *Item;
+	char str[g_MaxPath], str2[g_MaxPath];
+	int i;
+
+	for (i = 0; i < 5; i++)
+	{
+		
+		sprintf(str, "load_slot_%d", i);
+		sprintf(str2, "save_slot_%d", i);
+		Item = lookup_widget(MainWindow, str);
+		
+		if GTK_IS_WIDGET(Item) 
+			gtk_widget_set_sensitive(Item, Slots[i]);
+		else
+			Console::Error("No such widget: %s", params str);
+		
+		Item = lookup_widget(MainWindow, str2);
+		gtk_widget_set_sensitive(Item, (ElfCRC != 0));
+			
+	}
+}
+
+void CheckSlots()
+{
+	int i = 0;
+	
+	if (ElfCRC == 0) Console::Notice("Disabling game slots until a game is loaded.");
+	
+	for (i=0; i<5; i++) 
+	{
+		if (isSlotUsed(i))
+			Slots[i] = true;
+		else
+			Slots[i] = false;
+	}
+	ResetMenuSlots();
 }
 
 //2002-09-28 (Florin)

@@ -21,6 +21,28 @@
 
 #include "PS2Etypes.h"
 
+struct TESTRUNARGS
+{
+	u8 enabled;
+	u8 jpgcapture;
+
+	int frame; // if < 0, frame is unlimited (run until crash).
+	int numimages;
+	int curimage;
+	u32 autopad; // mask for auto buttons
+	bool efile;
+	int snapdone;
+
+	const char* ptitle;
+	const char* pimagename;
+	const char* plogname;
+	const char* pgsdll, *pcdvddll, *pspudll;
+	const char* ppad1dll, *ppad2dll, *pdev9dll;
+
+};
+
+extern TESTRUNARGS g_TestRun;
+
 #define BIAS 2   // Bus is half of the actual ps2 speed
 //#define PS2CLK   36864000	/* 294.912 mhz */
 //#define PSXCLK	 9216000	/* 36.864 Mhz */
@@ -28,10 +50,22 @@
 #define PS2CLK 294912000 //hz	/* 294.912 mhz */
 
 
+/* Config.PsxType == 1: PAL:
+	 VBlank interlaced		50.00 Hz
+	 VBlank non-interlaced	49.76 Hz
+	 HBlank					15.625 KHz 
+   Config.PsxType == 0: NSTC
+	 VBlank interlaced		59.94 Hz
+	 VBlank non-interlaced	59.82 Hz
+	 HBlank					15.73426573 KHz */
+
+//Misc Clocks
+#define PSXPIXEL        ((int)(PSXCLK / 13500000))
+#define PSXSOUNDCLK		((int)(48000))
+
 #include "Plugins.h"
 #include "Misc.h"
 #include "SaveState.h"
-
 #include "DebugTools/Debug.h"
 #include "R5900.h"
 #include "Memory.h"
@@ -41,6 +75,6 @@
 //#include "Misc.h"
 #include "Patch.h"
 
-#define PCSX2_VERSION "(beta)"
+#define PCSX2_VERSION "0.9.6"
 
 #endif /* __COMMON_H__ */

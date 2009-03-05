@@ -90,7 +90,6 @@ extern SessionOverrideFlags g_Session;
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK	 (Config.GameFixes & 0x1) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUCOMPAREHACK (Config.GameFixes & 0x4) // Special Fix for Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-#define CHECK_VUCLIPFLAGHACK (Config.GameFixes & 0x2) // Special Fix for God of War, fixes SPS.
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW		 (Config.vuOptions & 0x1)
 #define CHECK_VU_EXTRA_OVERFLOW	 (Config.vuOptions & 0x2) // If enabled, Operands are clamped before being used in the VU recs
@@ -100,7 +99,6 @@ extern SessionOverrideFlags g_Session;
 #define CHECK_FPU_OVERFLOW		 (Config.eeOptions & 0x1)
 #define CHECK_FPU_EXTRA_OVERFLOW (Config.eeOptions & 0x2) // If enabled, Operands are checked for infinities before being used in the FPU recs
 #define CHECK_FPU_EXTRA_FLAGS 1	// Always enabled now // Sets D/I flags on FPU instructions
-#define CHECK_FPU_FULL			 (Config.eeOptions & 0x4)
 #define DEFAULT_eeOptions	0x01
 #define DEFAULT_vuOptions	0x01
 //------------ DEFAULT sseMXCSR VALUES!!! ---------------
@@ -156,6 +154,7 @@ public:
 	int Cdda;
 	int Mdec;
 	int Patch;
+	int ThPriority;
 	int CustomFps;
 	int Hacks;
 	int GameFixes;
@@ -212,14 +211,8 @@ void SetCPUState(u32 sseMXCSR, u32 sseVUMXCSR);
 
 // when using mmx/xmm regs, use; 0 is load
 // freezes no matter the state
-#ifndef __INTEL_COMPILER
-extern "C" void FreezeXMMRegs_(int save);
-extern "C" void FreezeMMXRegs_(int save);
-#else
 extern void FreezeXMMRegs_(int save);
 extern void FreezeMMXRegs_(int save);
-#endif
-
 extern bool g_EEFreezeRegs;
 extern u8 g_globalMMXSaved;
 extern u8 g_globalXMMSaved;

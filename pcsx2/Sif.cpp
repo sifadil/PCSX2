@@ -18,10 +18,8 @@
 
 #include "PrecompiledHeader.h"
 
-#define _PC_	// disables MIPS opcode macros.
-
-#include "PsxCommon.h"
-#include "Common.h"
+#include "Sif.h"
+#include "IopHw.h"
 #include "Sifcmd.h"
 
 using namespace std;
@@ -29,6 +27,8 @@ using namespace std;
 #define sif0dma ((DMACh*)&PS2MEM_HW[0xc000])
 #define sif1dma ((DMACh*)&PS2MEM_HW[0xc400])
 #define sif2dma ((DMACh*)&PS2MEM_HW[0xc800])
+
+int eeSifTransfer;
 
 DMACh *sif0ch;
 DMACh *sif1ch;
@@ -204,11 +204,11 @@ __forceinline void SIF0Dma()
 				else  // Chain mode
 				{
 					// Process DMA tag at HW_DMA9_TADR
-					sif0.sifData = *(sifData *)iopPhysMem( HW_DMA9_TADR );
+					sif0.sifData = *(struct sifData *)PSXM(HW_DMA9_TADR);
 
 					sif0.sifData.words = (sif0.sifData.words + 3) & 0xfffffffc; // Round up to nearest 4.
 
-					SIF0write((u32*)iopPhysMem(HW_DMA9_TADR+8), 4);
+					SIF0write((u32*)PSXM(HW_DMA9_TADR+8), 4);
 
 					//psxCycles += 2;
 
@@ -231,7 +231,7 @@ __forceinline void SIF0Dma()
 
 				SIF_LOG("+++++++++++ %lX of %lX\n", wTransfer, sif0.counter /*(HW_DMA9_BCR >> 16)*/ );
 
-				SIF0write((u32*)iopPhysMem(HW_DMA9_MADR), wTransfer);
+				SIF0write((u32*)PSXM(HW_DMA9_MADR), wTransfer);
 				HW_DMA9_MADR += wTransfer << 2;
 				//HW_DMA9_BCR = (HW_DMA9_BCR & 0xFFFF) | (((HW_DMA9_BCR >> 16) - wTransfer)<<16);
 				psxCycles += (wTransfer / 4) * BIAS;		// fixme : should be / 16
@@ -453,7 +453,7 @@ __forceinline void SIF1Dma()
 
 					SIF_LOG(" IOP SIF doing transfer %04X to %08X\n", readSize, HW_DMA10_MADR);
 
-					SIF1read((u32*)iopPhysMem(HW_DMA10_MADR), readSize);
+					SIF1read((u32*)PSXM(HW_DMA10_MADR), readSize);
 					psxCpu->Clear(HW_DMA10_MADR, readSize);
 					psxCycles += readSize / 4;		// fixme: should be / 16
 					sif1.counter = size-readSize;
@@ -591,7 +591,7 @@ void SaveState::sifFreeze() {
 	Freeze(sif0);
 	Freeze(sif1);
 
-	if( GetVersion() >= 0x0002 )
+	if( GetVersion() >= 0x0012 )
 	{
 		Freeze(eesifbusy);
 		Freeze(iopsifbusy);

@@ -6,16 +6,13 @@
 # Uncomment if building by itself, rather then with all the plugins
 
 #Normal
-#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"
+export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"
 
 #Optimized, but a devbuild
-export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --enable-devbuild --prefix `pwd`"
+#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --enable-devbuild --prefix `pwd`"
 
 #Debug / Devbuild version
 #export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse3 --prefix `pwd`"
-
-#Optimized, but a devbuild - with memcpy_fast_ enabled. - BROKEN!
-#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --enable-devbuild --enable-memcpyfast --prefix `pwd`"
 
 #ZeroGS Normal mode
 export ZEROGSOPTIONS="--enable-sse2"
@@ -23,15 +20,10 @@ export ZEROGSOPTIONS="--enable-sse2"
 #ZeroGS Debug mode
 #export ZEROGSOPTIONS="--enable-debug --enable-devbuild --enable-sse2"
 
-#ZeroSPU2 Debug mode (Don't enable right now)
-#export ZEROSPU2OPTIONS="--enable-debug --enable-devbuild"
-
 option=$@
 export PCSX2PLUGINS="`pwd`/bin/plugins"
 curdir=`pwd`
 
-echo "Building the Pcsx2 Suite."
-echo "Note: will not compile on Linux x64."
 cd ${curdir}/plugins
 sh build.sh $option
 
@@ -41,8 +33,6 @@ echo Error with building plugins
 exit 1
 fi
 
-echo "Building Pcsx2."
-echo "Note: will not compile on Linux x64."
 cd ${curdir}/pcsx2
 sh build.sh $option
 

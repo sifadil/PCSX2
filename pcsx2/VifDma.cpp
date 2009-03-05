@@ -46,17 +46,17 @@ extern "C"
 	extern u32* _vifCol;
 }
 
-PCSX2_ALIGNED16_EXTERN(u32 g_vifRow0[4]);
-PCSX2_ALIGNED16_EXTERN(u32 g_vifCol0[4]);
-PCSX2_ALIGNED16_EXTERN(u32 g_vifRow1[4]);
-PCSX2_ALIGNED16_EXTERN(u32 g_vifCol1[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_vifRow0[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_vifCol0[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_vifRow1[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_vifCol1[4]);
 
 extern vifStruct *_vif;
 
 vifStruct vif0, vif1;
 
-static PCSX2_ALIGNED16(u32 g_vif1Masks[64]);
-static PCSX2_ALIGNED16(u32 g_vif0Masks[64]);
+PCSX2_ALIGNED16(u32 g_vif1Masks[64]);
+PCSX2_ALIGNED16(u32 g_vif0Masks[64]);
 u32 g_vif1HasMask3[4] = {0}, g_vif0HasMask3[4] = {0};
 
 // Generic constants
@@ -1338,11 +1338,11 @@ void vif0Reset() {
 void SaveState::vif0Freeze()
 {
 	// Dunno if this one is needed, but whatever, it's small. :)
-	if( GetVersion() >= 0x04 )
+	if( GetVersion() >= 0x14 )
 		Freeze( g_vifCycles );
 
 	Freeze( vif0 );
-	if( GetVersion() >= 0x04 )
+	if( GetVersion() >= 0x14 )
 	{
 		Freeze( g_vif0HasMask3 );
 		Freeze( g_vif0Masks );
@@ -2263,7 +2263,7 @@ void SaveState::vif1Freeze()
 {
 	Freeze(vif1);
 	
-	if( GetVersion() >= 0x04 )
+	if( GetVersion() >= 0x14 )
 	{
 		Freeze( g_vif1HasMask3 );
 		Freeze( g_vif1Masks );

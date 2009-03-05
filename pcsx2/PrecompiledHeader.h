@@ -1,14 +1,27 @@
 #ifndef _PCSX2_PRECOMPILED_HEADER_
 #define _PCSX2_PRECOMPILED_HEADER_
 
-#define NOMINMAX		// Disables other libs inclusion of their own min/max macros (we use std instead)
-
 #if defined (__linux__)  // some distributions are lower case
 #	define __LINUX__
 #endif
 
 #ifndef _WIN32
 #	include <unistd.h>
+#else
+
+// For now Windows headers are needed by all modules, so include it here so
+// that it compiles nice and fast...
+
+// Force availability of to WinNT APIs (change to 0x600 to enable XP-specific APIs)
+#	define WINVER 0x0501
+#	define _WIN32_WINNT 0x0501
+
+#	include <windows.h>
+
+// disable Windows versions of min/max -- we'll use the typesafe STL versions instead.
+#undef min
+#undef max
+
 #endif
 
 // Include the STL junk that's actually handy.
@@ -41,19 +54,10 @@
 #endif
 
 using std::string;		// we use it enough, so bring it into the global namespace.
-using std::min;
-using std::max;
 
-#include "zlib/zlib.h"
+#include "zlib.h"
 #include "PS2Etypes.h"
 #include "StringUtils.h"
-
-typedef int BOOL;
-
-#	undef TRUE
-#	undef FALSE
-#	define TRUE  1
-#	define FALSE 0
 
 ////////////////////////////////////////////////////////////////////
 // Compiler/OS specific macros and defines -- Begin Section
@@ -73,12 +77,24 @@ typedef int BOOL;
 #		define __declspec(x)
 #	endif
 
+// functions that linux lacks...
+// fixme: this should probably be in a __LINUX__ conditional rather than
+// a GCC conditional (since GCC on a windows platform would have these functions)
+#	define Sleep(seconds) usleep(1000*(seconds))
+
 static __forceinline u32 timeGetTime()
 {
 	struct timeb t;
 	ftime(&t);
 	return (u32)(t.time*1000+t.millitm);
 }
+
+#	define BOOL int
+
+#	undef TRUE
+#	undef FALSE
+#	define TRUE  1
+#	define FALSE 0
 
 #	ifndef strnicmp
 #		define strnicmp strncasecmp
@@ -98,26 +114,5 @@ static __forceinline u32 timeGetTime()
 #ifndef __LINUX__
 #	define __unused
 #endif
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Emitter Instance Identifiers.  If you add a new emitter, do it here also.
-// Note: Currently most of the instances map back to 0, since existing dynarec code all
-// shares iCore and must therefore all share the same emitter instance.
-enum
-{
-	EmitterId_R5900 = 0,
-	EmitterId_R3000a = EmitterId_R5900,
-	EmitterId_VU0micro = EmitterId_R5900,
-	EmitterId_VU1micro = EmitterId_R5900,
-	
-	// Cotton's new microVU, which is iCore-free
-	EmitterId_microVU0,
-	EmitterId_microVU1,
-
-	// Air's eventual IopRec, which will also be iCore-free
-	EmitterId_R3000air,
-		
-	EmitterId_Count			// must always be last!
-};
 
 #endif

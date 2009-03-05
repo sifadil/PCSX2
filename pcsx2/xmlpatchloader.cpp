@@ -28,6 +28,10 @@ using namespace std;
 #pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #if !defined(_WIN32)
 #ifndef strnicmp
 #define strnicmp strncasecmp

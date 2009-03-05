@@ -1,25 +1,22 @@
-/* SPU2-X, A plugin for Emulating the Sound Processing Unit of the Playstation 2
- * Developed and maintained by the Pcsx2 Development Team.
- * 
- * Original portions from SPU2ghz are (c) 2008 by David Quintana [gigaherz]
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 2.1 of the the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along
- * with this library; if not, write to the Free Software Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+//GiGaHeRz's SPU2 Driver
+//Copyright (c) 2003-2008, David Quintana <gigaherz@gmail.com>
+//
+//This library is free software; you can redistribute it and/or
+//modify it under the terms of the GNU Lesser General Public
+//License as published by the Free Software Foundation; either
+//version 2.1 of the License, or (at your option) any later version.
+//
+//This library is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//Lesser General Public License for more details.
+//
+//You should have received a copy of the GNU Lesser General Public
+//License along with this library; if not, write to the Free Software
+//Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
 
-#include "Spu2.h"
+#include "spu2.h"
 
 int crazy_debug=0;
 
@@ -29,13 +26,14 @@ FILE *spu2Log;
 
 void FileLog(const char *fmt, ...) {
 #ifdef SPU2_LOG
+	int n;
 	va_list list;
 
 	if(!AccessLog()) return;
 	if(!spu2Log) return;
 
 	va_start(list, fmt);
-	vsprintf(s,fmt, list);
+	n=vsprintf(s,fmt, list);
 	va_end(list);
 
 	fputs(s,spu2Log);
@@ -53,12 +51,13 @@ void FileLog(const char *fmt, ...) {
 
 void ConLog(const char *fmt, ...) {
 #ifdef SPU2_LOG
+	int n;
 	va_list list;
 
 	if(!MsgToConsole()) return;
 
 	va_start(list, fmt);
-	vsprintf(s,fmt, list);
+	n=vsprintf(s,fmt, list);
 	va_end(list);
 
 	fputs(s,stderr);
@@ -95,14 +94,13 @@ void V_VolumeLR::DebugDump( FILE* dump, const char* title )
 
 void DoFullDump()
 {
-#ifdef _MSC_VER
 #ifdef SPU2_LOG
 	FILE *dump;
 	u8 c=0, v=0;
 
 	if(MemDump())
 	{
-		dump = fopen( Unicode::Convert( MemDumpFileName ).c_str(), "wb" );
+		dump = _wfopen( MemDumpFileName, _T("wb") );
 		if (dump)
 		{
 			fwrite(_spu2mem,0x200000,1,dump);
@@ -111,7 +109,7 @@ void DoFullDump()
 	}
 	if(RegDump())
 	{
-		dump = fopen( Unicode::Convert( RegDumpFileName ).c_str(), "wb" );
+		dump = _wfopen( RegDumpFileName, _T("wb") );
 		if (dump)
 		{
 			fwrite(spu2regs,0x2000,1,dump);
@@ -120,7 +118,7 @@ void DoFullDump()
 	}
 
 	if(!CoresDump()) return;
-	dump = fopen( Unicode::Convert( CoresDumpFileName ).c_str(), "wt" );
+	dump = _wfopen( CoresDumpFileName, _T("wt") );
 	if (dump)
 	{
 		for(c=0;c<2;c++)
@@ -135,18 +133,18 @@ void DoFullDump()
 
 			fprintf(dump,"Interrupt Address:          %x\n",Cores[c].IRQA);
 			fprintf(dump,"DMA Transfer Start Address: %x\n",Cores[c].TSA);
-			fprintf(dump,"External Input to Direct Output (Left):    %s\n",Cores[c].DryGate.ExtL?"Yes":"No");
-			fprintf(dump,"External Input to Direct Output (Right):   %s\n",Cores[c].DryGate.ExtR?"Yes":"No");
-			fprintf(dump,"External Input to Effects (Left):          %s\n",Cores[c].WetGate.ExtL?"Yes":"No");
-			fprintf(dump,"External Input to Effects (Right):         %s\n",Cores[c].WetGate.ExtR?"Yes":"No");
-			fprintf(dump,"Sound Data Input to Direct Output (Left):  %s\n",Cores[c].DryGate.SndL?"Yes":"No");
-			fprintf(dump,"Sound Data Input to Direct Output (Right): %s\n",Cores[c].DryGate.SndR?"Yes":"No");
-			fprintf(dump,"Sound Data Input to Effects (Left):        %s\n",Cores[c].WetGate.SndL?"Yes":"No");
-			fprintf(dump,"Sound Data Input to Effects (Right):       %s\n",Cores[c].WetGate.SndR?"Yes":"No");
-			fprintf(dump,"Voice Data Input to Direct Output (Left):  %s\n",Cores[c].DryGate.InpL?"Yes":"No");
-			fprintf(dump,"Voice Data Input to Direct Output (Right): %s\n",Cores[c].DryGate.InpR?"Yes":"No");
-			fprintf(dump,"Voice Data Input to Effects (Left):        %s\n",Cores[c].WetGate.InpL?"Yes":"No");
-			fprintf(dump,"Voice Data Input to Effects (Right):       %s\n",Cores[c].WetGate.InpR?"Yes":"No");
+			fprintf(dump,"External Input to Direct Output (Left):    %s\n",Cores[c].ExtDryL?"Yes":"No");
+			fprintf(dump,"External Input to Direct Output (Right):   %s\n",Cores[c].ExtDryR?"Yes":"No");
+			fprintf(dump,"External Input to Effects (Left):          %s\n",Cores[c].ExtWetL?"Yes":"No");
+			fprintf(dump,"External Input to Effects (Right):         %s\n",Cores[c].ExtWetR?"Yes":"No");
+			fprintf(dump,"Sound Data Input to Direct Output (Left):  %s\n",Cores[c].SndDryL?"Yes":"No");
+			fprintf(dump,"Sound Data Input to Direct Output (Right): %s\n",Cores[c].SndDryR?"Yes":"No");
+			fprintf(dump,"Sound Data Input to Effects (Left):        %s\n",Cores[c].SndWetL?"Yes":"No");
+			fprintf(dump,"Sound Data Input to Effects (Right):       %s\n",Cores[c].SndWetR?"Yes":"No");
+			fprintf(dump,"Voice Data Input to Direct Output (Left):  %s\n",Cores[c].InpDryL?"Yes":"No");
+			fprintf(dump,"Voice Data Input to Direct Output (Right): %s\n",Cores[c].InpDryR?"Yes":"No");
+			fprintf(dump,"Voice Data Input to Effects (Left):        %s\n",Cores[c].InpWetL?"Yes":"No");
+			fprintf(dump,"Voice Data Input to Effects (Right):       %s\n",Cores[c].InpWetR?"Yes":"No");
 			fprintf(dump,"IRQ Enabled:     %s\n",Cores[c].IRQEnable?"Yes":"No");
 			fprintf(dump,"Effects Enabled: %s\n",Cores[c].FxEnable?"Yes":"No");
 			fprintf(dump,"Mute Enabled:    %s\n",Cores[c].Mute?"Yes":"No");
@@ -197,10 +195,10 @@ void DoFullDump()
 				fprintf(dump,"  - Pitch:     %x\n",Cores[c].Voices[v].Pitch);
 				fprintf(dump,"  - Modulated: %s\n",Cores[c].Voices[v].Modulated?"Yes":"No");
 				fprintf(dump,"  - Source:    %s\n",Cores[c].Voices[v].Noise?"Noise":"Wave");
-				fprintf(dump,"  - Direct Output for Left Channel:   %s\n",Cores[c].VoiceGates[v].DryL?"Yes":"No");
-				fprintf(dump,"  - Direct Output for Right Channel:  %s\n",Cores[c].VoiceGates[v].DryR?"Yes":"No");
-				fprintf(dump,"  - Effects Output for Left Channel:  %s\n",Cores[c].VoiceGates[v].WetL?"Yes":"No");
-				fprintf(dump,"  - Effects Output for Right Channel: %s\n",Cores[c].VoiceGates[v].WetR?"Yes":"No");
+				fprintf(dump,"  - Direct Output for Left Channel:   %s\n",Cores[c].Voices[v].DryL?"Yes":"No");
+				fprintf(dump,"  - Direct Output for Right Channel:  %s\n",Cores[c].Voices[v].DryR?"Yes":"No");
+				fprintf(dump,"  - Effects Output for Left Channel:  %s\n",Cores[c].Voices[v].WetL?"Yes":"No");
+				fprintf(dump,"  - Effects Output for Right Channel: %s\n",Cores[c].Voices[v].WetR?"Yes":"No");
 				fprintf(dump,"  - Loop Start Address:  %x\n",Cores[c].Voices[v].LoopStartA);
 				fprintf(dump,"  - Sound Start Address: %x\n",Cores[c].Voices[v].StartA);
 				fprintf(dump,"  - Next Data Address:   %x\n",Cores[c].Voices[v].NextA);
@@ -259,6 +257,5 @@ void DoFullDump()
 		}
 		fclose(dump);
 	}
-#endif
 #endif
 }

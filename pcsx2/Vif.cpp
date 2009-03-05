@@ -20,6 +20,7 @@
 #include <cmath>
 
 #include "Common.h"
+#include "ix86/ix86.h"
 #include "VUmicro.h"
 
 #include "Vif.h"

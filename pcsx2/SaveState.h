@@ -19,6 +19,8 @@
 #ifndef _SAVESTATE_H_
 #define _SAVESTATE_H_
 
+#include <zlib.h>
+
 // This shouldn't break Win compiles, but it does.
 #ifdef __LINUX__
 #include "PS2Edefs.h"
@@ -27,7 +29,7 @@
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
 
-static const u32 g_SaveVersion = 0x8b400005;
+static const u32 g_SaveVersion = 0x8b400004;
 
 // this function is meant to be sued in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
@@ -46,13 +48,15 @@ public:
 	SaveState( const char* msg, const string& destination );
 	virtual ~SaveState() { }
 
+	static void GetFilename( string& dest, int slot );
 	static string GetFilename( int slot );
 
 	// Gets the version of savestate that this object is acting on.
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
 	u32 GetVersion() const
 	{
-		return (m_version & 0xffff);
+		// HACK!  Matches the vTLB build versions with VM
+		return (m_version & 0xffff) + 0x10;
 	}
 
 	// Loads or saves the entire emulation state.
@@ -109,7 +113,6 @@ protected:
 	void sifFreeze();
 	void ipuFreeze();
 	void gifFreeze();
-	void sprFreeze();
 
 	void sioFreeze();
 	void cdrFreeze();
@@ -199,16 +202,5 @@ public:
 	void FreezeMem( void* data, int size );
 	bool IsSaving() const { return false; }
 };
-
-namespace StateRecovery
-{
-	extern bool HasState();
-	extern void Recover();
-	extern void SaveToFile( const string& file );
-	extern void SaveToSlot( uint num );
-	extern void MakeGsOnly();
-	extern void MakeFull();
-	extern void Clear();
-}
 
 #endif

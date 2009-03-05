@@ -16,6 +16,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 /**************************
 *
 * patchbrowser.c contains all the src of patchbrowser window
@@ -24,6 +26,7 @@
 
 #include "Win32.h"
 #include "Common.h"
+#include "resource.h"
 
 /*
  * TODO:

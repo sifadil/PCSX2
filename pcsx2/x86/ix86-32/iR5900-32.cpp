@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "Memory.h"
 #include "R5900OpcodeTables.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iR5900AritImm.h"
 #include "iR5900Arit.h"
@@ -41,15 +42,22 @@
 #include "vtlb.h"
 
 #include "SamplProf.h"
-#include "Paths.h"
-
-#include "NakedAsm.h"
 
 using namespace R5900;
 
 // used to disable register freezing during cpuBranchTests (registers
 // are safe then since they've been completely flushed)
 bool g_EEFreezeRegs = false;
+
+// I can't find where the Linux recRecompile is defined.  Is it used anymore?
+// If so, namespacing might break it. :/  (air)
+#ifdef __LINUX__
+extern "C" {
+#endif
+void recRecompile( u32 startpc );
+#ifdef __LINUX__
+}
+#endif
 
 u32 maxrecmem = 0;
 uptr *recLUT = NULL;
@@ -127,7 +135,7 @@ BASEBLOCKEX* PC_GETBLOCKEX(BASEBLOCK* p)
 static void iDumpBlock( int startpc, u8 * ptr )
 {
 	FILE *f;
-	string filename;
+	char filename[ g_MaxPath ];
 	u32 i, j;
 	EEINST* pcur;
 	u8 used[34];
@@ -135,25 +143,30 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	int numused, count, fpunumused;
 
 	Console::Status( "dump1 %x:%x, %x", params startpc, pc, cpuRegs.cycle );
-	Path::CreateDirectory( "dumps" );
-	ssprintf( filename, "dumps\\R5900dump%.8X.txt", startpc );
+#ifdef _WIN32
+	CreateDirectory("dumps", NULL);
+	sprintf_s( filename, g_MaxPath, "dumps\\dump%.8X.txt", startpc);
+#else
+	mkdir("dumps", 0755);
+	sprintf( filename, "dumps/dump%.8X.txt", startpc);
+#endif
 
 	fflush( stdout );
 //	f = fopen( "dump1", "wb" );
-//	fwrite( ptr, 1, (u32)x86Ptr[0] - (u32)ptr, f );
+//	fwrite( ptr, 1, (u32)x86Ptr - (u32)ptr, f );
 //	fclose( f );
 //
 //	sprintf( command, "objdump -D --target=binary --architecture=i386 dump1 > %s", filename );
 //	system( command );
 
-	f = fopen( filename.c_str(), "w" );
+	f = fopen( filename, "w" );
 
 	std::string output;
 
     if( disR5900GetSym(startpc) != NULL )
         fprintf(f, "%s\n", disR5900GetSym(startpc));
 	for ( i = startpc; i < s_nEndBlock; i += 4 ) {
-		disR5900Fasm( output, memRead32( i ), i );
+		disR5900Fasm( output, PSMu32( i ), i );
 		fprintf( f, output.c_str() );
 	}
 
@@ -164,7 +177,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 
 	memzero_obj(used);
 	numused = 0;
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( s_pInstCache->regs[i] & EEINST_USED ) {
 			used[i] = 1;
 			numused++;
@@ -173,7 +186,7 @@ static void iDumpBlock( int startpc, u8 * ptr )
 
 	memzero_obj(fpuused);
 	fpunumused = 0;
-	for(i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->fpuregs); ++i) {
 		if( s_pInstCache->fpuregs[i] & EEINST_USED ) {
 			fpuused[i] = 1;
 			fpunumused++;
@@ -181,19 +194,19 @@ static void iDumpBlock( int startpc, u8 * ptr )
 	}
 
 	fprintf(f, "       ");
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( used[i] ) fprintf(f, "%2d ", i);
 	}
-	for(i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->fpuregs); ++i) {
 		if( fpuused[i] ) fprintf(f, "%2d ", i);
 	}
 	fprintf(f, "\n");
 
 	fprintf(f, "       ");
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( used[i] ) fprintf(f, "%s ", disRNameGPR[i]);
 	}
-	for(i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->fpuregs); ++i) {
 		if( fpuused[i] ) fprintf(f, "%s ", i<32?"FR":"FA");
 	}
 	fprintf(f, "\n");
@@ -203,14 +216,14 @@ static void iDumpBlock( int startpc, u8 * ptr )
 		fprintf(f, "%2d: %2.2x ", i+1, pcur->info);
 		
 		count = 1;
-		for(j = 0; j < ArraySize(s_pInstCache->regs); j++) {
+		for(j = 0; j < ARRAYSIZE(s_pInstCache->regs); j++) {
 			if( used[j] ) {
 				fprintf(f, "%2.2x%s", pcur->regs[j], ((count%8)&&count<numused)?"_":" ");
 				++count;
 			}
 		}
 		count = 1;
-		for(j = 0; j < ArraySize(s_pInstCache->fpuregs); j++) {
+		for(j = 0; j < ARRAYSIZE(s_pInstCache->fpuregs); j++) {
 			if( fpuused[j] ) {
 				fprintf(f, "%2.2x%s", pcur->fpuregs[j], ((count%8)&&count<fpunumused)?"_":" ");
 				++count;
@@ -584,8 +597,8 @@ void recResetEE( void )
 	// so a fix will have to wait until later. -_- (air)
 
 	//x86SetPtr(recMem+REC_CACHEMEM);
-	//dyna_block_discard_recmem=(u8*)x86Ptr[0];
-	//JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr[0] + 5 ));
+	//dyna_block_discard_recmem=(u8*)x86Ptr;
+	//JMP32( (uptr)&dyna_block_discard - ( (u32)x86Ptr + 5 ));
 
 	x86SetPtr(recMem);
 
@@ -612,6 +625,8 @@ static void recShutdown( void )
 
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
+
+	x86Shutdown();
 }
 
 // Ignored by Linux
@@ -669,10 +684,10 @@ static __naked void Dispatcher()
 	assert( g_EEDispatchTemp );
 #endif
 
-	// Modify the prev block's jump address, and jump to the new block:
 	__asm {
+		//and eax, 0x0fffffff
 		shl eax, 4
-		pop ecx // x86Ptr[0] to mod
+		pop ecx // x86Ptr to mod
 		mov edx, eax
 		sub edx, ecx
 		sub edx, 4
@@ -683,7 +698,7 @@ static __naked void Dispatcher()
 }
 
 // edx -  baseblock->startpc
-// stack - x86Ptr[0]
+// stack - x86Ptr
 static __naked void DispatcherClear()
 {
 	// EDX contains the current pc
@@ -703,6 +718,7 @@ static __naked void DispatcherClear()
 			mov eax, s_pDispatchBlock
 			add esp, 4 // ignore stack
 			mov eax, dword ptr [eax]
+			//and eax, 0x0fffffff
 			shl eax, 4
 			jmp eax
 		}
@@ -716,6 +732,7 @@ static __naked void DispatcherClear()
 
 		pop ecx // old fnptr
 
+		//and eax, 0x0fffffff
 		shl eax, 4
 		mov byte ptr [ecx], 0xe9 // jmp32
 		mov edx, eax
@@ -747,6 +764,7 @@ static __naked void DispatcherReg()
 #endif
 
 	__asm {
+		//and eax, 0x0fffffff
 		shl eax, 4
 		jmp eax
 	}
@@ -756,8 +774,7 @@ __forceinline void recExecute()
 {
 	// Optimization note : Compared pushad against manually pushing the regs one-by-one.
 	// Manually pushing is faster, especially on Core2's and such. :)
-	do
-	{
+	do {
 		g_EEFreezeRegs = true;
 		__asm
 		{
@@ -800,7 +817,12 @@ static void recExecuteBlock()
 }
 
 #else // _MSC_VER
-
+// Linux uses an assembly version of these routines.
+extern "C" {
+extern void Dispatcher();
+extern void DispatcherClear();
+extern void DispatcherReg();
+}
 __forceinline void recExecute()
 {
 	// Optimization note : Compared pushad against manually pushing the regs one-by-one.
@@ -866,7 +888,7 @@ void recSYSCALL( void ) {
 	CMP32ItoM((uptr)&cpuRegs.pc, pc);
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&cpuRegs.cycle, eeScaleBlockCycles());
-	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+	JMP32((uptr)DispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 	//branch = 2;
 }
@@ -906,17 +928,12 @@ void recClearMem(BASEBLOCK* p)
 	int lastdelay;
 
 	// necessary since recompiler doesn't call femms/emms
-#ifdef __INTEL_COMPILER
-		__asm__("emms");
+#ifdef _MSC_VER
+	if (cpucaps.has3DNOWInstructionExtensions) __asm femms;
+	else __asm emms;
 #else
-	#ifdef _MSC_VER
-		if (cpucaps.has3DNOWInstructionExtensions) __asm femms;
-		else __asm emms;
-	#else
-		if( cpucaps.has3DNOWInstructionExtensions )__asm__("femms");
-		else 
-			__asm__("emms");
-	#endif
+    if( cpucaps.has3DNOWInstructionExtensions )__asm__("femms");
+    else __asm__("emms");
 #endif
 		
 	assert( p != NULL );
@@ -930,13 +947,13 @@ void recClearMem(BASEBLOCK* p)
 	assert( p->GetFnptr() != 0 );
 	assert( p->startpc );
 
-	x86Ptr[0] = (u8*)p->GetFnptr();
+	x86Ptr = (u8*)p->GetFnptr();
 
 	// there is a small problem: mem can be ored with 0xa<<28 or 0x8<<28, and don't know which
 	MOV32ItoR(EDX, p->startpc);
-	PUSH32I((u32)x86Ptr[0]); // will be replaced by JMP32
-	JMP32((u32)DispatcherClear - ( (u32)x86Ptr[0] + 5 ));
-	assert( x86Ptr[0] == (u8*)p->GetFnptr() + EE_MIN_BLOCK_BYTES );
+	PUSH32I((u32)x86Ptr); // will be replaced by JMP32
+	JMP32((u32)DispatcherClear - ( (u32)x86Ptr + 5 ));
+	assert( x86Ptr == (u8*)p->GetFnptr() + EE_MIN_BLOCK_BYTES );
 
 	pstart = PC_GETBLOCK(p->startpc);
 	pexblock = PC_GETBLOCKEX(pstart);
@@ -993,7 +1010,7 @@ void CheckForBIOSEnd()
 	x86SetJ8( j8Ptr[1] );
 
 	// bios end
-	RET();
+	RET2();
 
 	x86SetJ8( j8Ptr[2] );
 }
@@ -1228,7 +1245,7 @@ static void iBranchTest(u32 newpc, bool noDispatch)
 		// to; creating a static link of blocks that doesn't require the overhead
 		// of a dispatcher.
 		MOV32ItoR(EDX, 0);
-		ptr = (u32*)(x86Ptr[0]-4);
+		ptr = (u32*)(x86Ptr-4);
 	}
 
 	// Check the Event scheduler if our "cycle target" has been reached.
@@ -1242,15 +1259,15 @@ static void iBranchTest(u32 newpc, bool noDispatch)
 	if( newpc != 0xffffffff )
 	{
 		// This is the jump instruction which gets modified by Dispatcher.
-		*ptr = (u32)JS32((u32)Dispatcher - ( (u32)x86Ptr[0] + 6 ));
+		*ptr = (u32)JS32((u32)Dispatcher - ( (u32)x86Ptr + 6 ));
 	}
 	else if( !noDispatch )
 	{
 		// This instruction is a dynamic link, so it's never modified.
-		JS32((uptr)DispatcherReg - ( (uptr)x86Ptr[0] + 6 ));
+		JS32((uptr)DispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
 
-	RET();
+	RET2();
 }
 
 static void checkcodefn()
@@ -1310,22 +1327,22 @@ void recompileNextInstruction(int delayslot)
 				
 //			if( pexblock->pOldFnptr ) {
 //				// code already in place, so jump to it and exit recomp
-//				JMP32((u32)pexblock->pOldFnptr - ((u32)x86Ptr[0] + 5));
+//				JMP32((u32)pexblock->pOldFnptr - ((u32)x86Ptr + 5));
 //				branch = 3;
 //				return;
 //			}
 			
-			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr[0] + 5));
+			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr + 5));
 			branch = 3;
 			return;
 		}
 		else {
 
 			if( !(delayslot && pblock->startpc == pc) ) {
-				u8* oldX86 = x86Ptr[0];
+				u8* oldX86 = x86Ptr;
 				//__Log("clear block %x\n", pblock->startpc);
 				recClearMem(pblock);
-				x86Ptr[0] = oldX86;
+				x86Ptr = oldX86;
 				if( delayslot )
 					Console::Notice("delay slot %x", params pc);
 			}
@@ -1573,8 +1590,8 @@ void recRecompile( const u32 startpc )
 
 	x86SetPtr( recPtr );
 	x86Align(16);
-	recPtr = x86Ptr[0];
-	s_pCurBlock->SetFnptr( (uptr)x86Ptr[0] );
+	recPtr = x86Ptr;
+	s_pCurBlock->SetFnptr( (uptr)x86Ptr );
 	s_pCurBlock->startpc = startpc;
 
 	branch = 0;
@@ -1864,7 +1881,7 @@ StartRecomp:
 
 #ifdef _DEBUG
 	// dump code
-	for(i = 0; i < ArraySize(s_recblocks); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_recblocks); ++i) {
 		if( startpc == s_recblocks[i] ) {
 			iDumpBlock(startpc, recPtr);
 		}
@@ -1903,7 +1920,7 @@ StartRecomp:
 			{
 				//MOV32ItoR(EAX,*pageVer);
 				//CMP32MtoR(EAX,(uptr)pageVer);
-				//JNE32(((u32)dyna_block_discard_recmem)- ( (u32)x86Ptr[0] + 6 ));
+				//JNE32(((u32)dyna_block_discard_recmem)- ( (u32)x86Ptr + 6 ));
 
 				mmap_MarkCountedRamPage(PSM(inpage_ptr),inpage_ptr&~0xFFF);
 			}
@@ -1915,7 +1932,7 @@ StartRecomp:
 				{
 					// was dyna_block_discard_recmem.  See note in recResetEE for details.
 					CMP32ItoM((uptr)PSM(lpc),*(u32*)PSM(lpc));
-					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr[0] + 6 ));
+					JNE32(((u32)&dyna_block_discard)- ( (u32)x86Ptr + 6 ));
 
 					stg-=4;
 					lpc+=4;
@@ -1994,7 +2011,7 @@ StartRecomp:
 			assert( pc == s_nEndBlock );
 			iFlushCall(FLUSH_EVERYTHING);
 			MOV32ItoM((uptr)&cpuRegs.pc, pc);
-			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr[0] + 5));
+			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr + 5));
 			branch = 3;
 		}
 		else if( !branch ) {
@@ -2007,12 +2024,12 @@ StartRecomp:
 		}
 	}
 
-	assert( x86Ptr[0] >= (u8*)s_pCurBlock->GetFnptr() + EE_MIN_BLOCK_BYTES );
-	assert( x86Ptr[0] < recMem+REC_CACHEMEM );
+	assert( x86Ptr >= (u8*)s_pCurBlock->GetFnptr() + EE_MIN_BLOCK_BYTES );
+	assert( x86Ptr < recMem+REC_CACHEMEM );
 	assert( recStackPtr < recStack+RECSTACK_SIZE );
 	assert( x86FpuState == 0 );
 
-	recPtr = x86Ptr[0];
+	recPtr = x86Ptr;
 
 	assert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
 

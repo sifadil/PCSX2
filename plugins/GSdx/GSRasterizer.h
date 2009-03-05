@@ -49,12 +49,14 @@ class IDrawScanline
 {
 public:
 	typedef void (IDrawScanline::*DrawSolidRectPtr)(const GSVector4i& r, const GSVertexSW& v);
-	typedef void (__fastcall *DrawScanlineStaticPtr)(int right, int left, int top, const GSVertexSW& v);
-	typedef void (__fastcall *SetupPrimStaticPtr)(const GSVertexSW* vertices, const GSVertexSW& dscan);
+	typedef void (IDrawScanline::*SetupPrimPtr)(const GSVertexSW* vertices, const GSVertexSW& dscan);
+	typedef void (*DrawScanlineStaticPtr)(int top, int left, int right, const GSVertexSW& v);
+	typedef void (*SetupPrimStaticPtr)(const GSVertexSW* vertices, const GSVertexSW& dscan);
 
 	struct Functions
 	{
-		DrawSolidRectPtr sr; // TODO
+		DrawSolidRectPtr sr;
+		SetupPrimPtr sp;
 		DrawScanlineStaticPtr ssl;
 		SetupPrimStaticPtr ssp;
 	};
@@ -84,8 +86,8 @@ protected:
 	void DrawTriangleBottom(GSVertexSW* v, const GSVector4i& scissor);
 	void DrawTriangleTopBottom(GSVertexSW* v, const GSVector4i& scissor);
 
-	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& l, const GSVertexSW& dl, GSVector4& r, const GSVector4& dr, const GSVertexSW& dscan, const GSVector4& scissor);
-	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& l, const GSVertexSW& dl, const GSVertexSW& dscan, const GSVector4& scissor);
+	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& l, const GSVertexSW& dl, GSVector4& r, const GSVector4& dr, const GSVertexSW& dscan, const GSVector4i& scissor);
+	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& l, const GSVertexSW& dl, const GSVertexSW& dscan, const GSVector4i& scissor);
 
 public:
 	GSRasterizer(IDrawScanline* ds, int id = 0, int threads = 0);

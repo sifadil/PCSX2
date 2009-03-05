@@ -16,7 +16,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#pragma once
+#ifndef __VU_H__
+#define __VU_H__
+
 #include "Vif.h"
 
 #define REG_STATUS_FLAG	16
@@ -179,7 +181,7 @@ struct _VURegsNum {
 };
 
 extern VURegs* g_pVU1;
-PCSX2_ALIGNED16_EXTERN(VURegs VU0);
+extern PCSX2_ALIGNED16_DECL(VURegs VU0);
 
 #define VU1 (*g_pVU1)
 
@@ -203,3 +205,5 @@ static __forceinline u32* GET_VU_MEM(VURegs* VU, u32 addr)
 #define VUFIX_EXTRAFLAGS        2
 #define VUFIX_XGKICKDELAY2      4
 extern int g_VUGameFixes;
+
+#endif /* __VU_H__ */

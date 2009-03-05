@@ -32,6 +32,7 @@
 #include "COP0.h"
 #include "Cache.h"
 
+
 using namespace R5900;
 
 extern int g_psxWriteOk;
@@ -40,7 +41,7 @@ extern void recResetIOP();
 
 static void PreLoadPrep()
 {
-	SysClearExecutionCache();
+	SysResetExecutionState();
 }
 
 static void PostLoadPrep()
@@ -50,10 +51,20 @@ static void PostLoadPrep()
 	for(int i=0; i<48; i++) MapTLB(i);
 }
 
+void SaveState::GetFilename( string& dest, int slot )
+{
+	string elfcrcText;
+	ssprintf( elfcrcText, "%8.8X.%3.3d", ElfCRC, slot );
+	Path::Combine( dest, SSTATES_DIR, elfcrcText );
+}
+
 string SaveState::GetFilename( int slot )
 {
-	return Path::Combine( SSTATES_DIR, fmt_string( "%8.8X.%3.3d", ElfCRC, slot ) );
+	string elfcrcText, dest;
+	GetFilename( dest, slot );
+	return dest;
 }
+
 
 SaveState::SaveState( const char* msg, const string& destination ) : m_version( g_SaveVersion )
 {
@@ -116,7 +127,6 @@ void SaveState::FreezeAll()
 	sifFreeze();
 	ipuFreeze();
 	gifFreeze();
-	sprFreeze();
 
 	// iop now
 	FreezeMem(psxM, Ps2MemSize::IopRam);        // 2 MB main memory

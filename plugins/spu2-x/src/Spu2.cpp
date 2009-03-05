@@ -21,20 +21,15 @@
 
 
 #include "Spu2.h"
-#include "RegTable.h"
-
-#ifdef __LINUX__
-#include "Linux.h"
-#endif
+#include "regtable.h"
 
 void StartVoices(int core, u32 value);
 void StopVoices(int core, u32 value);
 
 void InitADSR();
 
-#ifdef _MSC_VER
 DWORD CALLBACK TimeThread(PVOID /* unused param */);
-#endif
+
 
 // [Air]: fixed the hacky part of UpdateTimer with this:
 bool resetClock = true;
@@ -53,6 +48,9 @@ s32 uTicks;
 
 u8 callirq;
 
+HANDLE hThreadFunc;
+u32	ThreadFuncID;
+
 V_CoreDebug DebugCores[2];
 V_Core Cores[2];
 V_SPDIF Spdif;
@@ -70,12 +68,9 @@ int PlayMode;
 
 s16 attrhack[2]={0,0};
 
-#ifdef _MSC_VER
 HINSTANCE hInstance;
+
 CRITICAL_SECTION threadSync;
-HANDLE hThreadFunc;
-u32	ThreadFuncID;
-#endif
 
 bool has_to_call_irq=false;
 
@@ -84,7 +79,6 @@ void SetIrqCall()
 	has_to_call_irq=true;
 }
 
-#ifdef _MSC_VER
 void SysMessage(const char *fmt, ...) 
 {
 	va_list list;
@@ -94,12 +88,9 @@ void SysMessage(const char *fmt, ...)
 	va_start(list,fmt);
 	sprintf_s(tmp,fmt,list);
 	va_end(list);
-	swprintf_s(wtmp, L"%S", tmp);
-	MessageBox(0, wtmp, L"SPU2-X System Message", 0);
+	swprintf_s(wtmp, _T("%S"), tmp);
+	MessageBox(0, wtmp, _T("SPU2-X System Message"), 0);
 }
-#else
-extern void SysMessage(const char *fmt, ...);
-#endif
 
 __forceinline s16 * __fastcall GetMemPtr(u32 addr)
 {
@@ -163,19 +154,18 @@ void V_Core::Reset()
 
 	MasterVol = V_VolumeSlideLR::Max;
 
-	DryGate.ExtL = -1;
-	DryGate.ExtR = -1;
-	WetGate.ExtL = -1;
-	WetGate.ExtR = -1;
-	DryGate.InpL = -1;
-	DryGate.InpR = -1;
-	WetGate.InpR = -1;
-	WetGate.InpL = -1;
-	DryGate.SndL = -1;
-	DryGate.SndR = -1;
-	WetGate.SndL = -1;
-	WetGate.SndR = -1;
-	
+	ExtWetR = -1;
+	ExtWetL = -1;
+	ExtDryR = -1;
+	ExtDryL = -1;
+	InpWetR = -1;
+	InpWetL = -1;
+	InpDryR = -1;
+	InpDryL = -1;
+	SndWetR = -1;
+	SndWetL = -1;
+	SndDryR = -1;
+	SndDryL = -1;
 	Regs.MMIX = 0xFFCF;
 	Regs.VMIXL = 0xFFFFFF;
 	Regs.VMIXR = 0xFFFFFF;
@@ -187,18 +177,17 @@ void V_Core::Reset()
 	IRQA=0xFFFF0;
 	IRQEnable=1;
  
-	for( uint v=0; v<NumVoices; ++v )
+	for( uint v=0; v<24; ++v )
 	{
-		VoiceGates[v].DryL = -1;
-		VoiceGates[v].DryR = -1;
-		VoiceGates[v].WetL = -1;
-		VoiceGates[v].WetR = -1;
-	
 		Voices[v].Volume = V_VolumeSlideLR::Max;
 		
 		Voices[v].ADSR.Value = 0;
 		Voices[v].ADSR.Phase = 0;
 		Voices[v].Pitch = 0x3FFF;
+		Voices[v].DryL = -1;
+		Voices[v].DryR = -1;
+		Voices[v].WetL = -1;
+		Voices[v].WetR = -1;
 		Voices[v].NextA = 2800;
 		Voices[v].StartA = 2800;
 		Voices[v].LoopStartA = 2800;
@@ -296,8 +285,7 @@ void V_Voice::Start()
 		SCurrent		= 28;
 		LoopMode		= 0;
 		LoopFlags		= 0;
-		// Setting the loopstart to NextA breaks Squaresoft games (KH2 intro gets crackly)
-		//LoopStartA		= StartA;
+		LoopStartA		= StartA;
 		NextA			= StartA;
 		Prev1			= 0;
 		Prev2			= 0;
@@ -322,66 +310,6 @@ static const int SanityInterval = 4800;
 
 u32 TicksCore = 0;
 u32 TicksThread = 0;
-
-PCSX2_ALIGNED16( static u64 g_globalMMXData[8] );
-
-static __forceinline void SaveMMXRegs()
-{
-#ifdef _MSC_VER
-	__asm {
-		movntq mmword ptr [g_globalMMXData + 0], mm0
-		movntq mmword ptr [g_globalMMXData + 8], mm1
-		movntq mmword ptr [g_globalMMXData + 16], mm2
-		movntq mmword ptr [g_globalMMXData + 24], mm3
-		movntq mmword ptr [g_globalMMXData + 32], mm4
-		movntq mmword ptr [g_globalMMXData + 40], mm5
-		movntq mmword ptr [g_globalMMXData + 48], mm6
-		movntq mmword ptr [g_globalMMXData + 56], mm7
-		emms
-	}
-#else
-    __asm__(".intel_syntax\n"
-            "movq [%0+0x00], %%mm0\n"
-            "movq [%0+0x08], %%mm1\n"
-            "movq [%0+0x10], %%mm2\n"
-            "movq [%0+0x18], %%mm3\n"
-            "movq [%0+0x20], %%mm4\n"
-            "movq [%0+0x28], %%mm5\n"
-            "movq [%0+0x30], %%mm6\n"
-            "movq [%0+0x38], %%mm7\n"
-            "emms\n"
-            ".att_syntax\n" : : "r"(g_globalMMXData) );
-#endif
-}
-
-static __forceinline void RestoreMMXRegs()
-{
-#ifdef _MSC_VER
-	__asm {
-		movq mm0, mmword ptr [g_globalMMXData + 0]
-		movq mm1, mmword ptr [g_globalMMXData + 8]
-		movq mm2, mmword ptr [g_globalMMXData + 16]
-		movq mm3, mmword ptr [g_globalMMXData + 24]
-		movq mm4, mmword ptr [g_globalMMXData + 32]
-		movq mm5, mmword ptr [g_globalMMXData + 40]
-		movq mm6, mmword ptr [g_globalMMXData + 48]
-		movq mm7, mmword ptr [g_globalMMXData + 56]
-		emms
-	}
-#else
-    __asm__(".intel_syntax\n"
-            "movq %%mm0, [%0+0x00]\n"
-            "movq %%mm1, [%0+0x08]\n"
-            "movq %%mm2, [%0+0x10]\n"
-            "movq %%mm3, [%0+0x18]\n"
-            "movq %%mm4, [%0+0x20]\n"
-            "movq %%mm5, [%0+0x28]\n"
-            "movq %%mm6, [%0+0x30]\n"
-            "movq %%mm7, [%0+0x38]\n"
-            "emms\n"
-            ".att_syntax\n" : : "r"(g_globalMMXData) );
-#endif
-}
 
 void __fastcall TimeUpdate(u32 cClocks)
 {
@@ -463,10 +391,7 @@ void __fastcall TimeUpdate(u32 cClocks)
 		lClocks+=TickInterval;
 		Cycles++;
 
-		// Note: IPU does not use MMX regs, so no need to save them.
-		//SaveMMXRegs();
 		Mix();
-		//RestoreMMXRegs();
 	}
 }
 
@@ -818,6 +743,8 @@ __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 	omem=mem=rmem & 0x7FF; //FFFF;
 	if (mem & 0x400) { omem^=0x400; core=1; }
 
+	SPU2writeLog(mem,value);
+
 	if (omem < 0x0180)	// Voice Params
 	{ 
 		const u32 voice = (omem & 0x1F0) >> 4;
@@ -884,13 +811,13 @@ __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 
 		switch (address)
 		{
-			case 0:	// SSA (Waveform Start Addr) (hiword, 4 bits only)
+			case 0:
 				thisvoice.StartA = ((value & 0x0F) << 16) | (thisvoice.StartA & 0xFFF8); 
 				if( IsDevBuild )
 					DebugCores[core].Voices[voice].lastSetStartA = thisvoice.StartA; 
 			break;
 			
-			case 1:	// SSA (loword)
+			case 1:
 				thisvoice.StartA = (thisvoice.StartA & 0x0F0000) | (value & 0xFFF8); 
 				if( IsDevBuild )
 					DebugCores[core].Voices[voice].lastSetStartA = thisvoice.StartA; 
@@ -954,7 +881,7 @@ __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 				}
 
 				thiscore.AttrBit0   =(value>> 0) & 0x01; //1 bit
-				thiscore.DMABits	=(value>> 1) & 0x07; //3 bits
+				thiscore.DMABits	   =(value>> 1) & 0x07; //3 bits
 				thiscore.AttrBit4   =(value>> 4) & 0x01; //1 bit
 				thiscore.AttrBit5   =(value>> 5) & 0x01; //1 bit
 				thiscore.IRQEnable  =(value>> 6) & 0x01; //1 bit
@@ -1008,17 +935,18 @@ __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 // the shortcut that skips the bitloop if the values are equal.
 #define vx_SetSomeBits( reg_out, mask_out, hiword ) \
 { \
+	const uint start_bit	= hiword ? 16 : 0; \
+	const uint end_bit		= hiword ? 24 : 16; \
 	const u32 result		= thiscore.Regs.reg_out; \
 	if( hiword ) \
 		SetHiWord( thiscore.Regs.reg_out, value ); \
 	else \
 		SetLoWord( thiscore.Regs.reg_out, value ); \
-	if( result == thiscore.Regs.reg_out ) break; \
+	if( result == thiscore.Regs.reg_out ) return; \
  \
-	const uint start_bit	= hiword ? 16 : 0; \
-	const uint end_bit		= hiword ? 24 : 16; \
-	for (uint vc=start_bit, vx=1; vc<end_bit; ++vc, vx<<=1) \
-		thiscore.VoiceGates[vc].mask_out = (value & vx) ? -1 : 0; \
+	thiscore.Regs.reg_out = result; \
+	for (uint vc=start_bit, vx=1; vc<end_bit; vc++, vx<<=1) \
+		thiscore.Voices[vc].mask_out = (value & vx) ? -1 : 0; \
 }
 
 			case REG_S_VMIXL:
@@ -1060,18 +988,18 @@ __forceinline void SPU2_FastWrite( u32 rmem, u16 value )
 			
 				vx = value;
 				if (core == 0) vx&=0xFF0;
-				thiscore.WetGate.ExtR = (vx & 0x001) ? -1 : 0;
-				thiscore.WetGate.ExtL = (vx & 0x002) ? -1 : 0;
-				thiscore.DryGate.ExtR = (vx & 0x004) ? -1 : 0;
-				thiscore.DryGate.ExtL = (vx & 0x008) ? -1 : 0;
-				thiscore.WetGate.InpR = (vx & 0x010) ? -1 : 0;
-				thiscore.WetGate.InpL = (vx & 0x020) ? -1 : 0;
-				thiscore.DryGate.InpR = (vx & 0x040) ? -1 : 0;
-				thiscore.DryGate.InpL = (vx & 0x080) ? -1 : 0;
-				thiscore.WetGate.SndR = (vx & 0x100) ? -1 : 0;
-				thiscore.WetGate.SndL = (vx & 0x200) ? -1 : 0;
-				thiscore.DryGate.SndR = (vx & 0x400) ? -1 : 0;
-				thiscore.DryGate.SndL = (vx & 0x800) ? -1 : 0;
+				thiscore.ExtWetR = (vx & 0x001) ? -1 : 0;
+				thiscore.ExtWetL = (vx & 0x002) ? -1 : 0;
+				thiscore.ExtDryR = (vx & 0x004) ? -1 : 0;
+				thiscore.ExtDryL = (vx & 0x008) ? -1 : 0;
+				thiscore.InpWetR = (vx & 0x010) ? -1 : 0;
+				thiscore.InpWetL = (vx & 0x020) ? -1 : 0;
+				thiscore.InpDryR = (vx & 0x040) ? -1 : 0;
+				thiscore.InpDryL = (vx & 0x080) ? -1 : 0;
+				thiscore.SndWetR = (vx & 0x100) ? -1 : 0;
+				thiscore.SndWetL = (vx & 0x200) ? -1 : 0;
+				thiscore.SndDryR = (vx & 0x400) ? -1 : 0;
+				thiscore.SndDryL = (vx & 0x800) ? -1 : 0;
 				thiscore.Regs.MMIX = value;
 			break;
 
@@ -1201,11 +1129,12 @@ void StartVoices(int core, u32 value)
 
 	Cores[core].Regs.ENDX &= ~value;
 	
-	for( u8 vc=0; vc<V_Core::NumVoices; vc++ )
+	for( u8 vc=0; vc<24; vc++ )
 	{
 		if ((value>>vc) & 1)
 		{
 			Cores[core].Voices[vc].Start();
+			Cores[core].Regs.ENDX &= ~( 1 << vc );
 
 			if( IsDevBuild )
 			{
@@ -1213,11 +1142,11 @@ void StartVoices(int core, u32 value)
 
 				if(MsgKeyOnOff()) ConLog(" * SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %02x%02x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
 					core,vc,thisvc.StartA,
-					(Cores[core].VoiceGates[vc].DryL)?"+":"-",(Cores[core].VoiceGates[vc].DryR)?"+":"-",
-					(Cores[core].VoiceGates[vc].WetL)?"+":"-",(Cores[core].VoiceGates[vc].WetR)?"+":"-",
+					(thisvc.DryL)?"+":"-",(thisvc.DryR)?"+":"-",
+					(thisvc.WetL)?"+":"-",(thisvc.WetR)?"+":"-",
 					*(u8*)GetMemPtr(thisvc.StartA),*(u8 *)GetMemPtr((thisvc.StartA)+1),
 					thisvc.Pitch,
-					thisvc.Volume.Left.Value>>16,thisvc.Volume.Right.Value>>16,
+					thisvc.Volume.Left.Value,thisvc.Volume.Right.Value,
 					thisvc.ADSR.Reg_ADSR1,thisvc.ADSR.Reg_ADSR2);
 			}
 		}
@@ -1227,7 +1156,7 @@ void StartVoices(int core, u32 value)
 void StopVoices(int core, u32 value)
 {
 	if( value == 0 ) return;
-	for( u8 vc=0; vc<V_Core::NumVoices; vc++ )
+	for( u8 vc=0; vc<24; vc++ )
 	{
 		if ((value>>vc) & 1)
 		{

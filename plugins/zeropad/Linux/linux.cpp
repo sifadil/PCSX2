@@ -415,7 +415,7 @@ void UpdateConf(int pad)
 
 	int i;
     GtkWidget *Btn;
-	for (i=0; i<ArraySize(s_pGuiKeyMap); i++) {
+	for (i=0; i<ARRAYSIZE(s_pGuiKeyMap); i++) {
         
         if( s_pGuiKeyMap[i] == NULL )
             continue;
@@ -603,11 +603,6 @@ void OnConf_Cancel(GtkButton *button, gpointer user_data)
 
 void CALLBACK PADconfigure()
 {
-	char strcurdir[256];
-	getcwd(strcurdir, 256);
-	s_strIniPath = strcurdir;
-	s_strIniPath += "/inis/zeropad.ini";
-	
 	LoadConfig();
 
 	Conf = create_Conf();

@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 
-#include "Spu2.h"
+#include "spu2.h"
 
 FILE* s2rfile;
 
@@ -114,8 +114,7 @@ void dummy7()
 
 #define Cread(a,b,c,d) if(fread(a,b,c,d)<b) break;
 
-#ifdef _MSC_VER
-EXPORT_C_(void) s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
+void CALLBACK s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 {
 	// load file
 	FILE *file=fopen(filename,"rb");
@@ -191,4 +190,3 @@ EXPORT_C_(void) s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdS
 
 	replay_mode=false;
 }
-#endif

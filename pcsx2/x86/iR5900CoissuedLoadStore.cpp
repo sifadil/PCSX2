@@ -23,6 +23,7 @@
 #include "Common.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900LoadStore.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 
 namespace R5900 { 
@@ -1568,7 +1569,7 @@ void recLQC2_co( void )
 
 		dohw = recSetMemLocation(_Rs_, _Imm_, mmregs, 2, 0);
 
-		rawreadptr = x86Ptr[0];
+		rawreadptr = x86Ptr;
 		if( mmreg1 >= 0 ) SSEX_MOVDQARmtoROffset(mmreg1, ECX, PS2MEM_BASE_+s_nAddMemOffset);
 		if( mmreg2 >= 0 ) SSEX_MOVDQARmtoROffset(mmreg2, ECX, PS2MEM_BASE_+s_nAddMemOffset+_Imm_co_-_Imm_);
 
@@ -1578,7 +1579,7 @@ void recLQC2_co( void )
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);
-			JAE8(rawreadptr - (x86Ptr[0]+2));
+			JAE8(rawreadptr - (x86Ptr+2));
 
 			MOV32RtoM((u32)&s_tempaddr, ECX);
 
@@ -1633,7 +1634,7 @@ void recSQC2_co( void )
 
 		dohw = recSetMemLocation(_Rs_, _Imm_, mmregs, 2, 0);
 
-		rawreadptr = x86Ptr[0];
+		rawreadptr = x86Ptr;
 
 		if( mmreg1 >= 0 ) {
 			SSEX_MOVDQARtoRmOffset(ECX, mmreg1, PS2MEM_BASE_+s_nAddMemOffset);
@@ -1704,7 +1705,7 @@ void recSQC2_co( void )
 
 			// check if writing to VUs
 			CMP32ItoR(ECX, 0x11000000);
-			JAE8(rawreadptr - (x86Ptr[0]+2));
+			JAE8(rawreadptr - (x86Ptr+2));
 
 			// some type of hardware write
 			if( mmreg1 >= 0) {

@@ -12,7 +12,6 @@
 #include "DeviceEnumerator.h"
 #include "WndProcEater.h"
 #include "KeyboardQueue.h"
-#include "svnrev.h"
 #include "resource.h"
 
 // Used to prevent reading input and cleaning up input devices at the same time.
@@ -497,19 +496,9 @@ u32 CALLBACK PS2EgetLibVersion2(u32 type) {
 	return 0;
 }
 
-void GetNameAndVersionString(wchar_t *out) {
-#ifdef _DEBUG
-	wsprintfW(out, L"LilyPad Debug %i.%i.%i (r%i)", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF, SVN_REV);
-#else
-	wsprintfW(out, L"LilyPad %i.%i.%i", (VERSION>>8)&0xFF, VERSION&0xFF, (VERSION>>24)&0xFF, SVN_REV);
-#endif
-}
-
 char* CALLBACK PSEgetLibName() {
 #ifdef _DEBUG
-	static char version[50];
-	sprintf(version, "LilyPad Debug (r%i)", SVN_REV);
-	return version;
+	return "LilyPad Debug";
 #else
 	return "LilyPad";
 #endif
@@ -655,7 +644,7 @@ ExtraWndProcResult HackWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				// Need to do this when not reading input from gs thread.
 				// Checking for that case not worth the effort.
 				EnterCriticalSection(&readInputCriticalSection);
-				UpdateEnabledDevices(1);
+				RefreshEnabledDevices(1);
 				LeaveCriticalSection(&readInputCriticalSection);
 			}
 			break;
@@ -1039,14 +1028,9 @@ u32 CALLBACK PADquery() {
 //void CALLBACK PADgsDriverInfo(GSdriverInfo *info) {
 //}
 
-INT_PTR CALLBACK AboutDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (uMsg == WM_INITDIALOG) {
-		wchar_t idString[100];
-		GetNameAndVersionString(idString);
-		SetDlgItemTextW(hWndDlg, IDC_VERSION, idString);
-	}
-	else if (uMsg == WM_COMMAND && (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)) {
-		EndDialog(hWndDlg, 0);
+INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	if (uMsg == WM_COMMAND && LOWORD(wParam) == IDOK) {
+		EndDialog(hwndDlg, 0);
 		return 1;
 	}
 	return 0;
@@ -1096,14 +1080,14 @@ keyEvent* CALLBACK PADkeyEvent() {
 	static int shiftDown = 0;
 	static keyEvent ev;
 	if (!GetQueuedKeyEvent(&ev)) return 0;
-	if (ev.key == VK_ESCAPE && ev.evt == KEYPRESS && config.escapeFullscreenHack) {
+	if (ev.key == VK_ESCAPE && ev.event == KEYPRESS && config.escapeFullscreenHack) {
 		if (IsWindowMaximized(hWnd)) {
 			EatWndProc(hWnd, KillFullScreenProc);
 			return 0;
 		}
 	}
 
-	if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
+	if (ev.key == VK_F2 && ev.event == KEYPRESS) {
 		saveStateIndex += 1 - 2*shiftDown;
 		saveStateIndex = (saveStateIndex+10)%10;
 		if (config.saveStateTitle) {
@@ -1116,7 +1100,7 @@ keyEvent* CALLBACK PADkeyEvent() {
 
 	if (ev.key == VK_LSHIFT || ev.key == VK_RSHIFT || ev.key == VK_SHIFT) {
 		ev.key = VK_SHIFT;
-		if (ev.evt == KEYPRESS)
+		if (ev.event == KEYPRESS)
 			shiftDown = 1;
 		else
 			shiftDown = 0;
@@ -1129,6 +1113,14 @@ keyEvent* CALLBACK PADkeyEvent() {
 	}
 	return &ev;
 }
+
+typedef struct {
+	unsigned char controllerType;
+	unsigned short buttonStatus;
+	unsigned char rightJoyX, rightJoyY, leftJoyX, leftJoyY;
+	unsigned char moveX, moveY;
+	unsigned char reserved[91];
+} PadDataS;
 
 u32 CALLBACK PADreadPort1 (PadDataS* pads) {
 	PADstartPoll(1);

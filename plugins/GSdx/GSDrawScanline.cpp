@@ -170,6 +170,10 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data, Functions* f)
 		f->sr = (DrawSolidRectPtr)&GSDrawScanline::DrawSolidRect;
 	}
 
+	//
+
+	f->sp = (SetupPrimPtr)&GSDrawScanline::SetupPrim;
+
 	// doesn't need all bits => less functions generated
 
 	GSScanlineSelector sel;
@@ -185,12 +189,19 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data, Functions* f)
 	sel.zb = m_env.sel.zb;
 	sel.zoverflow = m_env.sel.zoverflow;
 
-	f->ssp = m_sp.Lookup(sel);
+	m_spf = m_sp.Lookup(sel); 
+
+	f->ssp = m_spf;
 }
 
 void GSDrawScanline::EndDraw(const GSRasterizerStats& stats)
 {
 	m_ds.UpdateStats(stats, m_state->m_perfmon.GetFrame());
+}
+
+void GSDrawScanline::SetupPrim(const GSVertexSW* vertices, const GSVertexSW& dscan)
+{
+	m_spf(vertices, dscan); // TODO: call this directly from rasterizer
 }
 
 void GSDrawScanline::DrawSolidRect(const GSVector4i& r, const GSVertexSW& v)
@@ -346,8 +357,7 @@ void GSDrawScanline::FillBlock(const GSVector4i* row, int* col, const GSVector4i
 //
 
 GSDrawScanline::GSSetupPrimMap::GSSetupPrimMap(GSScanlineEnvironment& env)
-	: GSCodeGeneratorFunctionMap("GSSetupPrim")
-	, m_env(env)
+	: m_env(env)
 {
 }
 
@@ -359,8 +369,7 @@ GSSetupPrimCodeGenerator* GSDrawScanline::GSSetupPrimMap::Create(UINT64 key, voi
 //
 
 GSDrawScanline::GSDrawScanlineMap::GSDrawScanlineMap(GSScanlineEnvironment& env)
-	: GSCodeGeneratorFunctionMap("GSDrawScanline")
-	, m_env(env)
+	: m_env(env)
 {
 }
 

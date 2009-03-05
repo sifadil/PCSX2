@@ -21,8 +21,6 @@
 #include "PsxCommon.h"
 #include "Misc.h"
 
-#include "R5900.h"
-
 using namespace R3000A;
 
 R3000Acpu *psxCpu;

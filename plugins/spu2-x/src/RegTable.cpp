@@ -16,8 +16,8 @@
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 
-#include "Spu2.h"
-#include "RegTable.h"
+#include "spu2.h"
+#include "regtable.h"
 
 // This var is used to confirm that our lookup table is "correct"
 // If the assertion in DllMain fails, it means the table has too too few entries.
@@ -25,10 +25,10 @@
 const u16 zero=0;
 
 #define PCORE(c,p) \
-	U16P(Cores[c].p)
+	U16P(Cores[c].##p)
 
 #define PVCP(c,v,p) \
-	PCORE(c,Voices[v].p)
+	PCORE(c,Voices[v].##p)
 
 #define PVC(c,v) \
 	PVCP(c,v,Volume.Left.Reg_VOL), \
@@ -52,8 +52,8 @@ const u16 zero=0;
 	((u16*)NULL)
 
 #define PREVB_REG(c,n) \
-	PCORE(c,Revb.n)+1, \
-	PCORE(c,Revb.n)
+	PCORE(c,Revb.##n)+1, \
+	PCORE(c,Revb.##n)
 
 #pragma pack(1)
 u16* regtable[0x800] =

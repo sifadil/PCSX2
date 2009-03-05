@@ -28,7 +28,7 @@
 
 #include "Common.h"
 #include "PsxCommon.h"
-#include "HostGui.h"
+#include "SaveState.h"
 
 #include "CDVDisodrv.h"
 #include "VUmicro.h"
@@ -63,7 +63,7 @@ const char *LabelAuthors = { N_(
 	"\n"
 	"Betatesting: Bositman, ChaosCode,\n"
 	"CKemu, crushtest, GeneralPlot,\n"
-	"Krakatos, Parotaku, Rudy_X\n"
+	"Krakatos, Paorotaku, Rudy_X\n"
 	"\n"
 	"Webmasters: CKemu, Falcon4ever"
 	)
@@ -191,12 +191,13 @@ u32 GetBiosVersion() {
 //2002-09-22 (Florin)
 int IsBIOS(char *filename, char *description)
 {
+	string Bios;
 	char ROMVER[14+1], zone[12+1];
 	FILE *fp;
 	unsigned int fileOffset=0, found=FALSE;
 	struct romdir rd;
 
-	string Bios( Path::Combine( Config.BiosDir, filename ) );
+	Path::Combine( Bios, Config.BiosDir, filename );
 
 	int biosFileSize = Path::getFileSize( Bios );
 	if( biosFileSize <= 0) return FALSE;	
@@ -414,7 +415,8 @@ void LoadGSState(const string& file)
 		// file not found? try prefixing with sstates folder:
 		if( !Path::isRooted( file ) )
 		{
-			string strfile( Path::Combine( SSTATES_DIR, file ) );
+			string strfile;
+			Path::Combine( strfile, SSTATES_DIR, file );
 			f = new gzLoadingState( strfile.c_str() );
 
 			// If this load attempt fails, then let the exception bubble up to
@@ -507,11 +509,11 @@ char* mystrlwr( char* string )
     return string;
 }
 
-static string GetGSStateFilename()
+static void GetGSStateFilename( string& dest )
 {
 	string gsText;
 	ssprintf( gsText, "/%8.8X.%d.gs", ElfCRC, StatesC);
-	return Path::Combine( SSTATES_DIR, gsText );
+	Path::Combine( dest, SSTATES_DIR, gsText );
 }
 
 void CycleFrameLimit(int dir)
@@ -576,14 +578,16 @@ void CycleFrameLimit(int dir)
 
 void ProcessFKeys(int fkey, int shift)
 {
+    string Text;
+
     assert(fkey >= 1 && fkey <= 12 );
 
     switch(fkey) {
         case 1:
 			try
 			{
-				gzSavingState( SaveState::GetFilename( StatesC ) ).FreezeAll();
-				HostGui::ResetMenuSlots();
+				SaveState::GetFilename( Text, StatesC );
+				gzSavingState( Text ).FreezeAll();
 			}
 			catch( Exception::BaseException& ex )
 			{
@@ -603,16 +607,19 @@ void ProcessFKeys(int fkey, int shift)
 
 			Console::Notice( _( " > Selected savestate slot %d" ), params StatesC);
 
-			if( GSchangeSaveState != NULL )
-				GSchangeSaveState(StatesC, SaveState::GetFilename(StatesC).c_str());
+			if( GSchangeSaveState != NULL ) {
+				SaveState::GetFilename(Text, StatesC);
+				GSchangeSaveState(StatesC, Text.c_str());
+			}
 			break;
 
 		case 3:	
 			try
 			{
-				gzLoadingState joe( SaveState::GetFilename( StatesC ) );	// throws exception on version mismatch
+				SaveState::GetFilename( Text, StatesC );
+				gzLoadingState joe( Text );	// throws exception on version mismatch
 				cpuReset();
-				SysClearExecutionCache();
+				SysResetExecutionState();
 				joe.FreezeAll();
 			}
 			catch( Exception::StateLoadError_Recoverable& )
@@ -648,18 +655,35 @@ void ProcessFKeys(int fkey, int shift)
 
 		// note: VK_F5-VK_F7 are reserved for GS
 		case 8:
-			GSmakeSnapshot( SNAPSHOTS_DIR "/" );
+			GSmakeSnapshot("snaps/");
 			break;
 
 #ifdef PCSX2_DEVBUILD
-	
+		case 10:
+		{
+			int num;
+			FILE* f;
+			BASEBLOCKEX** ppblocks = GetAllBaseBlocks(&num, 0);
+
+			f = fopen("perflog.txt", "w");
+			while(num-- > 0 ) {
+				if( ppblocks[0]->visited > 0 ) {
+					fprintf(f, "%u %u %u %u\n", ppblocks[0]->startpc, (u32)(ppblocks[0]->ltime.QuadPart / ppblocks[0]->visited), ppblocks[0]->visited, ppblocks[0]->size);
+				}
+				ppblocks[0]->visited = 0;
+				ppblocks[0]->ltime.QuadPart = 0;
+				ppblocks++;
+			}
+			fclose(f);
+			Console::Status( "perflog.txt written" );
+			break;
+		}
+		
 		case 11:
 			if( mtgsThread != NULL ) {
 				Console::Notice( "Cannot make gsstates in MTGS mode" );
 			}
-			else
-			{
-				string Text;
+			else {
 				if( strgametitle[0] != 0 ) {
 					// only take the first two words
 					char name[256], *tok;
@@ -671,10 +695,10 @@ void ProcessFKeys(int fkey, int shift)
 					if( tok != NULL ) strcat(name, tok);
 
 					ssprintf( gsText, "%s.%d.gs", name, StatesC);
-					Text = Path::Combine( SSTATES_DIR, gsText );
+					Path::Combine( Text, SSTATES_DIR, gsText );
 				}
 				else
-					Text = GetGSStateFilename();
+					GetGSStateFilename( Text );
 
 				SaveGSState(Text);
 			}
@@ -704,6 +728,7 @@ void ProcessFKeys(int fkey, int shift)
 
 void injectIRX(const char *filename)
 {
+	string path;
 	char name[260], *p, *q;
 	struct romdir *rd;
 	int iROMDIR=-1, iIOPBTCONF=-1, iBLANK=-1, i, filesize;
@@ -743,7 +768,7 @@ void injectIRX(const char *filename)
 	strcpy(p, name);p[strlen(name)]=0xA;
 
 	//phase 4: find file
-	string path( Path::Combine( Config.BiosDir, filename ) );
+	Path::Combine( path, Config.BiosDir, filename );
 
 	if( !Path::isFile( path ) )
 	{
@@ -768,6 +793,43 @@ void injectIRX(const char *filename)
 	rd[i].extInfoSize=0;
 }
 
+
+// [TODO] I'd like to move the following functions to their own module eventually.
+// It might even be a good idea to just go ahead and move them into Win32/Linux
+// specific files since they're all #ifdef'd that way anyways.
+
+#ifdef _WIN32
+static LARGE_INTEGER lfreq;
+#endif
+
+void InitCPUTicks()
+{
+#ifdef _WIN32
+    QueryPerformanceFrequency(&lfreq);
+#endif
+}
+
+u64 GetTickFrequency()
+{
+#ifdef _WIN32
+	return lfreq.QuadPart;
+#else
+    return 1000000;		// unix measures in microseconds
+#endif
+}
+
+u64 GetCPUTicks()
+{
+#ifdef _WIN32
+    LARGE_INTEGER count;
+    QueryPerformanceCounter(&count);
+    return count.QuadPart;
+#else
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return ((u64)t.tv_sec*GetTickFrequency())+t.tv_usec;
+#endif
+}
 
 void _memset16_unaligned( void* dest, u16 data, size_t size )
 {

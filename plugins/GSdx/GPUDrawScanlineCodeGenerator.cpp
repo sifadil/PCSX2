@@ -57,10 +57,7 @@ L("loop");
 
 	movdqa(xmm7, xmmword[edx + (size_t)&m_test[7]]);
 
-	// movdqu(xmm1, xmmword[edi]);
-
-	movq(xmm1, qword[edi]);
-	movhps(xmm1, qword[edi + 8]);
+	movdqu(xmm1, xmmword[edi]);
 
 	// ecx = steps
 	// esi = tex (tme)
@@ -109,37 +106,42 @@ L("exit");
 	pop(edi);
 	pop(esi);
 
-	ret(8);
+	ret();
 }
 
 void GPUDrawScanlineCodeGenerator::Init(int params)
 {
 	const int _top = params + 4;
-	const int _v = params + 8;
+	const int _left = params + 8;
+	const int _right = params + 12;
+	const int _v = params + 16;
 
-	mov(eax, dword[esp + _top]);
+	mov(edx, dword[esp + _top]);
+	mov(eax, dword[esp + _left]);
 
-	// WORD* fb = &m_env.vm[(top << (10 + m_env.sel.scalex)) + left];
+	// WORD* fb = &m_env.vm[(top << m_env.fbw) + left];
 
-	mov(edi, eax);
-	shl(edi, 10 + m_env.sel.scalex);
-	add(edi, edx);
+	mov(ecx, dword[&m_env.fbw]);
+	mov(edi, edx);
+	shl(edi, cl);
+	add(edi, eax);
 	lea(edi, ptr[edi * 2 + (size_t)m_env.vm]);
 
 	// int steps = right - left - 8;
 
-	sub(ecx, edx);
+	mov(ecx, dword[esp + _right]);
+	sub(ecx, eax);
 	sub(ecx, 8);
 
 	if(m_env.sel.dtd)
 	{
 		// dither = GSVector4i::load<false>(&s_dither[top & 3][left & 3]);
 
-		and(eax, 3);
-		shl(eax, 5);
 		and(edx, 3);
-		shl(edx, 1);
-		movdqu(xmm0, xmmword[eax + edx + (size_t)m_dither]);
+		shl(edx, 5);
+		and(eax, 3);
+		shl(eax, 1);
+		movdqu(xmm0, xmmword[edx + eax + (size_t)m_dither]);
 		movdqa(xmmword[&m_env.temp.dither], xmm0);
 	}
 
@@ -297,6 +299,10 @@ void GPUDrawScanlineCodeGenerator::SampleTexture()
 {
 	if(!m_env.sel.tme)
 	{
+		// c[3] = GSVector4i::zero();
+
+		pxor(xmm3, xmm3);
+		
 		return;		
 	}
 
@@ -882,11 +888,11 @@ void GPUDrawScanlineCodeGenerator::Dither()
 
 void GPUDrawScanlineCodeGenerator::WriteFrame()
 {
-	// GSVector4i fs = r | g | b | (m_env.sel.md ? GSVector4i(0x80008000) : m_env.sel.tme ? a : 0);
+	// GSVector4i fs = r | g | b | (m_env.sel.md ? GSVector4i(0x80008000) : a);
 
 	pcmpeqd(xmm0, xmm0);
 	
-	if(m_env.sel.md || m_env.sel.tme) 
+	if(m_env.sel.md) 
 	{
 		movdqa(xmm2, xmm0); 
 		psllw(xmm2, 15);
@@ -921,7 +927,7 @@ void GPUDrawScanlineCodeGenerator::WriteFrame()
 
 		por(xmm4, xmm2);
 	}
-	else if(m_env.sel.tme)
+	else
 	{
 		// GSVector4i a = (c[3] << 8) & 0x80008000;
 
@@ -937,10 +943,7 @@ void GPUDrawScanlineCodeGenerator::WriteFrame()
 
 	// GSVector4i::store<false>(fb, fs);
 
-	// movdqu(xmmword[edi], xmm4);
-
-	movq(qword[edi], xmm4);
-	movhps(qword[edi + 8], xmm4);
+	movdqu(xmmword[edi], xmm4);
 }
 
 void GPUDrawScanlineCodeGenerator::ReadTexel(const Xmm& dst, const Xmm& addr)

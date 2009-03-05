@@ -20,6 +20,7 @@
 #include <time.h>
 
 #include "PsxCommon.h"
+#include "ix86/ix86.h"
 #include "iR3000A.h"
 #include "IopMem.h"
 #include "IopDma.h"
@@ -894,7 +895,7 @@ REC_FUNC(SWR);
 
 #else
 
-// TLB loadstore functions
+// TLB loadstore functions (slower
 REC_FUNC(LWL);
 REC_FUNC(LWR);
 REC_FUNC(SWL);
@@ -908,7 +909,7 @@ static void rpsxLB()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-    _callFunctionArg1((uptr)iopMemRead8, X86ARG1|MEM_X86TAG, 0);
+    _callFunctionArg1((uptr)psxMemRead8, X86ARG1|MEM_X86TAG, 0);
 	if (_Rt_) {
 		MOVSX32R8toR(EAX, EAX);
 		MOV32RtoM((uptr)&psxRegs.GPR.r[_Rt_], EAX);
@@ -924,7 +925,7 @@ static void rpsxLBU()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg1((uptr)iopMemRead8, X86ARG1|MEM_X86TAG, 0);
+	_callFunctionArg1((uptr)psxMemRead8, X86ARG1|MEM_X86TAG, 0);
 	if (_Rt_) {
 		MOVZX32R8toR(EAX, EAX);
 		MOV32RtoM((uptr)&psxRegs.GPR.r[_Rt_], EAX);
@@ -940,7 +941,7 @@ static void rpsxLH()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg1((uptr)iopMemRead16, X86ARG1|MEM_X86TAG, 0);
+	_callFunctionArg1((uptr)psxMemRead16, X86ARG1|MEM_X86TAG, 0);
 	if (_Rt_) {
 		MOVSX32R16toR(EAX, EAX);
 		MOV32RtoM((uptr)&psxRegs.GPR.r[_Rt_], EAX);
@@ -956,7 +957,7 @@ static void rpsxLHU()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg1((uptr)iopMemRead16, X86ARG1|MEM_X86TAG, 0);
+	_callFunctionArg1((uptr)psxMemRead16, X86ARG1|MEM_X86TAG, 0);
 	if (_Rt_) {
 		MOVZX32R16toR(EAX, EAX);
 		MOV32RtoM((uptr)&psxRegs.GPR.r[_Rt_], EAX);
@@ -974,13 +975,16 @@ static void rpsxLW()
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
 
+#ifndef TLB_DEBUG_MEM
 	TEST32ItoR(X86ARG1, 0x10000000);
 	j8Ptr[0] = JZ8(0);
+#endif
 
-	_callFunctionArg1((uptr)iopMemRead32, X86ARG1|MEM_X86TAG, 0);
+	_callFunctionArg1((uptr)psxMemRead32, X86ARG1|MEM_X86TAG, 0);
 	if (_Rt_) {
 		MOV32RtoM((uptr)&psxRegs.GPR.r[_Rt_], EAX);
 	}
+#ifndef TLB_DEBUG_MEM
 	j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 
@@ -992,6 +996,7 @@ static void rpsxLW()
 	MOV32RtoM( (uptr)&psxRegs.GPR.r[_Rt_], X86ARG1);
 
 	x86SetJ8(j8Ptr[1]);
+#endif
 	PSX_DEL_CONST(_Rt_);
 }
 
@@ -1002,7 +1007,7 @@ static void rpsxSB()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg2((uptr)iopMemWrite8, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
+	_callFunctionArg2((uptr)psxMemWrite8, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
 }
 
 static void rpsxSH()
@@ -1012,7 +1017,7 @@ static void rpsxSH()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg2((uptr)iopMemWrite16, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
+	_callFunctionArg2((uptr)psxMemWrite16, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
 }
 
 static void rpsxSW()
@@ -1022,7 +1027,7 @@ static void rpsxSW()
 
 	MOV32MtoR(X86ARG1, (uptr)&psxRegs.GPR.r[_Rs_]);
 	if (_Imm_) ADD32ItoR(X86ARG1, _Imm_);
-	_callFunctionArg2((uptr)iopMemWrite32, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
+	_callFunctionArg2((uptr)psxMemWrite32, X86ARG1|MEM_X86TAG, MEM_MEMORYTAG, 0, (uptr)&psxRegs.GPR.r[_Rt_]);
 }
 
 #endif // end load store
@@ -1258,7 +1263,7 @@ void rpsxJALR()
 static void* s_pbranchjmp;
 static u32 s_do32 = 0;
 
-#define JUMPVALID(pjmp) (( x86Ptr[0] - (u8*)pjmp ) <= 0x80)
+#define JUMPVALID(pjmp) (( x86Ptr - (u8*)pjmp ) <= 0x80)
 
 void rpsxSetBranchEQ(int info, int process)
 {
@@ -1305,7 +1310,7 @@ void rpsxBEQ_process(int info, int process)
 	else
 	{
 		_psxFlushAllUnused();
-		u8* prevx86 = x86Ptr[0];
+		u8* prevx86 = x86Ptr;
 		s_do32 = 0;
 		psxSaveBranchState();
 
@@ -1318,10 +1323,10 @@ void rpsxBEQ_process(int info, int process)
 			x86SetJ8A( (u8*)s_pbranchjmp ); 
 		}
 		else {
-			x86Ptr[0] = prevx86;
+			x86Ptr = prevx86;
 			s_do32 = 1;
 			psxpc -= 4;
-			psxRegs.code = iopMemRead32( psxpc - 4 );
+			psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 			psxLoadBranchState();
 			rpsxSetBranchEQ(info, process);
 			psxRecompileNextInstruction(1);
@@ -1369,7 +1374,7 @@ void rpsxBNE_process(int info, int process)
 	}
 
 	_psxFlushAllUnused();
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	s_do32 = 0;
 	rpsxSetBranchEQ(info, process);
 
@@ -1381,10 +1386,10 @@ void rpsxBNE_process(int info, int process)
 		x86SetJ8A( (u8*)s_pbranchjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		s_do32 = 1;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		rpsxSetBranchEQ(info, process);
 		psxRecompileNextInstruction(1);
@@ -1423,7 +1428,7 @@ void rpsxBLTZ()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JL8(0);
 
 	psxSaveBranchState();
@@ -1435,9 +1440,9 @@ void rpsxBLTZ()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JL32(0);
 		psxRecompileNextInstruction(1);
@@ -1470,7 +1475,7 @@ void rpsxBGEZ()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JGE8(0);
 
 	psxSaveBranchState();
@@ -1482,9 +1487,9 @@ void rpsxBGEZ()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JGE32(0);
 		psxRecompileNextInstruction(1);
@@ -1524,7 +1529,7 @@ void rpsxBLTZAL()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JL8(0);
 
 	psxSaveBranchState();
@@ -1538,9 +1543,9 @@ void rpsxBLTZAL()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JL32(0);
 		MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
@@ -1577,7 +1582,7 @@ void rpsxBGEZAL()
 	}
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JGE8(0);
 
 	MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
@@ -1591,9 +1596,9 @@ void rpsxBGEZAL()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JGE32(0);
 		MOV32ItoM((uptr)&psxRegs.GPR.r[31], psxpc+4);
@@ -1631,7 +1636,7 @@ void rpsxBLEZ()
 	_clearNeededX86regs();
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JLE8(0);
 
 	psxSaveBranchState();
@@ -1642,9 +1647,9 @@ void rpsxBLEZ()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JLE32(0);
 		psxRecompileNextInstruction(1);
@@ -1679,7 +1684,7 @@ void rpsxBGTZ()
 	_clearNeededX86regs();
 
 	CMP32ItoM((uptr)&psxRegs.GPR.r[_Rs_], 0);
-	u8* prevx86 = x86Ptr[0];
+	u8* prevx86 = x86Ptr;
 	u8* pjmp = JG8(0);
 
 	psxSaveBranchState();
@@ -1690,9 +1695,9 @@ void rpsxBGTZ()
 		x86SetJ8A( pjmp ); 
 	}
 	else {
-		x86Ptr[0] = prevx86;
+		x86Ptr = prevx86;
 		psxpc -= 4;
-		psxRegs.code = iopMemRead32( psxpc - 4 );
+		psxRegs.code = *(u32*)PSXM( psxpc - 4 );
 		psxLoadBranchState();
 		u32* pjmp32 = JG32(0);
 		psxRecompileNextInstruction(1);
@@ -1812,6 +1817,18 @@ void (*rpsxCP0[32])() = {
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxRFE , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+};
+
+// coissued insts
+void (*rpsxBSC_co[64] )() = {
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
+    rpsxNULL,	rpsxNULL,   rpsxNULL, rpsxNULL,  rpsxNULL, rpsxNULL, rpsxNULL,  rpsxNULL,
 };
 
 ////////////////////////////////////////////////

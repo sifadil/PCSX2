@@ -18,11 +18,16 @@
 #ifndef __PSXCOMMON_H__
 #define __PSXCOMMON_H__
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "PS2Etypes.h"
 
 #include <assert.h>
 
 #include "System.h"
+#include <zlib.h>
 
 extern long LoadCdBios;
 extern int cdOpenCase;
@@ -30,9 +35,6 @@ extern int cdOpenCase;
 #define PSXCLK	(36864000ULL)	/* 36.864 Mhz */
 
 #include "Plugins.h"
-#include "Misc.h"
-#include "SaveState.h"
-
 #include "R3000A.h"
 #include "IopMem.h"
 #include "IopHw.h"

@@ -26,11 +26,8 @@ extern "C" {
 #include "callbacks.h"
 }
 
-#include "Linux.h"
 #include "zerospu2.h"
-
-extern char *libraryName;
-extern string s_strIniPath;
+#include "Linux.h"
 
 // This is a bit ugly. I'll see if I can work out a better way to do this later.
 int SetupSound()
@@ -68,14 +65,12 @@ void SoundFeedVoiceData(unsigned char* pSound,long lBytes)
 
 GtkWidget *MsgDlg, *ConfDlg;
 
-void OnMsg_Ok() 
-{
+void OnMsg_Ok() {
 	gtk_widget_destroy(MsgDlg);
 	gtk_main_quit();
 }
 
-void SysMessage(char *fmt, ...) 
-{
+void SysMessage(char *fmt, ...) {
 	GtkWidget *Ok,*Txt;
 	GtkWidget *Box,*Box1;
 	va_list list;
@@ -118,11 +113,6 @@ void SysMessage(char *fmt, ...)
 
 void CALLBACK SPU2configure() 
 {
-	char strcurdir[256];
-	getcwd(strcurdir, 256);
-	s_strIniPath = strcurdir;
-	s_strIniPath += "/inis/zerospu2.ini";
-	
 	LOG_CALLBACK("SPU2configure()\n");
 	ConfDlg = create_Config();
 	LoadConfig();
@@ -141,17 +131,15 @@ void on_Conf_Ok (GtkButton *button, gpointer user_data)
 {
 	conf.options = 0;
 	
-	if (is_checked(ConfDlg, "realtimebutton")) 
+	if (is_checked(ConfDlg, "realtimebutton"))
 		conf.options |= OPTION_REALTIME;
-	if (is_checked(ConfDlg, "timescalingbutton")) 
+	if (is_checked(ConfDlg, "timescalingbutton"))
 		conf.options |= OPTION_TIMESTRETCH;
 	if (is_checked(ConfDlg, "recordingbutton"))
 		conf.options |= OPTION_RECORDING;
 	if (is_checked(ConfDlg, "mutebutton"))
 		conf.options |= OPTION_MUTE;
-	
 	conf.Log = is_checked(ConfDlg, "loggingbutton");
-	
 	SaveConfig();
 	gtk_widget_destroy(ConfDlg);
 	gtk_main_quit();
@@ -165,72 +153,46 @@ void on_Conf_Cancel (GtkButton *button, gpointer user_data)
 
 }
 
+extern char *libraryName;
+extern string s_strIniPath;
+
 void CALLBACK SPU2about() 
 {
 	LOG_CALLBACK("SPU2about()\n");
 	SysMessage("%s %d.%d\ndeveloper: zerofrog", libraryName, SPU2_VERSION, SPU2_BUILD);
 }
 
-void SaveConfig() 
-{
+void SaveConfig() {
 	FILE *f;
 	char cfg[255];
 
 	strcpy(cfg, s_strIniPath.c_str());
-	
 	f = fopen(cfg,"w");
-	if (f == NULL) 
-	{
-		ERROR_LOG("Failed to open %s\n", s_strIniPath.c_str());
+	if (f == NULL) {
+		printf("Failed to open %s\n", s_strIniPath.c_str());
 		return;
 	}
-	
 	fprintf(f, "log = %d\n", conf.Log);
-	//fprintf(f, "options = %d\n", conf.options);
-	
-	fprintf(f, "realtime = %d\n", is_checked(ConfDlg, "realtimebutton"));
-	fprintf(f, "timestretch = %d\n", is_checked(ConfDlg, "timescalingbutton"));
-	fprintf(f, "recording = %d\n", is_checked(ConfDlg, "recordingbutton"));
-	fprintf(f, "mute = %d\n", is_checked(ConfDlg, "mutebutton"));
-	
+	fprintf(f, "options = %d\n", conf.options);
 	fclose(f);
 }
 
-void LoadConfig() 
-{
+void LoadConfig() {
 	FILE *f;
 	char cfg[255];
-	int temp;
 
 	memset(&conf, 0, sizeof(conf));
 
 	strcpy(cfg, s_strIniPath.c_str());
-	
 	f = fopen(cfg, "r");
-	if (f == NULL) 
-	{
-		ERROR_LOG("Failed to open %s\n", s_strIniPath.c_str());
+	if (f == NULL) {
+		printf("Failed to open %s\n", s_strIniPath.c_str());
 		conf.Log = 0;
 		conf.options = 0;
 		SaveConfig();//save and return
 		return;
 	}
-	
 	fscanf(f, "log = %d\n", &conf.Log);
-	
-	fscanf(f, "realtime = %d\n", &temp);
-	if (temp) conf.options |= OPTION_REALTIME;
-	
-	fscanf(f, "timestretch = %d\n", &temp);
-	if (temp) conf.options |= OPTION_TIMESTRETCH;
-	
-	fscanf(f, "recording = %d\n", &temp);
-	if (temp) conf.options |= OPTION_RECORDING;
-	
-	fscanf(f, "mute = %d\n", &temp);
-	if (temp) conf.options |= OPTION_MUTE;
-	
 	fscanf(f, "options = %d\n", &conf.options);
-	
 	fclose(f);
 }

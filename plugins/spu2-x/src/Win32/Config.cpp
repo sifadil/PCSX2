@@ -19,7 +19,8 @@
  * 
  */
 
-#include "Dialogs.h"
+#include "spu2.h"
+#include "dialogs.h"
 
 #ifdef SPU2X_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -47,6 +48,7 @@ bool timeStretchDisabled = false;
 
 u32 OutputModule = 0;
 
+CONFIG_DSOUNDOUT Config_DSoundOut;
 CONFIG_WAVEOUT Config_WaveOut;
 CONFIG_XAUDIO2 Config_XAudio2;
 
@@ -61,32 +63,32 @@ bool StereoExpansionDisabled = true;
 
 void ReadSettings()
 {
-	AutoDMAPlayRate[0] = CfgReadInt(L"MIXING",L"AutoDMA_Play_Rate_0",0);
-	AutoDMAPlayRate[1] = CfgReadInt(L"MIXING",L"AutoDMA_Play_Rate_1",0);
+	AutoDMAPlayRate[0] = CfgReadInt(_T("MIXING"),_T("AutoDMA_Play_Rate_0"),0);
+	AutoDMAPlayRate[1] = CfgReadInt(_T("MIXING"),_T("AutoDMA_Play_Rate_1"),0);
 
-	Interpolation = CfgReadInt( L"MIXING",L"Interpolation", 1 );
+	Interpolation = CfgReadInt(_T("MIXING"),_T("Interpolation"),1);
 
-	timeStretchDisabled = CfgReadBool( L"OUTPUT", L"Disable_Timestretch", false );
-	EffectsDisabled = CfgReadBool( L"MIXING", L"Disable_Effects", false );
+	timeStretchDisabled = CfgReadBool( _T("OUTPUT"), _T("Disable_Timestretch"), false );
+	EffectsDisabled = CfgReadBool( _T("MIXING"), _T("Disable_Effects"), false );
 
-	StereoExpansionDisabled = CfgReadBool( L"OUTPUT", L"Disable_StereoExpansion", false );
-	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 160);
+	StereoExpansionDisabled = CfgReadBool( _T("OUTPUT"), _T("Disable_StereoExpansion"), false );
+	SndOutLatencyMS = CfgReadInt(_T("OUTPUT"),_T("Latency"), 160);
 
 	wchar_t omodid[128];
-	CfgReadStr( L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent() );
+	CfgReadStr( _T("OUTPUT"), _T("Output_Module"), omodid, 127, XAudio2Out->GetIdent() );
 
 	// find the driver index of this module:
 	OutputModule = FindOutputModuleById( omodid );
 
-	CfgReadStr( L"DSP PLUGIN",L"Filename",dspPlugin,255,L"");
-	dspPluginModule = CfgReadInt(L"DSP PLUGIN",L"ModuleNum",0);
-	dspPluginEnabled= CfgReadBool(L"DSP PLUGIN",L"Enabled",false);
+	CfgReadStr( _T("DSP PLUGIN"),_T("Filename"),dspPlugin,255,_T(""));
+	dspPluginModule = CfgReadInt(_T("DSP PLUGIN"),_T("ModuleNum"),0);
+	dspPluginEnabled= CfgReadBool(_T("DSP PLUGIN"),_T("Enabled"),false);
 
 	// Read DSOUNDOUT and WAVEOUT configs:
-	CfgReadStr( L"WAVEOUT", L"Device", Config_WaveOut.Device, 254, L"default" );
-	Config_WaveOut.NumBuffers = CfgReadInt( L"WAVEOUT", L"Buffer_Count", 4 );
-
-	DSoundOut->ReadSettings();
+	CfgReadStr( _T("DSOUNDOUT"), _T("Device"), Config_DSoundOut.Device, 254, _T("default") );
+	CfgReadStr( _T("WAVEOUT"), _T("Device"), Config_WaveOut.Device, 254, _T("default") );
+	Config_DSoundOut.NumBuffers = CfgReadInt( _T("DSOUNDOUT"), _T("Buffer_Count"), 5 );
+	Config_WaveOut.NumBuffers = CfgReadInt( _T("WAVEOUT"), _T("Buffer_Count"), 4 );
 
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
@@ -96,6 +98,9 @@ void ReadSettings()
 
 	Clampify( SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX );
 	
+	Clampify( Config_DSoundOut.NumBuffers, (s8)2, (s8)8 );
+	Clampify( Config_DSoundOut.NumBuffers, (s8)3, (s8)8 );
+
 	if( mods[OutputModule] == NULL )
 	{
 		// Unsupported or legacy module.
@@ -109,27 +114,31 @@ void ReadSettings()
 
 void WriteSettings()
 {
-	CfgWriteInt(L"MIXING",L"Interpolation",Interpolation);
+	CfgWriteInt(_T("MIXING"),_T("Interpolation"),Interpolation);
 
-	CfgWriteInt(L"MIXING",L"AutoDMA_Play_Rate_0",AutoDMAPlayRate[0]);
-	CfgWriteInt(L"MIXING",L"AutoDMA_Play_Rate_1",AutoDMAPlayRate[1]);
+	CfgWriteInt(_T("MIXING"),_T("AutoDMA_Play_Rate_0"),AutoDMAPlayRate[0]);
+	CfgWriteInt(_T("MIXING"),_T("AutoDMA_Play_Rate_1"),AutoDMAPlayRate[1]);
 
-	CfgWriteBool(L"MIXING",L"Disable_Effects",EffectsDisabled);
+	CfgWriteBool(_T("MIXING"),_T("Disable_Effects"),EffectsDisabled);
 
-	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
-	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
-	CfgWriteBool(L"OUTPUT",L"Disable_Timestretch", timeStretchDisabled);
-	CfgWriteBool(L"OUTPUT",L"Disable_StereoExpansion", StereoExpansionDisabled);
+	CfgWriteStr(_T("OUTPUT"),_T("Output_Module"), mods[OutputModule]->GetIdent() );
+	CfgWriteInt(_T("OUTPUT"),_T("Latency"), SndOutLatencyMS);
+	CfgWriteBool(_T("OUTPUT"),_T("Disable_Timestretch"), timeStretchDisabled);
+	CfgWriteBool(_T("OUTPUT"),_T("Disable_StereoExpansion"), StereoExpansionDisabled);
 
-	if( Config_WaveOut.Device.empty() ) Config_WaveOut.Device = L"default";
-	CfgWriteStr(L"WAVEOUT",L"Device",Config_WaveOut.Device);
-	CfgWriteInt(L"WAVEOUT",L"Buffer_Count",Config_WaveOut.NumBuffers);
+	if( Config_DSoundOut.Device.empty() ) Config_DSoundOut.Device = _T("default");
+	if( Config_WaveOut.Device.empty() ) Config_WaveOut.Device = _T("default");
 
-	CfgWriteStr(L"DSP PLUGIN",L"Filename",dspPlugin);
-	CfgWriteInt(L"DSP PLUGIN",L"ModuleNum",dspPluginModule);
-	CfgWriteBool(L"DSP PLUGIN",L"Enabled",dspPluginEnabled);
+	CfgWriteStr(_T("DSOUNDOUT"),_T("Device"),Config_DSoundOut.Device);
+	CfgWriteInt(_T("DSOUNDOUT"),_T("Buffer_Count"),Config_DSoundOut.NumBuffers);
 
-	DSoundOut->WriteSettings();	
+	CfgWriteStr(_T("WAVEOUT"),_T("Device"),Config_WaveOut.Device);
+	CfgWriteInt(_T("WAVEOUT"),_T("Buffer_Count"),Config_WaveOut.NumBuffers);
+
+	CfgWriteStr(_T("DSP PLUGIN"),_T("Filename"),dspPlugin);
+	CfgWriteInt(_T("DSP PLUGIN"),_T("ModuleNum"),dspPluginModule);
+	CfgWriteBool(_T("DSP PLUGIN"),_T("Enabled"),dspPluginEnabled);
+	
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 
@@ -148,9 +157,9 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case WM_INITDIALOG:
 		{
 			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_RESETCONTENT,0,0 ); 
-			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) L"0 - Nearest (none/fast)" );
-			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) L"1 - Linear (recommended)" );
-			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) L"2 - Cubic (slower/maybe better)" );
+			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) _T("0 - Nearest (none/fast)") );
+			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) _T("1 - Linear (recommended)") );
+			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_ADDSTRING,0,(LPARAM) _T("2 - Cubic (not good with effects)") );
 			SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_SETCURSEL,Interpolation,0 ); 
 
 			SendDialogMsg( hWnd, IDC_OUTPUT, CB_RESETCONTENT,0,0 );
@@ -158,7 +167,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int modidx = 0;
 			while( mods[modidx] != NULL )
 			{
-				swprintf_s( temp, 72, L"%d - %s", modidx, mods[modidx]->GetLongName() );
+				swprintf_s( temp, 72, _T("%d - %s"), modidx, mods[modidx]->GetLongName() );
 				SendDialogMsg( hWnd, IDC_OUTPUT, CB_ADDSTRING,0,(LPARAM)temp );
 				++modidx;
 			}
@@ -169,7 +178,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			INIT_SLIDER( IDC_LATENCY_SLIDER, minexp, maxexp, 200, 42, 12 );
 
 			SendDialogMsg( hWnd, IDC_LATENCY_SLIDER, TBM_SETPOS, TRUE, (int)((pow( (double)SndOutLatencyMS, 1.0/3.0 ) * 128.0) + 0.5) ); 
-			swprintf_s(temp,L"%d ms (avg)",SndOutLatencyMS);
+			swprintf_s(temp,_T("%d ms (avg)"),SndOutLatencyMS);
 			SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL),temp);
 			
 			EnableWindow( GetDlgItem( hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH ), !timeStretchDisabled );
@@ -277,7 +286,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					{
 						double res = pow( curpos / 128.0, 3.0 );
 						curpos = (int)res;
-						swprintf_s(temp,L"%d ms (avg)",curpos);
+						swprintf_s(temp,_T("%d ms (avg)"),curpos);
 						SetDlgItemText(hWnd,IDC_LATENCY_LABEL,temp);
 					}
 				break;
@@ -301,7 +310,7 @@ void configure()
 	ret = DialogBoxParam(hInstance,MAKEINTRESOURCE(IDD_CONFIG),GetActiveWindow(),(DLGPROC)ConfigProc,1);
 	if(ret==-1)
 	{
-		MessageBoxEx(GetActiveWindow(),L"Error Opening the config dialog.",L"OMG ERROR!",MB_OK,0);
+		MessageBoxEx(GetActiveWindow(),_T("Error Opening the config dialog."),_T("OMG ERROR!"),MB_OK,0);
 		return;
 	}
 	ReadSettings();

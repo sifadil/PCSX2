@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "GS.h"
 #include "R5900OpcodeTables.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iMMI.h"
 #include "iFPU.h"
@@ -85,15 +86,15 @@
 //------------------------------------------------------------------
 int vucycle;
 
-PCSX2_ALIGNED16(const float s_fones[8])		= {1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-PCSX2_ALIGNED16(const u32 s_mask[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
-PCSX2_ALIGNED16(const u32 s_expmask[4])		= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-PCSX2_ALIGNED16(const u32 g_minvals[4])		= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-PCSX2_ALIGNED16(const u32 g_maxvals[4])		= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
-PCSX2_ALIGNED16(const u32 const_clip[8])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
-											   0x80000000, 0x80000000, 0x80000000, 0x80000000};
-PCSX2_ALIGNED(64, const u32 g_ones[4])		= {0x00000001, 0x00000001, 0x00000001, 0x00000001};
-PCSX2_ALIGNED16(const u32 g_minvals_XYZW[16][4]) =
+PCSX2_ALIGNED16(float s_fones[8])	= {1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
+PCSX2_ALIGNED16(u32 s_mask[4])		= {0x007fffff, 0x007fffff, 0x007fffff, 0x007fffff};
+PCSX2_ALIGNED16(u32 s_expmask[4])	= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
+PCSX2_ALIGNED16(u32 g_minvals[4])	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
+PCSX2_ALIGNED16(u32 g_maxvals[4])	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
+PCSX2_ALIGNED16(u32 const_clip[8])	= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+									   0x80000000, 0x80000000, 0x80000000, 0x80000000};
+PCSX2_ALIGNED(64, u32 g_ones[4])	= {0x00000001, 0x00000001, 0x00000001, 0x00000001};
+PCSX2_ALIGNED16(u32 g_minvals_XYZW[16][4]) =
 {
    { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }, //0000
    { 0xffffffff, 0xffffffff, 0xffffffff, 0xff7fffff }, //0001
@@ -112,7 +113,7 @@ PCSX2_ALIGNED16(const u32 g_minvals_XYZW[16][4]) =
    { 0xff7fffff, 0xff7fffff, 0xff7fffff, 0xffffffff }, //1110
    { 0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff }, //1111
 };
-PCSX2_ALIGNED16(const u32 g_maxvals_XYZW[16][4])=
+PCSX2_ALIGNED16(u32 g_maxvals_XYZW[16][4])=
 {
    { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //0000
    { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7f7fffff }, //0001
@@ -405,12 +406,12 @@ void _recvuFlushEFU(VURegs * VU) {
 }
 
 void _recvuTestFDIVStalls(VURegs * VU, _VURegsNum *VUregsn) {
-	_recvuTestFMACStalls(VU,VUregsn, false);
+//	_vuTestFMACStalls(VURegs * VU, _VURegsNum *VUregsn);
 	_recvuFlushFDIV(VU);
 }
 
 void _recvuTestEFUStalls(VURegs * VU, _VURegsNum *VUregsn) {
-	_recvuTestFMACStalls(VU,VUregsn, false);
+//	_vuTestFMACStalls(VURegs * VU, _VURegsNum *VUregsn);
 	_recvuFlushEFU(VU);
 }
 

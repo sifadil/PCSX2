@@ -27,8 +27,6 @@
 #ifndef _S_IFREG
 #define _S_IFREG S_IFREG
 #endif
-#else
-#include <direct.h>
 #endif
 
 namespace Path
@@ -92,21 +90,23 @@ bool isRooted( const string& path )
 
 // Concatenates two pathnames together, inserting delimiters (backslash on win32)
 // as needed! Assumes the 'dest' is allocated to at least g_MaxPath length.
-string Combine( const string& srcPath, const string& srcFile )
+void Combine( string& dest, const string& srcPath, const string& srcFile )
 {
 	int pathlen, guesslen;
 
 	if( srcFile.empty() )
 	{
 		// No source filename?  Return the path unmodified.
-		return srcPath;
+		dest = srcPath;
+		return;
 	}
 
 	if( isRooted( srcFile ) || srcPath.empty() )
 	{
 		// No source path?  Or source filename is rooted?
 		// Return the filename unmodified.
-		return srcFile;
+		dest = srcFile;
+		return;
 	}
 
 	// strip off the srcPath's trailing backslashes (if any)
@@ -125,17 +125,14 @@ string Combine( const string& srcPath, const string& srcFile )
 
 	// Concatenate!
 
-	string dest( srcPath.begin(), srcPath.begin()+pathlen );
+	dest.assign( srcPath.begin(), srcPath.begin()+pathlen );
 	dest += Separator;
 	dest += srcFile;
-	return dest;
 }
 
 // Replaces the extension of the file with the one given.
-string ReplaceExtension( const string& src, const string& ext )
+void ReplaceExtension( string& dest, const string& src, const string& ext )
 {
-	string dest;
-
 	int pos = src.find_last_of( '.' );
 	if( pos == string::npos || pos == 0 )
 		dest = src;
@@ -147,8 +144,6 @@ string ReplaceExtension( const string& src, const string& ext )
 		dest += '.';
 		dest += ext;
 	}
-	
-	return dest;
 }
 
 // finds the starting character position of a filename for the given source path.
@@ -179,11 +174,10 @@ static int _findFilenamePosition( const string& src)
 	return pos;
 }
 
-string ReplaceFilename( const string& src, const string& newfilename )
+void ReplaceFilename( string& dest, const string& src, const string& newfilename )
 {
-	string dest;
 	int pos = _findFilenamePosition( src );
-
+	
 	if( pos == 0 )
 		dest = src;
 	else
@@ -194,7 +188,6 @@ string ReplaceFilename( const string& src, const string& newfilename )
 		dest += '.';
 		dest += newfilename;
 	}
-	return dest;
 }
 
 void GetFilename( const string& src, string& dest )
@@ -238,15 +231,4 @@ void GetRootDirectory( const string& src, string& dest )
 	else
 		dest.assign( src.begin(), src.begin()+pos );
 }
-
-void CreateDirectory( const string& src )
-{
-#ifdef _WIN32
-	_mkdir( src.c_str() );
-#else
-	mkdir( src.c_str(), 0755);
-#endif
 }
-
-}
-

@@ -21,7 +21,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "Config.h"
 #include "CDVDiso.h"
@@ -39,14 +38,6 @@ void ExecCfg(char *arg)
 		return;
 	}
 
-	strcpy(cfg, "./plugins/cfgCDVDiso");
-	if (stat(cfg, &buf) != -1)
-	{
-		sprintf(cfg, "%s %s", cfg, arg);
-		system(cfg);
-		return;
-	}
-	
 	strcpy(cfg, "./cfg/cfgCDVDiso");
 	if (stat(cfg, &buf) != -1)
 	{
@@ -68,29 +59,17 @@ void ExecCfg(char *arg)
 
 void CDVDconfigure()
 {
-	char *file;
-	getcwd(file, ArraySize(file));
-	chdir("plugins");
 	ExecCfg("configure");
-	chdir(file);
 }
 
 void CDVDabout()
 {
-	char *file;
-	getcwd(file, ArraySize(file));
-	chdir("plugins");
 	ExecCfg("about");
-	chdir(file);
 }
 
 void CfgOpenFile()
 {
-	char *file;
-	getcwd(file, ArraySize(file));
-	chdir("plugins");
 	ExecCfg("open");
-	chdir(file);
 }
 
 void SysMessage(char *fmt, ...)

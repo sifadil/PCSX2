@@ -37,8 +37,6 @@
 #include "vtlb.h"
 #include "COP0.h"
 
-#include "R5900Exceptions.h"
-
 using namespace R5900;
 using namespace vtlb_private;
 
@@ -168,7 +166,7 @@ __forceinline void __fastcall MemOp_w0(u32 addr, DataType data)
 		//has to: translate, find function, call function
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
-		//SysPrintf("Translated 0x%08X to 0x%08X\n",addr,paddr);
+		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
 
 		switch( DataSize )
 		{
@@ -197,7 +195,7 @@ __forceinline void __fastcall MemOp_w1(u32 addr,const DataType* data)
 		//has to: translate, find function, call function
 		u32 hand=(u8)vmv;
 		u32 paddr=ppf-hand+0x80000000;
-		//SysPrintf("Translated 0x%08X to 0x%08X\n",addr,paddr);
+		//SysPrintf("Translted 0x%08X to 0x%08X\n",addr,paddr);
 		switch( DataSize )
 		{
 			case 64: return ((vtlbMemW64FP*)RWFT[3][1][hand])(paddr, data);
@@ -207,7 +205,6 @@ __forceinline void __fastcall MemOp_w1(u32 addr,const DataType* data)
 		}
 	}
 }
-
 
 mem8_t __fastcall vtlb_memRead8(u32 mem)
 {
@@ -250,30 +247,34 @@ void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 	MemOp_w1<128,mem128_t>(mem,value);
 }
 
+// Some functions used by interpreters and stuff...
+// These maintain a "consistent" API with 64/128 reads.
+void __fastcall memRead8(u32 mem, u8  *out) { *out = vtlb_memRead8( mem ); }
+void __fastcall memRead16(u32 mem, u16 *out) { *out = vtlb_memRead16( mem ); }
+void __fastcall memRead32(u32 mem, u32 *out) { *out = vtlb_memRead32( mem ); }
+
 /////////////////////////////////////////////////////////////////////////
 // Error / TLB Miss Handlers
 // 
 
-static const char* _getModeStr( u32 mode )
-{
-	return (mode==0) ? "read" : "write";
-}
-
 // Generates a tlbMiss Exception
 static __forceinline void vtlb_Miss(u32 addr,u32 mode)
 {
-	//Console::Error( "vtlb miss : addr 0x%X, mode %d [%s]", params addr, mode, _getModeStr(mode) );
-	//verify(false);
-	throw R5900Exception::TLBMiss( addr, !!mode );
+	Console::Error("vtlb miss : addr 0x%X, mode %d", params addr,mode);
+	verify(false);
+
+	if (mode==0)
+		cpuTlbMissR(addr, cpuRegs.branch);
+	else
+		cpuTlbMissW(addr, cpuRegs.branch);
 }
 
 // Just dies a horrible death for now.
 // Eventually should generate a BusError exception.
 static __forceinline void vtlb_BusError(u32 addr,u32 mode)
 {
-	//Console::Error( "vtlb bus error : addr 0x%X, mode %d\n", params addr, _getModeStr(mode) );
-	//verify(false);
-	throw R5900Exception::BusError( addr, !!mode );
+	Console::Error("vtlb bus error : addr 0x%X, mode %d\n",params addr,mode);
+	verify(false);
 }
 
 ///// Virtual Mapping Errors (TLB Miss)
@@ -337,6 +338,7 @@ void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data) { Console:
 /////////////////////////////////////////////////////////////////////////
 // VTLB Public API -- Init/Term/RegisterHandler stuff
 // 
+
 
 // Registers a handler into the VTLB's internal handler array.  The handler defines specific behavior
 // for how memory pages bound to the handler are read from / written to.  If any of the handler pointers
@@ -436,9 +438,10 @@ void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 __forceinline void* vtlb_GetPhyPtr(u32 paddr)
 {
 	if (paddr>=VTLB_PMAP_SZ || pmap[paddr>>VTLB_PAGE_BITS]<0)
-		return NULL;
+		return 0;
 	else
 		return reinterpret_cast<void*>(pmap[paddr>>VTLB_PAGE_BITS]+(paddr&VTLB_PAGE_MASK));
+
 }
 
 //virtual mappings
@@ -581,7 +584,8 @@ void vtlb_free( void* pmem, uint size )
 	SafeSysMunmap( pmem, size );
 #else
 	// Make sure and unprotect memory first, since CrtDebug will try to write to it.
-	HostSys::MemProtect( pmem, size, Protect_ReadWrite );
+	DWORD old;
+	VirtualProtect( pmem, size, PAGE_READWRITE, &old );
 	safe_aligned_free( pmem );
 #endif
 }

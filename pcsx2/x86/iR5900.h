@@ -19,15 +19,12 @@
 #ifndef __IR5900_H__
 #define __IR5900_H__
 
-#define _EmitterId_ EmitterId_R5900
-#include "ix86/ix86.h"
-#include "ix86/ix86_sse_helpers.h"
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
 #include "BaseblockEx.h"	// needed for recClear and stuff
 
-// Yay!  These work now! (air) ... almost (air)
+// Yay!  These work now! (air)
 #define ARITHMETICIMM_RECOMPILE
 #define ARITHMETIC_RECOMPILE
 #define MULTDIV_RECOMPILE
@@ -137,7 +134,7 @@ extern void recDoBranchImm_Likely( u32* jmpSkip );
 }
 
 extern void (*recBSC_co[64])();
-PCSX2_ALIGNED16_EXTERN(GPR_reg64 g_cpuConstRegs[32]);
+extern PCSX2_ALIGNED16_DECL(GPR_reg64 g_cpuConstRegs[32]);
 extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 
 // gets a memory pointer to the constant reg
@@ -262,10 +259,7 @@ void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
 void rec##fn(void) \
 { \
-	if (CHECK_FPU_FULL) \
-		eeFPURecompileCode(DOUBLE::rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
-	else \
-		eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
+	eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
 }
 
 // rd = rs op rt (all regs need to be in xmm)

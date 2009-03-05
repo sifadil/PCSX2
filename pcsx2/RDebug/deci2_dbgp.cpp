@@ -244,8 +244,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				break;
 			}
 			if (in->h.destination=='I')
-				if (iopVirtMemR<void>(mem->address & 0x1FFFFFFF))
-					memcpy(data, iopVirtMemR<void>(mem->address & 0x1FFFFFFF), mem->length);
+				if (PSXM(mem->address & 0x1FFFFFFF))
+					memcpy(data, PSXM(mem->address & 0x1FFFFFFF), mem->length);
 				else{
 					out->result=0x11;
 					strcat(line, " ADDRESS ERROR");
@@ -298,8 +298,8 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				break;
 			}
 			if (in->h.destination=='I')
-				if (iopVirtMemR<void>(mem->address & 0x1FFFFFFF))
-					memcpy( (void*)iopVirtMemR<void>(mem->address & 0x1FFFFFFF), data, mem->length);
+				if (PSXM(mem->address & 0x1FFFFFFF))
+					memcpy(PSXM(mem->address & 0x1FFFFFFF), data, mem->length);
 				else{
 					out->result=0x11;
 					strcat(line, " ADDRESS ERROR");
@@ -379,7 +379,9 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 				Sleep(100);//first get the run thread to Wait state
 				runCount=in->count;
 				runCode=in->code;
-				runEvent->Post();//kick it
+#ifdef _WIN32
+				SetEvent(runEvent);//kick it
+#endif
 			}
 			break;
 		case 0x18://ok [without argc/argv stuff]
@@ -398,7 +400,9 @@ void D2_DBGP(const u8 *inbuffer, u8 *outbuffer, char *message, char *eepc, char 
 			Sleep(1000);//first get the run thread to Wait state
 			runCount=0;
 			runCode=0xFF;
-			runEvent->Post();
+#ifdef _WIN32
+			SetEvent(runEvent);//awake it
+#endif
 			out->h.length=sizeof(DECI2_DBGP_HEADER);
 			break;
 		}

@@ -87,21 +87,14 @@ namespace Threading
 		pthread_mutex_unlock( &mutex );
 	}
 #endif
-
 	Semaphore::Semaphore()
 	{
 		sem_init( &sema, false, 0 );
 	}
-	
+
 	Semaphore::~Semaphore()
 	{
 		sem_destroy( &sema );
-	}
-
-	void Semaphore::Reset()
-	{
-		sem_destroy( &sema );
-		sem_init( &sema, false, 0 );
 	}
 
 	void Semaphore::Post()

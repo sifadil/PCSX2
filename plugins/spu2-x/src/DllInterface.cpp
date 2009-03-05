@@ -19,16 +19,11 @@
  * 
  */
 
-#include "Spu2.h"
-#include "Dialogs.h"
-#include "RegTable.h"
+#include "spu2.h"
+#include "regtable.h"
+#include "dialogs.h"
 
-#ifdef _MSC_VER
 #include "svnrev.h"
-#else
-#include <stdio.h>
-#include <string.h>
-#endif
 
 // [Air]: Adding the spu2init boolean wasn't necessary except to help me in
 //   debugging the spu2 suspend/resume behavior (when user hits escape).
@@ -41,14 +36,12 @@ static u32  pClocks=0;
 // Pcsx2 expects ASNI, not unicode, so this MUST always be char...
 static char libraryName[256];
 
-#ifdef _MSC_VER
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD dwReason,LPVOID lpvReserved)
 {
 	if( dwReason == DLL_PROCESS_ATTACH )
 		hInstance = hinstDLL;
 	return TRUE;
 }
-#endif
 
 static void InitLibraryName()
 {
@@ -144,7 +137,7 @@ EXPORT_C_(s32) SPU2init()
 #ifdef SPU2_LOG
 	if(AccessLog()) 
 	{
-		spu2Log = fopen( Unicode::Convert( AccessLogFileName ).c_str(), "w" );
+		spu2Log = _wfopen( AccessLogFileName, _T("w") );
 		setvbuf(spu2Log, NULL,  _IONBF, 0);
 		FileLog("SPU2init\n");
 	}
@@ -371,29 +364,25 @@ EXPORT_C_(u16) SPU2read(u32 rmem)
 
 	if(rmem==0x1f9001AC)
 	{
-		ret = DmaRead(core);
+		ret =  DmaRead(core);
 	}
-	else
+	else if (rmem>>16 == 0x1f80)
 	{
-		TimeUpdate( *cPtr );
-
-		if (rmem>>16 == 0x1f80)
-		{
-			ret = SPU_ps1_read(rmem);
-		}
-		else if( (mem&0xFFFF) >= 0x800 )
-		{
-			ret = spu2Ru16(mem);
-			ConLog(" * SPU2: Read from reg>=0x800: %x value %x\n",mem,ret);
-		}
-		else 
-		{
-			ret = *(regtable[(mem>>1)]);
-			//FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
-			SPU2writeLog( "read", rmem, ret );
-		}
+		ret = SPU_ps1_read(rmem);
 	}
-	
+	else if ((mem&0xFFFF)>=0x800)
+	{
+		ret=spu2Ru16(mem);
+		ConLog(" * SPU2: Read from reg>=0x800: %x value %x\n",mem,ret);
+		FileLog(" * SPU2: Read from reg>=0x800: %x value %x\n",mem,ret);
+	}
+	else 
+	{
+		ret = *(regtable[(mem>>1)]);
+
+		FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
+	}
+
 	return ret;
 }
 
@@ -428,18 +417,10 @@ EXPORT_C_(void) SPU2write(u32 rmem, u16 value)
 	}
 	else
 	{
-		// Note: Reverb/Effects are very sensitive to having precise update timings.
-		// If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
-		// incorrect pitches and loop lengths.
-
-		TimeUpdate( *cPtr );
 		if (rmem>>16 == 0x1f80)
 			SPU_ps1_write(rmem,value);
 		else
-		{
-			SPU2writeLog( "write", rmem, value );
 			SPU2_FastWrite( rmem, value );
-		}
 	}
 }
 

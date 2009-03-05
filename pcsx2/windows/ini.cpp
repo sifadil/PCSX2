@@ -16,7 +16,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Win32.h"
+#include "PrecompiledHeader.h"
+#include "win32.h"
 
 #include "Common.h"
 #include "Paths.h"
@@ -33,12 +34,23 @@ static bool hasCustomConfig()
 }
 
 // Returns the FULL (absolute) path and filename of the configuration file.
-static string GetConfigFilename()
+static void GetConfigFilename( string& dest )
 {
-	// Load a user-specified configuration, or use the ini relative to the application's working directory.
-	// (Our current working directory can change, so we use the one we detected at startup)
+	if( hasCustomConfig() )
+	{
+		// Load a user-specified configuration.
+		// If the configuration isn't found, fail outright (see below)
 
-	return Path::Combine( g_WorkingFolder, hasCustomConfig() ? g_CustomConfigFile : (CONFIG_DIR "\\pcsx2.ini") );
+		Path::Combine( dest, g_WorkingFolder, g_CustomConfigFile );
+	}
+	else
+	{
+		// use the ini relative to the application's working directory.
+		// Our current working directory can change, so we use the one we detected
+		// at startup:
+
+		Path::Combine( dest, g_WorkingFolder, CONFIG_DIR "\\pcsx2.ini" );
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -162,8 +174,9 @@ void IniFileSaver::EnumEntry( const string& var, int& value, const char* const* 
 //  InitFile -- Base class implementation.
 
 IniFile::~IniFile() {}
-IniFile::IniFile() : m_filename( GetConfigFilename() ), m_section("Misc")
+IniFile::IniFile() : m_filename(), m_section("Misc")
 {
+	GetConfigFilename( m_filename );
 }
 
 void IniFile::SetCurrentSection( const string& newsection )
@@ -185,16 +198,16 @@ void IniFile::DoConfig( PcsxConfig& Conf )
 	SetCurrentSection( "Interface" );
 	Entry( "Bios", Conf.Bios );
 	Entry( "Language", Conf.Lang );
-	string plug = DEFAULT_PLUGINS_DIR;
-	Entry( "PluginsDir", Conf.PluginsDir, plug );
-	string bios = DEFAULT_BIOS_DIR;
-	Entry( "BiosDir", Conf.BiosDir, bios );
+	Entry( "PluginsDir", Conf.PluginsDir, DEFAULT_PLUGINS_DIR );
+	Entry( "BiosDir", Conf.BiosDir, DEFAULT_BIOS_DIR );
 	Entry( "CloseGsOnEscape", Conf.closeGSonEsc, true );
 
 	SetCurrentSection( "Console" );
 	Entry( "ConsoleWindow", Conf.PsxOut, true );
 	Entry( "Profiler", Conf.Profiler, false );
 	Entry( "CdvdVerbose", Conf.cdvdPrint, false );
+
+	Entry( "ThreadPriority", Conf.ThPriority, THREAD_PRIORITY_NORMAL );
 
 	SetCurrentSection( "Framelimiter" );
 	Entry( "CustomFps", Conf.CustomFps );
@@ -230,9 +243,10 @@ void IniFile::DoConfig( PcsxConfig& Conf )
 
 bool LoadConfig()
 {
+	string szIniFile;
 	bool status  = true;
 
-	string szIniFile( GetConfigFilename() );
+	GetConfigFilename( szIniFile );
 
 	if( !Path::Exists( szIniFile ) )
 	{

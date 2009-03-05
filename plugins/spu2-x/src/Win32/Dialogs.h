@@ -24,7 +24,7 @@
 #ifndef _DIALOGS_H_
 #define _DIALOGS_H_
 
-#include "../Spu2.h"
+#include "BaseTypes.h"
 
 #include <commctrl.h>
 #include <initguid.h>

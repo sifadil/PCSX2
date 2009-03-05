@@ -20,7 +20,7 @@
 #define _DPLII_H_
 
 #include "PS2Etypes.h"
-#include "Lowpass.h"
+#include "lowpass.h"
 
 class DPLII
 {

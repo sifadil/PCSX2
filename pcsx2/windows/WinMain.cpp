@@ -20,6 +20,7 @@
 #include "win32.h"
 
 #include <winnt.h>
+#include <commctrl.h>
 #include <direct.h>
 
 #include <ntsecapi.h>
@@ -59,6 +60,8 @@ void strcatz(char *dst, char *src)
 BOOL APIENTRY CmdlineProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);//forward def
 //-------------------
 
+TESTRUNARGS g_TestRun;
+
 static const char* phelpmsg = 
     "pcsx2 [options] [file]\n\n"
     "-cfg [file] {configuration file}\n"
@@ -80,14 +83,10 @@ static const char* phelpmsg =
     "\n"
 #endif
 
-    "Plugin Overrides (specified dlls will be used in place of configured dlls):\n"
-    "\t-cdvd [dllpath] {specifies an override for the CDVD plugin}\n"
-    "\t-gs [dllpath] {specifies an override for the GS plugin}\n"
-    "\t-spu [dllpath] {specifies an override for the SPU2 plugin}\n"
-	"\t-pads [dllpath] {specifies an override for *both* pad plugins}\n"
-	"\t-pad1 [dllpath] {specifies an override for the PAD1 plugin only}\n"
-	"\t-pad2 [dllpath] {specifies an override for the PAD2 plugin only}\n"
-	"\t-dev9 [dllpath] {specifies an override for the DEV9 plugin}\n"
+    "Load Plugins:\n"
+    "\t-cdvd [dllpath] {specify the dll load path of the CDVD plugin}\n"
+    "\t-gs [dllpath] {specify the dll load path of the GS plugin}\n"
+    "\t-spu [dllpath] {specify the dll load path of the SPU2 plugin}\n"
     "\n";
 
 /// This code is courtesy of http://alter.org.ua/en/docs/win/args/
@@ -173,7 +172,7 @@ static PTCHAR* _CommandLineToArgv( const TCHAR *CmdLine, int* _argc )
 
 void WinClose()
 {
-	cpuShutdown();
+	SysClose();
 
 	// Don't check Config.Profiler here -- the Profiler will know if it's running or not.
 	ProfilerTerm();
@@ -189,27 +188,19 @@ void WinClose()
 
 BOOL SysLoggedSetLockPagesPrivilege ( HANDLE hProcess, BOOL bEnable);
 
-// Returns TRUE if the test run mode was activated (game was run and has been exited)
+// Returns TRUE if the test run mode was activaated (game was run and has been exited)
 static bool TestRunMode()
 {
 	if( IsDevBuild && (g_TestRun.enabled || g_TestRun.ptitle != NULL) )
 	{
 		// run without ui
-		UseGui = false;
+		UseGui = 0;
 		PCSX2_MEM_PROTECT_BEGIN();
-		SysPrepareExecution( g_TestRun.efile ? g_TestRun.ptitle : NULL );
+		RunExecute( g_TestRun.efile ? g_TestRun.ptitle : NULL );
 		PCSX2_MEM_PROTECT_END();
 		return true;
 	}
 	return false;
-}
-
-static void _doPluginOverride( const char* name, const char* src, char (&dest)[g_MaxPath] )
-{
-	if( src == NULL || src[0] == 0 ) return;
-
-	_tcscpy_s( dest, src );
-	Console::Notice( "* %s plugin override: \n\t%s\n", params name, dest);
 }
 
 void WinRun()
@@ -219,13 +210,23 @@ void WinRun()
 
 	memcpy( &winConfig, &Config, sizeof( PcsxConfig ) );
 
-	_doPluginOverride( "GS", g_TestRun.pgsdll, Config.GS );
-	_doPluginOverride( "CDVD", g_TestRun.pcdvddll, Config.CDVD );
-	_doPluginOverride( "SPU2", g_TestRun.pspudll, Config.SPU2 );
-	_doPluginOverride( "PAD1", g_TestRun.ppad1dll, Config.PAD1 );
-	_doPluginOverride( "PAD2", g_TestRun.ppad2dll, Config.PAD2 );
-	_doPluginOverride( "DEV9", g_TestRun.pdev9dll, Config.DEV9 );
+	if( g_TestRun.pgsdll )
+	{
+		_tcscpy_s( Config.GS, g_MaxPath, g_TestRun.pgsdll );
+		Console::Notice( "* GS plugin override: \n\t%s\n", params Config.GS );
+	}
+	if( g_TestRun.pcdvddll )
+	{
+		_tcscpy_s( Config.CDVD, g_MaxPath, g_TestRun.pcdvddll );
+		Console::Notice( "* CDVD plugin override: \n\t%s\n", params Config.CDVD );
+	}
+	if( g_TestRun.pspudll )
+	{
+		_tcscpy_s( Config.SPU2, g_MaxPath, g_TestRun.pspudll );
+		Console::Notice( "* SPU2 plugin override: \n\t%s\n", params Config.SPU2 );
+	}
 
+	// [TODO] : Add the other plugin overrides here...
 
 #ifndef _DEBUG
 	if( Config.Profiler )
@@ -345,7 +346,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// Important!  Always allocate dynarecs before loading plugins, to give the dynarecs
 		// the best possible chance of claiming ideal memory space!
 
-		HostGuiInit();
+		SysInit();
 
 		if( needsToConfig )
 		{
@@ -537,7 +538,6 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_INITDIALOG:
 			if(Config.GameFixes & 0x1) CheckDlgButton(hDlg, IDC_GAMEFIX2, TRUE);//Tri-Ace fix
 			if(Config.GameFixes & 0x4) CheckDlgButton(hDlg, IDC_GAMEFIX3, TRUE);//Digimon FPU compare fix
-			if(Config.GameFixes & 0x2) CheckDlgButton(hDlg, IDC_GAMEFIX4, TRUE);//GoW fix
 		return TRUE;
 
         case WM_COMMAND:
@@ -546,7 +546,6 @@ BOOL APIENTRY GameFixes(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				uint newfixes = 0;
 				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX2) ? 0x1 : 0;
 				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX3) ? 0x4 : 0;
-				newfixes |= IsDlgButtonChecked(hDlg, IDC_GAMEFIX4) ? 0x2 : 0;
 				
 				EndDialog(hDlg, TRUE);
 
@@ -628,24 +627,22 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case ID_FILEOPEN:
 			{
-				string outstr;
+				std::string outstr;
 				if( Open_File_Proc( outstr ) )
-				{
-					SysReset();
-					SysPrepareExecution( outstr.c_str() );
-				}
+					RunExecute( outstr.c_str() );
 			}
 			break;
 
 			case ID_RUN_EXECUTE:
-				// Execute without reset -- resumes existing states or runs the BIOS if
-				// the state is cleared/reset.
-				SysPrepareExecution( NULL, true );
+				if( g_EmulationInProgress )
+					ExecuteCpu();
+				else
+					RunExecute( NULL, true );	// boots bios if no savestate is to be recovered
 			break;
 
 			case ID_FILE_RUNCD:
 				SysReset();
-				SysPrepareExecution( NULL );
+				RunExecute( NULL );
 			break;
 
 			case ID_RUN_RESET:
@@ -745,7 +742,7 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					if (remoteDebugBios)
 					{
 						cpuReset();
-						SysClearExecutionCache();
+						SysResetExecutionState();
 						cpuExecuteBios();
 
 						DialogBox(gApp.hInstance, MAKEINTRESOURCE(IDD_RDEBUG), NULL, (DLGPROC)RemoteDebuggerProc);
@@ -776,6 +773,30 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			case ID_CONFIG_MEMCARDS:
 				MemcardConfig::OpenDialog();
 				break;
+
+			case ID_PROCESSLOW: 
+               Config.ThPriority = THREAD_PRIORITY_LOWEST;
+                SaveConfig();
+				CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_CHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_UNCHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_UNCHECKED);
+                break;
+                
+			case ID_PROCESSNORMAL:
+                Config.ThPriority = THREAD_PRIORITY_NORMAL;
+                SaveConfig();
+				CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_CHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_UNCHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_UNCHECKED);
+                break;
+
+			case ID_PROCESSHIGH:
+                Config.ThPriority = THREAD_PRIORITY_HIGHEST;
+                SaveConfig();
+				CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_CHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_UNCHECKED);
+                CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_UNCHECKED);
+                break;
 
 			case ID_CONSOLE:
 				Config.PsxOut = !Config.PsxOut;
@@ -870,6 +891,19 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+int Slots[5] = { -1, -1, -1, -1, -1 };
+
+void ResetMenuSlots() {
+	int i;
+
+	for (i=0; i<5; i++) {
+		if (Slots[i] == -1)
+			EnableMenuItem(GetSubMenu(gApp.hMenu, 0), ID_FILE_STATES_LOAD_SLOT1+i, MF_GRAYED);
+		else 
+			EnableMenuItem(GetSubMenu(gApp.hMenu, 0), ID_FILE_STATES_LOAD_SLOT1+i, MF_ENABLED);
+	}
+}
+
 // fixme - this looks like the beginnings of a dynamic "list of valid saveslots"
 // feature.  Too bad it's never called and CheckState was old/dead code.
 /*void UpdateMenuSlots() {
@@ -884,36 +918,36 @@ LRESULT WINAPI MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
 #define _ADDSUBMENU(menu, menun, string) \
-	submenu[menun] = CreatePopupMenu(), \
-	AppendMenu(menu, MF_STRING | MF_POPUP, (UINT)submenu[menun], string)
+	submenu[menun] = CreatePopupMenu(); \
+	AppendMenu(menu, MF_STRING | MF_POPUP, (UINT)submenu[menun], string);
 
 #define ADDSUBMENU(menun, string) \
 	_ADDSUBMENU(gApp.hMenu, menun, string);
 
 #define ADDSUBMENUS(submn, menun, string) \
-	submenu[menun] = CreatePopupMenu(), \
-	InsertMenu(submenu[submn], 0, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT)submenu[menun], string)
+	submenu[menun] = CreatePopupMenu(); \
+	InsertMenu(submenu[submn], 0, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT)submenu[menun], string);
 
 #define ADDMENUITEM(menun, string, id) \
-	item.fType = MFT_STRING, \
-	item.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID, \
-	item.fState = MFS_ENABLED, \
-	item.wID = id, \
-	sprintf(buf, string), \
-	InsertMenuItem(submenu[menun], 0, TRUE, &item)
+	item.fType = MFT_STRING; \
+	item.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID; \
+	item.fState = MFS_ENABLED; \
+	item.wID = id; \
+	sprintf(buf, string); \
+	InsertMenuItem(submenu[menun], 0, TRUE, &item);
 
 #define ADDMENUITEMC(menun, string, id) \
-	item.fType = MFT_STRING, \
-	item.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID, \
-	item.fState = MFS_ENABLED | MFS_CHECKED, \
-	item.wID = id, \
-	sprintf(buf, string), \
-	InsertMenuItem(submenu[menun], 0, TRUE, &item)
+	item.fType = MFT_STRING; \
+	item.fMask = MIIM_STATE | MIIM_TYPE | MIIM_ID; \
+	item.fState = MFS_ENABLED | MFS_CHECKED; \
+	item.wID = id; \
+	sprintf(buf, string); \
+	InsertMenuItem(submenu[menun], 0, TRUE, &item);
 
 #define ADDSEPARATOR(menun) \
-	item.fMask = MIIM_TYPE, \
-	item.fType = MFT_SEPARATOR, \
-	InsertMenuItem(submenu[menun], 0, TRUE, &item)
+	item.fMask = MIIM_TYPE; \
+	item.fType = MFT_SEPARATOR; \
+	InsertMenuItem(submenu[menun], 0, TRUE, &item);
 
 void CreateMainMenu() {
 	MENUITEMINFO item;
@@ -953,9 +987,13 @@ void CreateMainMenu() {
 
     ADDSUBMENU(0, _("&Run"));
 
-	if( IsDevBuild )
+    ADDSUBMENUS(0, 1, _("&Process Priority"));
+	ADDMENUITEM(1, _("&Low"), ID_PROCESSLOW );
+	ADDMENUITEM(1, _("High"), ID_PROCESSHIGH);
+	ADDMENUITEM(1, _("Normal"), ID_PROCESSNORMAL);
+	if( IsDevBuild ) {
 		ADDMENUITEM(0,_("&Arguments"), ID_RUN_CMDLINE);
-
+	}
 	ADDMENUITEM(0,_("Re&set"), ID_RUN_RESET);
 	ADDMENUITEM(0,_("E&xecute"), ID_RUN_EXECUTE);
 
@@ -979,12 +1017,12 @@ void CreateMainMenu() {
 
     ADDSUBMENU(0,_("&Language"));
 
-	for (i=langsMax-1; i>=0; i--)
-	{
-		if (!strcmp(Config.Lang, langs[i].lang))
+	for (i=langsMax-1; i>=0; i--) {
+		if (!strcmp(Config.Lang, langs[i].lang)) {
 			ADDMENUITEMC(0,ParseLang(langs[i].lang), ID_LANGS + i);
-		else
+		} else {
 			ADDMENUITEM(0,ParseLang(langs[i].lang), ID_LANGS + i);
+		}
 	}
 
 #ifdef PCSX2_DEVBUILD
@@ -1027,6 +1065,8 @@ void CreateMainWindow()
 	RECT rect;
 	int w, h;
 
+	g_ReturnToGui = true;
+
 #ifdef _MSC_VER
 	sprintf(COMPILER, "(VC%d)", (_MSC_VER+100)/200);//hacky:) works for VC6 & VC.NET
 #elif __BORLANDC__
@@ -1051,9 +1091,9 @@ void CreateMainWindow()
 	GetObject(hbitmap_background, sizeof(bm), &bm);
 
 #ifdef PCSX2_DEVBUILD
-	sprintf(buf, _("PCSX2 %s - Compile Date - %s %s"), PCSX2_VERSION, COMPILEDATE, COMPILER);
+	sprintf(buf, "PCSX2 %s - Compile Date - %s %s", PCSX2_VERSION, COMPILEDATE, COMPILER);
 #else
-	sprintf(buf, _("PCSX2 %s"), PCSX2_VERSION);
+	sprintf(buf, "PCSX2 %s", PCSX2_VERSION );
 #endif
 
 	hWnd = CreateWindow(
@@ -1065,10 +1105,13 @@ void CreateMainWindow()
 	);
 
 	gApp.hWnd = hWnd;
-    HostGui::ResetMenuSlots();
+    ResetMenuSlots();
 	CreateMainMenu();
    
 	SetMenu(gApp.hWnd, gApp.hMenu);
+    if(Config.ThPriority==THREAD_PRIORITY_NORMAL) CheckMenuItem(gApp.hMenu,ID_PROCESSNORMAL,MF_CHECKED);
+	if(Config.ThPriority==THREAD_PRIORITY_HIGHEST) CheckMenuItem(gApp.hMenu,ID_PROCESSHIGH,MF_CHECKED);
+	if(Config.ThPriority==THREAD_PRIORITY_LOWEST)  CheckMenuItem(gApp.hMenu,ID_PROCESSLOW,MF_CHECKED);
 	if(Config.PsxOut)	CheckMenuItem(gApp.hMenu,ID_CONSOLE,MF_CHECKED);
 	if(Config.Patch)	CheckMenuItem(gApp.hMenu,ID_PATCHES,MF_CHECKED);
 	if(Config.Profiler)	CheckMenuItem(gApp.hMenu,ID_PROFILER,MF_CHECKED);
@@ -1085,7 +1128,7 @@ void CreateMainWindow()
 	MoveWindow(hWnd, 60, 60, w, h, TRUE);
 	SendMessage( hStatusWnd, WM_SIZE, 0, 0 );
 
-	HostGui::SetStatusMsg("F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
+	StatusBar_SetMsg("F1 - save, F2 - next state, Shift+F2 - prev state, F3 - load, F8 - snapshot");
 
 	ShowWindow(hWnd, true);
 	SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);

@@ -9,6 +9,7 @@
 
 #include "resrc1.h"
 
+#include "GS.h"
 #include "Win32.h"
 
 #include <map>
@@ -35,6 +36,8 @@ void CALLBACK GSkeyEvent(keyEvent *ev) {
 //			break;
 //	}
 }
+
+#include "Win32/resource.h"
 
 BOOL CALLBACK LoggingDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch(uMsg) {

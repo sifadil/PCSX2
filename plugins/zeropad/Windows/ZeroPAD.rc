@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxresmw.h"
+#include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -107,12 +107,14 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxresmw.h""\r\0"
+    "#include ""afxres.h""\r\n"
+    "\0"
 END
 
 3 TEXTINCLUDE 
 BEGIN
-    "\r\0"
+    "\r\n"
+    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED

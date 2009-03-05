@@ -1,40 +1,34 @@
-/* SPU2-X, A plugin for Emulating the Sound Processing Unit of the Playstation 2
- * Developed and maintained by the Pcsx2 Development Team.
- * 
- * Original portions from SPU2ghz are (c) 2008 by David Quintana [gigaherz]
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free 
- * Software Foundation; either version 2.1 of the the License, or (at your
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License along
- * with this library; if not, write to the Free Software Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- */
+//GiGaHeRz's SPU2 Driver
+//Copyright (c) 2003-2008, David Quintana <gigaherz@gmail.com>
+//
+//This library is free software; you can redistribute it and/or
+//modify it under the terms of the GNU Lesser General Public
+//License as published by the Free Software Foundation; either
+//version 2.1 of the License, or (at your option) any later version.
+//
+//This library is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//Lesser General Public License for more details.
+//
+//You should have received a copy of the GNU Lesser General Public
+//License along with this library; if not, write to the Free Software
+//Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
 
-#include "Spu2.h"
-#include "RegTable.h"
+#include "SPU2.h"
+#include "regtable.h"
 
 const char *ParamNames[8]={"VOLL","VOLR","PITCH","ADSR1","ADSR2","ENVX","VOLXL","VOLXR"};
 const char *AddressNames[6]={"SSAH","SSAL","LSAH","LSAL","NAXH","NAXL"};
 
-__forceinline void _RegLog_( const char* action, int level, char *RName, u32 mem, u32 core, u16 value ) 
+__forceinline void RegLog(int level, char *RName,u32 mem,u32 core,u16 value) 
 {
 	if( level > 1 )
-		FileLog("[%10d] SPU2 %s mem %08x (core %d, register %s) value %04x\n",
-			Cycles, action, mem, core, RName, value);
+		FileLog("[%10d] SPU2 write mem %08x (core %d, register %s) value %04x\n",Cycles,mem,core,RName,value);
 }
 
-#define RegLog( lev, rname, mem, core, val ) _RegLog_( action, lev, rname, mem, core, val )
-
-void SPU2writeLog( const char* action, u32 rmem, u16 value ) 
+void SPU2writeLog(u32 rmem, u16 value) 
 {
 	if( !IsDevBuild ) return;
 	
@@ -112,9 +106,9 @@ void SPU2writeLog( const char* action, u32 rmem, u16 value )
 				if(Spdif.Unknown2 != value) ConLog(" * SPU2: SPDIF Unknown Register 2 set to %04x\n",value);
 				RegLog(2,"SPDIF_UNKNOWN2",rmem,-1,value);
 				break;
-			case SPDIF_PROTECT:
+			case SPDIF_COPY:
 				if(Spdif.Protection != value) ConLog(" * SPU2: SPDIF Copy set to %04x\n",value);
-				RegLog(2,"SPDIF_PROTECT",rmem,-1,value);
+				RegLog(2,"SPDIF_COPY",rmem,-1,value);
 				break;
 		}
 		UpdateSpdifMode();
@@ -204,7 +198,7 @@ void SPU2writeLog( const char* action, u32 rmem, u16 value )
 				break;
 			case REG_S_ADMAS:
 				RegLog(3,"ADMAS",rmem,core,value);
-				//ConLog(" * SPU2: Core %d AutoDMAControl set to %d\n",core,value);
+				ConLog(" * SPU2: Core %d AutoDMAControl set to %d\n",core,value);
 				break;
 			case REG_P_STATX:
 				RegLog(3,"STATX",rmem,core,value);

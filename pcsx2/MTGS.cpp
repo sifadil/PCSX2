@@ -449,13 +449,12 @@ void mtgsThreadObject::PostVsyncEnd( bool updategs )
 			m_QueuedFrames = 0;
 			break;
 		}
-		Threading::Sleep( 2 );		// Sleep off quite a bit of time, since we're obviously *waaay* ahead.
+		Sleep( 2 );		// Sleep off quite a bit of time, since we're obviously *waaay* ahead.
 		SpinWait();
 	}
 
 	m_lock_FrameQueueCounter.Lock();
 	m_QueuedFrames++;
-	//Console::Status( " >> Frame Added!" );
 	m_lock_FrameQueueCounter.Unlock();
 
 	SendSimplePacket( GS_RINGTYPE_VSYNC,
@@ -570,7 +569,6 @@ int mtgsThreadObject::Callback()
 					m_lock_FrameQueueCounter.Lock();
 					AtomicDecrement( m_QueuedFrames );
 					jASSUME( m_QueuedFrames >= 0 );
-					//Console::Status( " << Frame Removed!" );
 					m_lock_FrameQueueCounter.Unlock();
 
 					if( PAD1update != NULL ) PAD1update(0);

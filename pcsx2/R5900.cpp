@@ -37,12 +37,12 @@
 
 #include "Paths.h"
 
-#include "R5900Exceptions.h"
-
 using namespace R5900;	// for R5900 disasm tools
 
 s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
+
+//static int inter;
 
 PCSX2_ALIGNED16(cpuRegisters cpuRegs);
 PCSX2_ALIGNED16(fpuRegisters fpuRegs);
@@ -56,13 +56,31 @@ static uint eeWaitCycles = 1024;
 
 bool eeEventTestIsActive = false;
 
-R5900Exception::BaseExcept::~BaseExcept() throw (){}
+// A run-once procedure for initializing the emulation state.
+// Can be done anytime after allocating memory, and before calling Cpu->Execute().
+// Multiple calls to this function are automatically ignored.
+/*void cpuInit()
+{
+	DevCon::WriteLn( "cpuInit > %s", params  cpuIsInitialized ? "Initializing..." : "Skipping (already initialized)" );
 
+	if( cpuIsInitialized ) return;
+
+	cpuIsInitialized = true;
+
+	// non memInit() currently since we don't support soft resets.  memory is initialized in full
+	// instead during cpuReset()   [using memReset()]
+	//memInit();
+}*/
 
 void cpuReset()
 {
 	mtgsWaitGS();		// GS better be done processing before we reset the EE, just in case.
-	cpuIsInitialized = true;
+	//cpuInit();			// more just-in-caseness!
+
+	//if( !cpuIsInitialized ) 
+	{
+		cpuIsInitialized = true;
+	}
 
 	memReset();
 	psxMemReset();
@@ -98,6 +116,9 @@ void cpuReset()
 
 void cpuShutdown()
 {
+	//if( !cpuIsInitialized ) return;
+	//cpuIsInitialized = false;
+
 	mtgsWaitGS();
 
 	hwShutdown();
@@ -174,9 +195,7 @@ void cpuException(u32 code, u32 bd)
 }
 
 void cpuTlbMiss(u32 addr, u32 bd, u32 excode) {
-	Console::Error("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x",
-		params cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
-		
+	Console::Error("cpuTlbMiss pc:%x, cycl:%x, addr: %x, status=%x, code=%x", params cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
 	if (bd) {
 		Console::Notice("branch delay!!");
 	}

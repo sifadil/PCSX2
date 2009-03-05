@@ -16,8 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
 #include "Win32.h"
 
+#include <commctrl.h>
 #include "Debugger.h"
 #include "RDebugger.h"
 #include "Common.h"
@@ -30,7 +32,7 @@ char	message[1024];		//message to add to listbox
 
 volatile long runStatus=STOP;
 int runCode=0, runCount=1;
-Threading::Semaphore* runEvent = NULL;
+HANDLE	runEvent=NULL;
 
 DECI2_DBGP_BRK	ebrk[32],
 				ibrk[32];
@@ -204,17 +206,16 @@ DWORD WINAPI Run2(LPVOID lpParam){
 		
 	while (1){
 		if (runStatus==RUN){
-			const u32 opcode = memRead32(cpuRegs.pc);
-			if (opcode==0x0000000D){
+			if (PSMu32(cpuRegs.pc)==0x0000000D){
 				sendBREAK('E', 0, runCode, 0x22, runCount);
 				InterlockedExchange(&runStatus, STOP);
 				continue;
 			}
 			if ((runCode==2) && (//next
-				((opcode & 0xFC000000)==0x0C000000) ||//JAL
-				((opcode & 0xFC00003F)==0x00000009) ||//JALR
-				((opcode & 0xFC00003F)==0x0000000C)	  //SYSCALL
-				)){u32 tmppc=cpuRegs.pc, skip=(opcode & 0xFC00003F)==0x0000000C ? 4 : 8;
+				((PSMu32(cpuRegs.pc) & 0xFC000000)==0x0C000000) ||//JAL
+				((PSMu32(cpuRegs.pc) & 0xFC00003F)==0x00000009) ||//JALR
+				((PSMu32(cpuRegs.pc) & 0xFC00003F)==0x0000000C)	  //SYSCALL
+				)){u32 tmppc=cpuRegs.pc, skip=(PSMu32(cpuRegs.pc) & 0xFC00003F)==0x0000000C ? 4 : 8;
 				while (cpuRegs.pc!=tmppc+skip)
 					Cpu->Step();
 			}else
@@ -253,8 +254,8 @@ DWORD WINAPI Run2(LPVOID lpParam){
 		else{
 			cpuRegs.CP0.n.EPC=cpuRegs.pc;
 			psxRegs.CP0.n.EPC=psxRegs.pc;
-			runEvent->Wait();
-			//WaitForSingleObject(runEvent, INFINITE);
+			ResetEvent(runEvent);
+			WaitForSingleObject(runEvent, INFINITE);
 			runStatus=RUN;
 		}
 	}
@@ -281,8 +282,8 @@ LRESULT WINAPI RemoteDebuggerProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 				CREATE_SUSPENDED, &thid);
 			runth=CreateThread(NULL, 0, Run2, (LPVOID)hDlg, 
 				CREATE_SUSPENDED, &thid);
-			runEvent = new Threading::Semaphore();
-			if (th==NULL || runth==NULL ){
+			runEvent=CreateEvent(NULL, TRUE, FALSE, "RunState");
+			if (th==NULL || runth==NULL || runEvent==NULL){
 				MessageBox(hDlg, _("Could not create threads or event"), 0, MB_OK);
 				connected=0;
 				closesocket(serversocket);
@@ -328,7 +329,7 @@ LRESULT WINAPI RemoteDebuggerProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 						connected=0;
 						CloseHandle(th);
 						CloseHandle(runth);
-						safe_delete( runEvent );
+						CloseHandle(runEvent);
 						closesocket(serversocket);
 						WSACleanup();
 						ClosePlugins( false );

@@ -120,7 +120,7 @@ void __forceinline KICK_VERTEX3()
 		{ 
 			/* tri fans need special processing */ 
 			if (gs.nTriFanVert == gs.primIndex) 
-				gs.primIndex = (gs.primIndex+1)%ArraySize(gs.gsvertex); 
+				gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex); 
 		} 
 	} 
 } 
@@ -132,7 +132,7 @@ void __fastcall GIFPackedRegHandlerXYZF2(u32* data)
 	gs.vertexregs.z = (data[2] >> 4) & 0xffffff;
 	gs.vertexregs.f = (data[3] >> 4) & 0xff;
 	gs.gsvertex[gs.primIndex] = gs.vertexregs;
-	gs.primIndex = (gs.primIndex+1)%ArraySize(gs.gsvertex);
+	gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex);
 
 	if( data[3] & 0x8000 ) {
 		KICK_VERTEX3();
@@ -148,7 +148,7 @@ void __fastcall GIFPackedRegHandlerXYZ2(u32* data)
 	gs.vertexregs.y = (data[1] >> 0) & 0xffff;
 	gs.vertexregs.z = data[2];
 	gs.gsvertex[gs.primIndex] = gs.vertexregs;
-	gs.primIndex = (gs.primIndex+1)%ArraySize(gs.gsvertex);
+	gs.primIndex = (gs.primIndex+1)%ARRAYSIZE(gs.gsvertex);
 
 	if( data[3] & 0x8000 ) {
 		KICK_VERTEX3();
@@ -937,7 +937,7 @@ void __fastcall GIFRegHandlerTRXDIR(u32* data)
 		}
 	}
 	else {
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 		WARN_LOG("ZeroGS: dummy transfer\n");
 #endif
 		gs.imageTransfer = -1;
@@ -951,7 +951,7 @@ void __fastcall GIFRegHandlerHWREG(u32* data)
 		ZeroGS::TransferHostLocal(data, 2);
 	}
 	else {
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 		ERROR_LOG("ZeroGS: HWREG!? %8.8x_%8.8x\n", data[0], data[1]);
 		//assert(0);
 #endif

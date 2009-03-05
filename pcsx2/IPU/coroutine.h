@@ -25,6 +25,13 @@ typedef void *coroutine_t;
 coroutine_t so_create(void (*func)(void *), void *data, void *stack, int size);
 void so_delete(coroutine_t coro);
 
-#include "NakedAsm.h"
-
+#ifdef __LINUX__
+extern "C" {
+#endif
+void so_call(coroutine_t coro);
+void so_resume(void);
+void so_exit(void);
+#ifdef __LINUX__
+}
+#endif
 #endif

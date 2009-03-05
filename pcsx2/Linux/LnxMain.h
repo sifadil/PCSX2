@@ -20,14 +20,21 @@
 #define __LNXMAIN_H__
 
 #include "Linux.h"
-#include "LnxMain.h"
-#include "HostGui.h"
 
 extern bool applychanges;
-extern bool Slots[5];
 
+extern SafeArray<u8>* g_RecoveryState;
+extern bool g_EmulationInProgress;	// Set TRUE if a game is actively running (set to false on reset)
+
+extern void RunExecute(const char* elf_file, bool use_bios = false);
+extern void ExecuteCpu();
+extern void CheckSlots();
+extern bool isSlotUsed(int num);
 extern bool ParseCommandLine(int argc, char *argv[], char *file);
 extern void MemoryCard_Init();
+
+extern void StatusBar_Notice( const std::string& text );
+extern void StatusBar_SetMsg( const std::string& text );
 
 void OnLanguage(GtkMenuItem *menuitem, gpointer user_data);
 void InitLanguages();
@@ -36,8 +43,6 @@ void CloseLanguages();
 
 void StartGui();
 void pcsx2_exit();
-extern bool SysInit();
-extern void SysClose();
 
 GtkWidget *MainWindow, *Status_Box;
 GtkWidget *pStatusBar = NULL;

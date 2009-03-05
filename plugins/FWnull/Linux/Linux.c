@@ -23,39 +23,27 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
-#include <unistd.h>
 
 #include "FW.h"
 
-int ExecCfg(char *arg) 
-{
+int ExecCfg(char *arg) {
 	char cfg[256];
 	struct stat buf;
 
 	strcpy(cfg, "./cfgFWnull");
-	if (stat(cfg, &buf) != -1) 
-	{
+	if (stat(cfg, &buf) != -1) {
 		sprintf(cfg, "%s %s", cfg, arg);
 		return system(cfg);
 	}
 
-	strcpy(cfg, "./plugins/cfgFWnull");
-	if (stat(cfg, &buf) != -1) 
-	{
-		sprintf(cfg, "%s %s", cfg, arg);
-		return system(cfg);
-	}
-	
 	strcpy(cfg, "./cfg/cfgFWnull");
-	if (stat(cfg, &buf) != -1) 
-	{
+	if (stat(cfg, &buf) != -1) {
 		sprintf(cfg, "%s %s", cfg, arg);
 		return system(cfg);
 	}
 
 	sprintf(cfg, "%s/cfgFWnull", getenv("HOME"));
-	if (stat(cfg, &buf) != -1) 
-	{
+	if (stat(cfg, &buf) != -1) {
 		sprintf(cfg, "%s %s", cfg, arg);
 		return system(cfg);
 	}
@@ -64,8 +52,7 @@ int ExecCfg(char *arg)
 	return -1;
 }
 
-void SysMessage(char *fmt, ...) 
-{
+void SysMessage(char *fmt, ...) {
 	va_list list;
 	char msg[512];
 	char cmd[512];
@@ -78,21 +65,11 @@ void SysMessage(char *fmt, ...)
 	ExecCfg(cmd);
 }
 
-void FWconfigure() 
-{
-	char *file;
-	getcwd(file, ArraySize(file));
-	chdir("plugins");
+void FWconfigure() {
 	ExecCfg("configure");
-	chdir(file);
 }
 
-void FWabout() 
-{
-	char *file;
-	getcwd(file, ArraySize(file));
-	chdir("plugins");
+void FWabout() {
 	ExecCfg("about");
-	chdir(file);
 }
 

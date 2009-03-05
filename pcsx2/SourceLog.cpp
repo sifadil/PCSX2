@@ -22,6 +22,7 @@
 #include "RDebug/deci2.h"
 #else
 #include <sys/time.h>
+#include "DebugTools/Debug.h"
 #endif
 
 #include <cstdarg>
@@ -30,7 +31,6 @@
 #include "R3000A.h"
 #include "iR5900.h"
 #include "System.h"
-#include "DebugTools/Debug.h"
 
 using namespace R5900;
 
@@ -98,7 +98,7 @@ static __forceinline void _vSourceLog( u16 protocol, u8 source, u32 cpuPc, u32 c
 #ifdef PCSX2_DEVBUILD
 #ifdef _WIN32
 	// Send log data to the (remote?) debugger.
-	if (connected && logProtocol<0x10)
+	if (connected && logProtocol>=0 && logProtocol<0x10)
 	{
 		sendTTYP(logProtocol, logSource, tmp);
 	}

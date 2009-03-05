@@ -19,7 +19,7 @@
 * 
 */
 
-#include "Dialogs.h"
+#include "dialogs.h"
 
 int SendDialogMsg( HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam)
 {
@@ -70,7 +70,7 @@ void AssignSliderValue( HWND idcwnd, HWND hwndDisplay, int value )
 	SendMessage(idcwnd,TBM_SETPOS,TRUE,value); 
 
 	wchar_t tbox[32];
-	swprintf_s( tbox, L"%d", value );
+	swprintf_s( tbox, _T("%d"), value );
 	SetWindowText( hwndDisplay, tbox );
 }
 

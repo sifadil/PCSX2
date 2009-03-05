@@ -16,11 +16,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
 #include "Win32.h"
 
 #include <shlobj.h>
 #include "common.h"
 #include "plugins.h"
+#include "resource.h"
 
 struct ComboInitializer
 {
@@ -46,7 +48,9 @@ struct ComboInitializer
 	,	PS2E_GetLibName( NULL )
 	,	PS2E_GetLibVersion2( NULL )
 	{
-		Find = FindFirstFile( Path::Combine( Config.PluginsDir, "*.dll" ).c_str(), &FindData);
+		string tmpStr;
+		Path::Combine( tmpStr, Config.PluginsDir, "*.dll" );
+		Find = FindFirstFile(tmpStr.c_str(), &FindData);
 	}
 
 	~ComboInitializer()
@@ -62,8 +66,9 @@ struct ComboInitializer
 
 	bool LoadNextLibrary()
 	{
-		string tmpStr( Path::Combine( Config.PluginsDir, FindData.cFileName ) );
-		Lib = HostSys::LoadLibrary( tmpStr.c_str() );
+		string tmpStr;
+		Path::Combine( tmpStr, Config.PluginsDir, FindData.cFileName );
+		Lib = LoadLibrary(tmpStr.c_str());
 		if (Lib == NULL)
 		{
 			Console::Error( "Plugin load failure: %hs\n\tSysLibError Message: %s", params &tmpStr, SysLibError() );
@@ -177,7 +182,10 @@ BOOL OnConfigureDialog(HWND hW) {
 	HANDLE Find;
 
 	WIN32_FIND_DATA FindData;
-	Find = FindFirstFile( Path::Combine( Config.BiosDir, "*" ).c_str(), &FindData);
+	string tmpStr;
+
+	Path::Combine( tmpStr, Config.BiosDir, "*" );
+	Find=FindFirstFile(tmpStr.c_str(), &FindData);
 
 	do
 	{
@@ -303,10 +311,12 @@ static void ConfPlugin( HWND hW, int confs, const char* name )
 	void *drv;
 	void (*conf)();
 	char * pDLL = GetComboSel(hW, confs);
+	string file;
 
 	if(pDLL==NULL) return;
+	Path::Combine( file, Config.PluginsDir, pDLL );
 
-	drv = SysLoadLibrary( Path::Combine( Config.PluginsDir, pDLL ).c_str() );
+	drv = SysLoadLibrary(file.c_str());
 	if (drv == NULL) return;
 
 	conf = (void (*)()) SysLoadSym(drv, name);
@@ -382,10 +392,12 @@ static void TestPlugin( HWND hW, int confs, const char* name )
 	int (*conf)();
 	int ret = 0;
 	char * pDLL = GetComboSel(hW, confs);
+	string file;
 
 	if (pDLL== NULL) return;
+	Path::Combine( file, Config.PluginsDir, pDLL );
 
-	drv = SysLoadLibrary( Path::Combine( Config.PluginsDir, pDLL ).c_str() );
+	drv = SysLoadLibrary(file.c_str());
 	if (drv == NULL) return;
 
 	conf = (int (*)()) SysLoadSym(drv, name);

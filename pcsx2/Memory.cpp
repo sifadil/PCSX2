@@ -49,6 +49,7 @@ BIOS
 #include "PsxCommon.h"
 #include "VUmicro.h"
 #include "GS.h"
+#include "vtlb.h"
 #include "IPU/IPU.h"
 
 
@@ -56,6 +57,11 @@ BIOS
 #include "Cache.h"
 #endif
 
+#ifdef __LINUX__
+#include <sys/mman.h>
+#endif
+
+//#define FULLTLB
 int MemMode = 0;		// 0 is Kernel Mode, 1 is Supervisor Mode, 2 is User Mode
 
 void memSetKernelMode() {
@@ -89,20 +95,22 @@ u16 ba0R16(u32 mem)
 void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 {
 	string Bios1;
+	string Bios;
 	long filesize;
 
-	string Bios( Path::Combine( Config.BiosDir, Config.Bios ) );
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
 	// Try first a basic extension concatenation (normally results in something like name.bin.rom1)
 	ssprintf(Bios1, "%hs.%s", &Bios, ext);
 	if( (filesize=Path::getFileSize( Bios1 ) ) <= 0 )
 	{
 		// Try the name properly extensioned next (name.rom1)
-		Bios1 = Path::ReplaceExtension( Bios, ext );
+		Path::ReplaceExtension( Bios1, Bios, ext );
 		if( (filesize=Path::getFileSize( Bios1 ) ) <= 0 )
 		{
 			// Try for the old-style method (rom1.bin)
-			Bios1 = Path::Combine( Config.BiosDir, ext ) + ".bin";
+			Path::Combine( Bios1, Config.BiosDir, ext );
+			Bios1 += ".bin";
 			if( (filesize=Path::getFileSize( Bios1 ) ) <= 0 )
 			{
 				Console::Error( "\n\n\n"
@@ -118,12 +126,12 @@ void loadBiosRom( const char *ext, u8 *dest, long maxSize )
 	// if we made it this far, we have a successful file found:
 
 	FILE *fp = fopen(Bios1.c_str(), "rb");
-	fread(dest, 1, min( maxSize, filesize ), fp);
+	fread(dest, 1, std::min( maxSize, filesize ), fp);
 	fclose(fp);
 }
 
-static u32 psMPWC[(Ps2MemSize::Base/32)>>12];
-static std::vector<u32> psMPWVA[Ps2MemSize::Base>>12];
+u32 psMPWC[(Ps2MemSize::Base/32)>>12];
+std::vector<u32> psMPWVA[Ps2MemSize::Base>>12];
 
 u8  *psM = NULL; //32mb Main Ram
 u8  *psR = NULL; //4mb rom area
@@ -398,7 +406,6 @@ void __fastcall _ext_memWrite16(u32 mem, u16 value)
 	MEM_LOG("Unknown Memory write16  to  address %x with data %4.4x\n", mem, value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
 template<int p>
 void __fastcall _ext_memWrite32(u32 mem, u32 value)
 {
@@ -415,7 +422,6 @@ void __fastcall _ext_memWrite32(u32 mem, u32 value)
 	MEM_LOG("Unknown Memory write32  to  address %x with data %8.8x\n", mem, value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
 template<int p>
 void __fastcall _ext_memWrite64(u32 mem, const u64* value)
 {
@@ -431,7 +437,6 @@ void __fastcall _ext_memWrite64(u32 mem, const u64* value)
 	MEM_LOG("Unknown Memory write64  to  address %x with data %8.8x_%8.8x\n", mem, (u32)(*value>>32), (u32)*value);
 	cpuTlbMissW(mem, cpuRegs.branch);
 }
-
 template<int p>
 void __fastcall _ext_memWrite128(u32 mem, const u64 *value)
 {
@@ -651,7 +656,13 @@ void memReset()
 {
 	// VTLB Protection Preparations.
 
-	HostSys::MemProtect( m_psAllMem, m_allMemSize, Protect_ReadWrite );
+#ifdef _WIN32
+	DWORD OldProtect;
+	// make sure can write
+	VirtualProtect(m_psAllMem, m_allMemSize, PAGE_READWRITE, &OldProtect);
+#else
+	mprotect(m_psAllMem, m_allMemSize, PROT_READ|PROT_WRITE);
+#endif
 
 	// Note!!  Ideally the vtlb should only be initialized once, and then subsequent
 	// resets of the system hardware would only clear vtlb mappings, but since the
@@ -785,8 +796,10 @@ void memReset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
+	string Bios;
 	FILE *fp;
-	string Bios( Path::Combine( Config.BiosDir, Config.Bios ) );
+
+	Path::Combine( Bios, Config.BiosDir, Config.Bios );
 
 	long filesize;
 	if( ( filesize = Path::getFileSize( Bios ) ) <= 0 )
@@ -797,7 +810,7 @@ void memReset()
 	}
 
 	fp = fopen(Bios.c_str(), "rb");
-	fread(PS2MEM_ROM, 1, min( (long)Ps2MemSize::Rom, filesize ), fp);
+	fread(PS2MEM_ROM, 1, std::min( (long)Ps2MemSize::Rom, filesize ), fp);
 	fclose(fp);
 
 	BiosVersion = GetBiosVersion();
@@ -821,8 +834,15 @@ int mmap_GetRamPageInfo(void* ptr)
 
 void mmap_MarkCountedRamPage(void* ptr,u32 vaddr)
 {
-	HostSys::MemProtect( ptr, 1, Protect_ReadOnly );
-
+#ifdef _WIN32
+	DWORD old;
+	VirtualProtect(ptr,1,PAGE_READONLY,&old);
+#else
+	// fixed?  mprotect needs input and size to be aligned to 4096 bytes pagesize.
+	// 'ptr' should be aligned properly, but a size of 1 was invalid. (air)
+	mprotect(ptr, getpagesize(), PROT_READ);
+#endif
+	
 	u32 offset=((u8*)ptr-psM);
 	offset>>=12;
 
@@ -842,12 +862,86 @@ void mmap_ResetBlockTracking()
 	{
 		psMPWVA[i].clear();
 	}
-	HostSys::MemProtect( psM, Ps2MemSize::Base, Protect_ReadWrite );
+#ifdef _WIN32
+	DWORD old;
+	VirtualProtect(psM,Ps2MemSize::Base,PAGE_READWRITE,&old);
+#else
+	mprotect(psM,Ps2MemSize::Base, PROT_READ|PROT_WRITE);
+#endif
 }
 
-void mmap_ClearCpuBlock( uint offset )
+#ifdef _WIN32
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS* eps)
 {
-	HostSys::MemProtect( &psM[offset], 1, Protect_ReadWrite );
+	const _EXCEPTION_RECORD& ExceptionRecord = *eps->ExceptionRecord;
+	//const _CONTEXT& ContextRecord = *eps->ContextRecord;
+	
+	if (ExceptionRecord.ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+	{
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// get bad virtual address
+	u32 offset = (u8*)ExceptionRecord.ExceptionInformation[1]-psM;
+
+	if (offset>=Ps2MemSize::Base)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	DWORD old;
+	VirtualProtect(&psM[offset],1,PAGE_READWRITE,&old);
+
+	offset>>=12;
+	psMPWC[(offset/32)]|=(1<<(offset&31));
+
+	for (u32 i=0;i<psMPWVA[offset].size();i++)
+	{
+		Cpu->Clear(psMPWVA[offset][i],0x1000);
+	}
+	psMPWVA[offset].clear();
+
+	return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+#else
+#include "errno.h"
+
+void InstallLinuxExceptionHandler()
+{
+	struct sigaction sa;
+	
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &SysPageFaultExceptionFilter;
+	sigaction(SIGSEGV, &sa, NULL); 
+}
+
+void ReleaseLinuxExceptionHandler()
+{
+	// Code this later.
+}
+// Linux implementation of SIGSEGV handler.  Bind it using sigaction().
+// This is my shot in the dark.  Probably needs some work.  Good luck! (air)
+void SysPageFaultExceptionFilter( int signal, siginfo_t *info, void * )
+{
+	int err;
+	u32 pagesize = getpagesize();
+
+	//DevCon::Error("SysPageFaultExceptionFilter!");
+	// get bad virtual address
+	u32 offset = (u8*)info->si_addr - psM;
+	uptr pageoffset = ( offset / pagesize ) * pagesize;
+	
+	DevCon::Status( "Protected memory cleanup. Offset 0x%x", params offset );
+
+	if (offset>=Ps2MemSize::Base)
+	{
+		// Bad mojo!  Completly invalid address.
+		// Instigate a crash or abort emulation or something.
+		assert( false );
+	}
+
+	err = mprotect( &psM[pageoffset], pagesize, PROT_READ | PROT_WRITE );
+	if (err) DevCon::Error("SysPageFaultExceptionFilter: %s", params strerror(errno));
 	
 	offset>>=12;
 	psMPWC[(offset/32)]|=(1<<(offset&31));
@@ -858,3 +952,4 @@ void mmap_ClearCpuBlock( uint offset )
 	}
 	psMPWVA[offset].clear();
 }
+#endif

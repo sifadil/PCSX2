@@ -19,7 +19,7 @@
 * 
 */
 
-#include "Spu2.h"
+#include "spu2.h"
 #include "SoundTouch/SoundTouch.h"
 #include "SoundTouch/WavFile.h"
 

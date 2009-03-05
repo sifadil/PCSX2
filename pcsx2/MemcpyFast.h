@@ -19,6 +19,8 @@
 #ifndef __MEMCPY_FAST_H__
 #define __MEMCPY_FAST_H__
 
+//#include "Misc.h"
+
 void _memset16_unaligned( void* dest, u16 data, size_t size );
 
 #if defined(_WIN32) && !defined(__x86_64__)
@@ -31,8 +33,6 @@ void _memset16_unaligned( void* dest, u16 data, size_t size );
 	//extern void __fastcall memcpy_raz_usrc(void *dest, const void *src, size_t bytes);
 	//extern void __fastcall memcpy_raz_(void *dest, const void *src, size_t bytes);
 	extern void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
-	extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
-	extern void memxor_mmx(void* dst, const void* src1, int cmpsize);
 
 #	include "windows/memzero.h"
 #	define memcpy_fast memcpy_amd_
@@ -41,24 +41,19 @@ void _memset16_unaligned( void* dest, u16 data, size_t size );
 #else
 
 	// for now linux uses the GCC memcpy/memset implementations.
-	//#define memcpy_raz_udst memcpy
-	//#define memcpy_raz_usrc memcpy
-	//#define memcpy_raz_ memcpy
-	
-	// fast_routines.S
-	extern "C" u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
-	extern "C" void memxor_mmx(void* dst, const void* src1, int cmpsize);
+	#define memcpy_fast memcpy
+	#define memcpy_raz_ memcpy
+	#define memcpy_raz_u memcpy
 
-#	include "Linux/memzero.h"
-#if defined(LINUX_USE_FAST_MEMORY)
-#	define memcpy_fast memcpy_amd_
-#	define memcpy_aligned memcpy_amd_
-	extern "C" void __fastcall memcpy_amd_(void *dest, const void *src, size_t bytes);
-#else
-#	define memcpy_fast memcpy
-#	define memcpy_aligned memcpy
-#endif // LINUX_USE_FAST_MEMORY
+	#define memcpy_aligned memcpy
+	#define memcpy_raz_u memcpy
 
-#endif // WIN32
+	#include "Linux/memzero.h"
 
-#endif //Header
+#endif
+
+
+extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
+extern void memxor_mmx(void* dst, const void* src1, int cmpsize);
+
+#endif

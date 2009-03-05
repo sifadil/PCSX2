@@ -19,7 +19,7 @@
  * 
  */
 
-#include "Spu2.h"
+#include "spu2.h"
 
 extern u8 callirq;
 
@@ -40,8 +40,8 @@ u16* DMABaseAddr;
 void DMALogOpen()
 {
 	if(!DMALog()) return;
-	DMA4LogFile    = fopen( Unicode::Convert( DMA4LogFileName ).c_str(), "wb");
-	DMA7LogFile    = fopen( Unicode::Convert( DMA7LogFileName ).c_str(), "wb");
+	DMA4LogFile    = _wfopen( DMA4LogFileName, _T("wb") );
+	DMA7LogFile    = _wfopen( DMA7LogFileName, _T("wb") );
 	ADMA4LogFile   = fopen( "logs/adma4.raw", "wb" );
 	ADMA7LogFile   = fopen( "logs/adma7.raw", "wb" );
 	ADMAOutLogFile = fopen( "logs/admaOut.raw", "wb" );
@@ -243,6 +243,45 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		cacheLine++;
 	} while ( cacheLine != &cacheEnd );
 
+#if 0
+	// Pcm Cache Invalidation!
+	// It's a requirement that we mask bits for the blocks that are written to *only*,
+	// because doing anything else can cause the cache to fail, thanks to the progressive
+	// nature of the SPU2's ADPCM encoding.  (the same thing that makes it impossible
+	// to use SSE optimizations on it).
+
+	u8* cache = (u8*)pcm_cache_flags;
+
+	// Step 1: Clear bits in the front remainder.
+
+	const int pcmTSA = Cores[core].TSA / pcm_WordsPerBlock;
+	const int pcmTDA = buff1end / pcm_WordsPerBlock;
+	const int remFront = pcmTSA & 31;
+	const int remBack = ((buff1end+pcm_WordsPerBlock-1)/pcm_WordsPerBlock) & 31;	// round up to get the end remainder
+
+	int flagTSA = pcmTSA / 32;
+
+	if( remFront )
+	{
+		// need to clear some upper bits of this u32
+		uint mask = (1ul<<remFront)-1;
+		cache[flagTSA++] &= mask;
+	}
+
+	// Step 2: Clear the middle run
+	const int flagClearLen = pcmTDA-pcmTSA;
+	memset( &cache[flagTSA], 0, flagClearLen );
+
+	// Step 3: Clear bits in the end remainder.
+
+	if( remBack )
+	{
+		// need to clear some lower bits in this u32
+		uint mask = ~(1ul<<remBack)-1;
+		cache[flagTSA + flagClearLen] &= mask;
+	}
+#endif
+
 	//ConLog( " * SPU2 : Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
 	//	Cores[core].TSA, buff1end, flagTSA, flagTDA, clearLen );
 
@@ -263,10 +302,8 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		//const u32 endpt2 = (buff2end + roundUp) / indexer_scalar;
 		//memset( pcm_cache_flags, 0, endpt2 );
 
-		// Emulation Grayarea: Should addresses wrap around to zero, or wrap around to
-		// 0x2800?  Hard to know for usre (almost no games depend on this)
-
 		memcpy( GetMemPtr( 0 ), &pMem[buff1size], buff2end*2 );
+
 		Cores[core].TDA = (buff2end+1) & 0xfffff;
 
 		if(Cores[core].IRQEnable)
@@ -276,9 +313,9 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 			// Since the buffer wraps, the conditional might seem odd, but it works.
 
 			if( ( Cores[core].IRQA >= Cores[core].TSA ) ||
-				( Cores[core].IRQA < Cores[core].TDA ) )
+				( Cores[core].IRQA <= Cores[core].TDA ) )
 			{
-				Spdif.Info = 4 << core;
+				Spdif.Info=4<<core;
 				SetIrqCall();
 			}
 		}
@@ -293,14 +330,12 @@ void DoDMAWrite(int core,u16 *pMem,u32 size)
 		if(Cores[core].IRQEnable)
 		{
 			// Flag interrupt?
-			// If IRQA occurs between start and dest, flag it.
-			// (start is inclusive, dest exclusive -- fixes DMC1 and hopefully won't break
-			// other games. ;)
+			// If IRQA occurs between start and dest, flag it:
 
 			if( ( Cores[core].IRQA >= Cores[core].TSA ) &&
-				( Cores[core].IRQA < Cores[core].TDA ) )
+				( Cores[core].IRQA <= Cores[core].TDA ) )
 			{
-				Spdif.Info = 4 << core;
+				Spdif.Info=4<<core;
 				SetIrqCall();
 			}
 		}
@@ -327,10 +362,6 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 
 	const u32 buff1size = (buff1end-Cores[core].TSA);
 	memcpy( pMem, GetMemPtr( Cores[core].TSA ), buff1size*2 );
-
-	// Note on TSA's position after our copy finishes:
-	// IRQA should be measured by the end of the writepos+0x20.  But the TDA
-	// should be written back at the precise endpoint of the xfer.
 
 	if( buff2end > 0 )
 	{
@@ -363,7 +394,7 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		Cores[core].TDA = (buff1end + 0x20) & 0xfffff;
+		Cores[core].TDA = buff1end;
 
 		for( int i=0; i<2; i++ )
 		{
@@ -373,7 +404,7 @@ void SPU2readDMA(int core, u16* pMem, u32 size)
 				// If IRQA occurs between start and dest, flag it:
 
 				if( ( Cores[i].IRQA >= Cores[i].TSA ) &&
-					( Cores[i].IRQA < Cores[i].TDA ) )
+					( Cores[i].IRQA <= Cores[i].TDA+0x1f ) )
 				{
 					Spdif.Info=4<<i;
 					SetIrqCall();

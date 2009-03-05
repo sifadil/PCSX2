@@ -16,8 +16,11 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "win32.h"
 
+#include "resource.h"
 #include "R5900OpcodeTables.h"
 #include "Debugger.h"
 #include "Common.h"
@@ -49,12 +52,12 @@ void RefreshDebugAll()//refresh disasm and register window
 
 void MakeDebugOpcode(void)
 {
-	cpuRegs.code = memRead32( opcode_addr );
+	memRead32( opcode_addr, &cpuRegs.code );
 }
 
 void MakeIOPDebugOpcode(void)
 {
-	psxRegs.code = iopMemRead32( opcode_addr );
+	psxRegs.code = PSXMu32( opcode_addr);
 }
 
 BOOL HasBreakpoint()
@@ -459,7 +462,7 @@ BOOL APIENTRY DebuggerProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 					 */
 					EnterRunningState(hDlg);
 
-					cpuRegs.code = memRead32(cpuRegs.pc);
+					memRead32(cpuRegs.pc, &cpuRegs.code);
 
 					{
 						u32 target_pc = 0;
@@ -668,7 +671,7 @@ void RefreshIOPDebugger(void)
     for (t = DebuggerIOPPC, cnt = 0; t < (DebuggerIOPPC + 0x00000029); t += 0x00000004, cnt++)
     {
 		// Make the opcode.
-		u32 mem = iopMemRead32( t );
+		u32 mem = PSXMu32(t);
 		char *str = R3000A::disR3000Fasm(mem, t);
         SendMessage(hWnd_IOP_debugdisasm, LB_ADDSTRING, 0, (LPARAM)str);
 	}

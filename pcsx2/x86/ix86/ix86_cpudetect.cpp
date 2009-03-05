@@ -18,13 +18,9 @@
 
 #include "PrecompiledHeader.h"
 
-#define _EmitterId_ 0
-
 #include "ix86.h"
 #include "Misc.h"
 #include "Threading.h"
-
-#include "RedtapeWindows.h"
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400
 
@@ -32,10 +28,8 @@
 	{
 		void __cpuid(int* CPUInfo, int InfoType);
 		unsigned __int64 __rdtsc();
-#ifndef __INTEL_COMPILER
 #		pragma intrinsic(__cpuid)
 #		pragma intrinsic(__rdtsc)
-#endif
 	}
 
 #endif
@@ -391,14 +385,14 @@ void cpudetectInit()
 	// intrinsic equivalents available.  So we use our own ix86 emitter to generate
 	// some code and run it that way. :)
 
-	u8* recSSE = (u8*)HostSys::Mmap( NULL, 0x1000 );
+	u8* recSSE = (u8*)SysMmap( NULL, 0x1000 );
 	if( recSSE != NULL )
 	{
 		x86SetPtr(recSSE);
 		SSE3_MOVSLDUP_XMM_to_XMM(XMM0, XMM0);
 		RET();
 		cpudetectSSE3(recSSE);
-		HostSys::Munmap( recSSE, 0x1000 );
+		SysMunmap( recSSE, 0x1000 );
 	}
 
 	//////////////////////////////////////

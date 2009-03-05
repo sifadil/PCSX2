@@ -15,7 +15,7 @@
 //License along with this library; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-#include "Spu2.h"
+#include "spu2.h"
 
 extern "C" {
 #include "liba52/inttypes.h"
@@ -56,6 +56,8 @@ s32 data_rate=4;
 int state=0;
 
 FILE *fSpdifDump;
+
+extern u32 core;
 
 union spdif_frame { // total size: 32bits
 	struct {
@@ -131,10 +133,12 @@ void spdif_update()
 {
 	StereoOut32 Data;
 
+	core=0;
+	V_Core& thiscore( Cores[core] );
 	for(int i=0;i<data_rate;i++)
 	{
 		// Right side data should be zero / ignored
-		ReadInput( 0, Data );	// read from core 0
+		ReadInput( thiscore, Data );
 		
 		if(fSpdifDump)
 		{

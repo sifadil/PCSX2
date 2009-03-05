@@ -25,28 +25,15 @@
 #include "BaseTypes.h"
 #include "PS2Edefs.h"
 
-#ifdef __LINUX__
-#include <stdio.h>
-#include <string.h>
-
-//Until I get around to putting in Linux svn code, this is an unknown svn version.
-#define SVN_REV_UNKNOWN
-#endif
-
-#include "ConvertUTF.h"
-
 namespace VersionInfo
 {
 	static const u8 PluginApi = PS2E_SPU2_VERSION;
 	static const u8 Release  = 1;
-	static const u8 Revision = 1;	// increase that with each version
+	static const u8 Revision = 0;	// increase that with each version
 }
 
-#ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
-#else
-#define EXPORT_C_(type) extern "C" type
-#endif
+
+#define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
 
 // We have our own versions that have the DLLExport attribute configured:
 
@@ -89,17 +76,17 @@ EXPORT_C_(s32)  SPU2test();
 //#define EFFECTS_DUMP
 
 //Plugin parts
-#include "Config.h"
+#include "config.h"
 #include "defs.h"
 #include "regs.h"
-#include "Dma.h"
-#include "SndOut.h"
+#include "dma.h"
+#include "sndout.h"
 
-#include "Spu2replay.h"
+#include "spu2replay.h"
 
 #define SPU2_LOG
 
-#include "Debug.h"
+#include "debug.h"
 
 //--------------------------------------------------------------------------------------
 // Helper macros
@@ -177,7 +164,8 @@ extern u32* cPtr;
 extern bool hasPtr;
 extern bool resetClock;
 
-extern void SPU2writeLog( const char* action, u32 rmem, u16 value );
+extern void RegLog(int level, char *RName,u32 mem,u32 core,u16 value);
+extern void SPU2writeLog(u32 rmem, u16 value);
 
 extern void __fastcall TimeUpdate(u32 cClocks);
 extern u16 SPU_ps1_read(u32 mem);
@@ -201,7 +189,7 @@ extern void LowPassFilterInit();
 extern void InitADSR();
 extern void CalculateADSR( V_Voice& vc );
 
-extern void __fastcall ReadInput( uint core, StereoOut32& PData );
+extern void __fastcall ReadInput( V_Core& thiscore, StereoOut32& PData );
 
 
 //////////////////////////////
@@ -210,7 +198,7 @@ extern void __fastcall ReadInput( uint core, StereoOut32& PData );
 
 extern void Mix();
 extern s32 clamp_mix( s32 x, u8 bitshift=0 );
-extern StereoOut32 clamp_mix( const StereoOut32& sample, u8 bitshift=0 );
+extern void clamp_mix( StereoOut32& sample, u8 bitshift=0 );
 extern void Reverb_AdvanceBuffer( V_Core& thiscore );
 extern StereoOut32 DoReverb( V_Core& thiscore, const StereoOut32& Input );
 extern s32 MulShr32( s32 srcval, s32 mulval );

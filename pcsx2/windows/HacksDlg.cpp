@@ -17,6 +17,7 @@
  */
 
 
+#include "PrecompiledHeader.h"
 #include "win32.h"
 
 BOOL APIENTRY HacksProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

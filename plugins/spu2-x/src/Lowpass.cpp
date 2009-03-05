@@ -19,7 +19,7 @@
  * 
  */
 
-#include "Lowpass.h"
+#include "lowpass.h"
 #include <math.h>
 #include <float.h>
 

@@ -100,9 +100,9 @@ struct cpuRegisters {
 	GPR_reg LO;			// hi & log 128bit wide
 	CP0regs CP0;		// is COP0 32bit?
 	u32 sa;				// shift amount (32bit), needs to be 16 byte aligned
-	u32 IsDelaySlot;	// set true when the current instruction is a delay slot.
+	u32 constzero;		// always 0, for MFSA
     u32 pc;				// Program counter, when changing offset in struct, check iR5900-X.S to make sure offset is correct
-    u32 code;			// current instruction
+    u32 code;			// The instruction
     PERFregs PERF;
 	u32 eCycle[32];
 	u32 sCycle[32];		// for internal counters
@@ -110,7 +110,7 @@ struct cpuRegisters {
 	u32 interrupt;
 	int branch;
 	int opmode;			// operating mode
-	u32 tempcycles;
+	u32 tempcycles;	
 };
 
 // used for optimization
@@ -184,19 +184,18 @@ struct tlbs
 #define _Opcode_ (cpuRegs.code >> 26 )
 
 #define _JumpTarget_     ((_Target_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
-#define _BranchTarget_   (((s32)(s16)_Im_ * 4) + _PC_)                 // Calculates the target during a branch instruction
-#define _TrapCode_       ((u16)cpuRegs.code >> 6)	// error code for non-immediate trap instructions.
+#define _BranchTarget_  (((s32)(s16)_Im_ * 4) + _PC_)                 // Calculates the target during a branch instruction
 
-#define _SetLink(x)     (cpuRegs.GPR.r[x].UD[0] = _PC_ + 4)       // Sets the return address in the link register
+#define _SetLink(x)     cpuRegs.GPR.r[x].UD[0] = _PC_ + 4;       // Sets the return address in the link register
 
 #endif
 
 void JumpCheckSym(u32 addr, u32 pc);
 void JumpCheckSymRet(u32 addr);
 
-PCSX2_ALIGNED16_EXTERN(cpuRegisters cpuRegs);
-PCSX2_ALIGNED16_EXTERN(fpuRegisters fpuRegs);
-PCSX2_ALIGNED16_EXTERN(tlbs tlb[48]);
+extern PCSX2_ALIGNED16_DECL(cpuRegisters cpuRegs);
+extern PCSX2_ALIGNED16_DECL(fpuRegisters fpuRegs);
+extern PCSX2_ALIGNED16_DECL(tlbs tlb[48]);
 
 extern u32 g_nextBranchCycle;
 extern bool eeEventTestIsActive;
@@ -271,5 +270,8 @@ extern void cpuTestTIMRInts();
 #define EXC_CODE_WATCH  EXC_CODE(23)
 #define EXC_CODE__MASK  0x0000007c
 #define EXC_CODE__SHIFT 2
+
+#define EXC_TLB_STORE 1
+#define EXC_TLB_LOAD  0
 
 #endif /* __R5900_H__ */

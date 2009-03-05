@@ -21,7 +21,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\vsprops\common.vsprops;..\..\..\common\vsprops\BaseProperties.vsprops;..\..\..\common\vsprops\3rdpartyDeps.vsprops;.\vsprops\debug.vsprops;.\vsprops\devbuild.vsprops;..\..\..\common\vsprops\pthreads.vsprops"
+			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\debug.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -52,6 +52,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32_PTHREADS;__CLEANUP_SEH"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				SmallerTypeCheck="false"
@@ -73,7 +74,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="zlib.lib"
 				OutputFile="$(OutDir)\$(ProjectName)-dbg.exe"
 				LinkIncremental="2"
 			/>
@@ -102,7 +102,7 @@
 		<Configuration
 			Name="Devel|Win32"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\vsprops\common.vsprops;..\..\..\common\vsprops\BaseProperties.vsprops;..\..\..\common\vsprops\3rdpartyDeps.vsprops;.\vsprops\devbuild.vsprops;..\..\..\common\vsprops\pthreads.vsprops"
+			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops;.\vsprops\devbuild.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG;WIN32_PTHREADS;__CLEANUP_SEH"
 				StringPooling="true"
 				ExceptionHandling="2"
 				SmallerTypeCheck="false"
@@ -159,7 +159,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib"
 				OutputFile="$(OutDir)\$(ProjectName)-dev.exe"
 			/>
 			<Tool
@@ -187,7 +186,7 @@
 		<Configuration
 			Name="Release|Win32"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\vsprops\common.vsprops;..\..\..\common\vsprops\BaseProperties.vsprops;..\..\..\common\vsprops\3rdpartyDeps.vsprops;.\vsprops\release.vsprops;..\..\..\common\vsprops\pthreads.vsprops"
+			InheritedPropertySheets=".\vsprops\common.vsprops;.\vsprops\release.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -221,7 +220,7 @@
 				Optimization="3"
 				EnableFiberSafeOptimizations="true"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG,WIN32_PTHREADS;__CLEANUP_SEH"
 				ExceptionHandling="2"
 				SmallerTypeCheck="false"
 				BufferSecurityCheck="false"
@@ -242,7 +241,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib"
 				ProgramDatabaseFile="&quot;$(TargetDir)$(TargetName).pdb&quot;"
 			/>
 			<Tool
@@ -277,241 +275,34 @@
 			<File
 				RelativePath="..\AboutDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\AboutDlg.h"
+				>
 			</File>
 			<File
 				RelativePath="..\AdvancedDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ConfigDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\CpuDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\HacksDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\Hyperlinks.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\ini.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\McdConfigDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\McdManagerDlg.cpp"
@@ -522,8 +313,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -532,8 +321,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -542,143 +329,42 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\McdsDlg.h"
+				>
 			</File>
 			<File
 				RelativePath="..\PatchBrowser.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\RDebugger.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\Saveslots.cpp"
+				RelativePath="..\RDebugger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Win32.h"
 				>
 			</File>
 			<File
 				RelativePath="..\WinConsole.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\WindowsPCH.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\WinMain.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Devel|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						BufferSecurityCheck="false"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -687,8 +373,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						BufferSecurityCheck="false"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -712,22 +396,11 @@
 				RelativePath="..\WinSysExec.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Devel|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						BufferSecurityCheck="false"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -736,8 +409,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						BufferSecurityCheck="false"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -767,24 +438,6 @@
 				<File
 					RelativePath=".\..\Debugger.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\..\Debugger.h"
@@ -793,46 +446,10 @@
 				<File
 					RelativePath=".\..\DebugMemory.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\Win32.pch"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\Win32.pch"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\..\Debugreg.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\Win32.pch"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\Win32.pch"
-						/>
-					</FileConfiguration>
 				</File>
 			</Filter>
 			<Filter
@@ -840,10 +457,6 @@
 				>
 				<File
 					RelativePath="..\Cdrom02.ico"
-					>
-				</File>
-				<File
-					RelativePath="..\debugger.rc"
 					>
 				</File>
 				<File
@@ -858,40 +471,8 @@
 					RelativePath="..\ps2_silver.bmp"
 					>
 				</File>
-			</Filter>
-			<Filter
-				Name="Include"
-				>
-				<File
-					RelativePath="..\AboutDlg.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\HostGui.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Hyperlinks.h"
-					>
-				</File>
-				<File
-					RelativePath="..\McdsDlg.h"
-					>
-				</File>
-				<File
-					RelativePath="..\RDebugger.h"
-					>
-				</File>
 				<File
 					RelativePath="..\resource.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Win32.h"
-					>
-				</File>
-				<File
-					RelativePath="..\WinDebugResource.h"
 					>
 				</File>
 			</Filter>
@@ -917,10 +498,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Misc.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\NakedAsm.h"
 				>
 			</File>
 			<File
@@ -989,10 +566,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\RedtapeWindows.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\SourceLog.cpp"
 				>
 			</File>
@@ -1003,28 +576,6 @@
 			<File
 				RelativePath="..\..\vssprintf.cpp"
 				>
-			</File>
-			<File
-				RelativePath="..\WinMisc.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<Filter
 				Name="TinyXML"
@@ -1304,51 +855,759 @@
 				<File
 					RelativePath="..\cheats\browser.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="..\Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="..\Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\cheats\cheats.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="..\Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="..\Win32.h"
-							PrecompiledHeaderFile="$(IntDir)\win32.pch"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\cheats\cheats.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="zlib"
+				>
+				<File
+					RelativePath="..\..\3rdparty\zlib\adler32.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\compress.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\crc32.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\deflate.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\gzio.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\infback.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\inffast.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\inflate.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\inftrees.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\trees.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\uncompr.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\3rdparty\zlib\zutil.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Devel vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release vm|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAs="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<Filter
+					Name="Includes"
+					>
+					<File
+						RelativePath="..\..\3rdparty\zlib\crc32.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\deflate.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\inffast.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\inffixed.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\inflate.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\inftrees.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\trees.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\zconf.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\zlib.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\3rdparty\zlib\zutil.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Linux"
@@ -1588,34 +1847,6 @@
 				<File
 					RelativePath="..\..\Linux\LnxMain.h"
 					>
-				</File>
-				<File
-					RelativePath="..\..\Linux\LnxMisc.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Devel|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\Linux\LnxSysExec.cpp"
@@ -1895,10 +2126,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\R5900Exceptions.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\R5900OpcodeImpl.cpp"
 					>
 				</File>
@@ -1987,10 +2214,6 @@
 					</File>
 					<File
 						RelativePath="..\..\x86\iFPU.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\x86\iFPUd.cpp"
 						>
 					</File>
 					<File
@@ -2200,30 +2423,6 @@
 					<File
 						RelativePath="..\..\x86\iPsxMem.cpp"
 						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Devel|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\x86\iR3000A.cpp"
@@ -2338,6 +2537,14 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iIPU.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="memory"
@@ -2386,6 +2593,14 @@
 					RelativePath="..\..\MTGS.cpp"
 					>
 				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iGS.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="VUmicro"
@@ -2446,7 +2661,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\x86\iVU0micro.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\x86\iVU1micro.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iVU1micro.h"
 						>
 					</File>
 					<File
@@ -2489,35 +2712,19 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\microVU_Alloc.h"
+							RelativePath="..\..\x86\microVU_Lower.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\microVU_Alloc.inl"
+							RelativePath="..\..\x86\microVU_Tables.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\microVU_Compile.inl"
+							RelativePath="..\..\x86\microVU_Tables.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\x86\microVU_Lower.inl"
-							>
-						</File>
-						<File
-							RelativePath="..\..\x86\microVU_Misc.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\x86\microVU_Misc.inl"
-							>
-						</File>
-						<File
-							RelativePath="..\..\x86\microVU_Tables.inl"
-							>
-						</File>
-						<File
-							RelativePath="..\..\x86\microVU_Upper.inl"
+							RelativePath="..\..\x86\microVU_Upper.cpp"
 							>
 						</File>
 					</Filter>
@@ -2606,6 +2813,18 @@
 					RelativePath="..\..\SPR.h"
 					>
 				</File>
+				<Filter
+					Name="Dynarec"
+					>
+					<File
+						RelativePath="..\..\x86\iHw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\x86\iPsxHw.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Sif"
@@ -2688,6 +2907,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Exceptions.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\x86\fast_routines.cpp"
 				>
 				<FileConfiguration
@@ -2700,6 +2923,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\MemcpyFast.h"
+				>
+			</File>
+			<File
+				RelativePath="..\memzero.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Paths.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\PathUtils.cpp"
 				>
 			</File>
@@ -2708,46 +2943,39 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\RecoverySystem.cpp"
+				RelativePath="..\..\Plugins.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SafeArray.h"
 				>
 			</File>
 			<File
 				RelativePath="..\SamplProf.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\SamplProf.h"
+				>
 			</File>
 			<File
 				RelativePath="..\..\SaveState.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\..\SaveState.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\System.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\System.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Threading.h"
 				>
 			</File>
 			<File
@@ -2757,109 +2985,11 @@
 			<File
 				RelativePath="..\WinCompressNTFS.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\WinThreads.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Devel|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PrecompiledHeaderThrough="Win32.h"
-						PrecompiledHeaderFile="$(IntDir)\win32.pch"
-					/>
-				</FileConfiguration>
 			</File>
-			<Filter
-				Name="Include"
-				>
-				<File
-					RelativePath="..\..\Exceptions.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\MemcpyFast.h"
-					>
-				</File>
-				<File
-					RelativePath="..\memzero.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Paths.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Plugins.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\SafeArray.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\SamplProf.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\SaveState.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\System.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Threading.h"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Dynarec Emitter"
@@ -2905,11 +3035,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86.inl"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\ix86\ix86_3dnow.inl"
+				RelativePath="..\..\x86\ix86\ix86_3dnow.cpp"
 				>
 				<FileConfiguration
 					Name="Devel vm|Win32"
@@ -2941,13 +3067,14 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_fpu.inl"
+				RelativePath="..\..\x86\ix86\ix86_fpu.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -2976,17 +3103,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_macros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\ix86\ix86_mmx.inl"
+				RelativePath="..\..\x86\ix86\ix86_mmx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3015,13 +3139,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\x86\ix86\ix86_sse.inl"
+				RelativePath="..\..\x86\ix86\ix86_sse.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCustomBuildTool"
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3048,17 +3173,9 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\x86\ix86\ix86_sse_helpers.h"
-				>
 			</File>
 			<File
 				RelativePath="..\..\x86\ix86\ix86_tools.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\x86\ix86\ix86_types.h"
 				>
 			</File>
 		</Filter>
@@ -3072,10 +3189,6 @@
 		</File>
 		<File
 			RelativePath="..\..\Stats.h"
-			>
-		</File>
-		<File
-			RelativePath="..\WinDebugResource"
 			>
 		</File>
 	</Files>

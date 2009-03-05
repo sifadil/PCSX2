@@ -128,6 +128,19 @@ struct CONFIG_XAUDIO2
 	}
 };
 
+// DSOUND
+struct CONFIG_DSOUNDOUT
+{
+	std::wstring Device;
+	s8 NumBuffers;
+
+	CONFIG_DSOUNDOUT() :
+		Device(),
+		NumBuffers( 3 )
+	{
+	}
+};
+
 // WAVEOUT
 struct CONFIG_WAVEOUT
 {
@@ -141,6 +154,7 @@ struct CONFIG_WAVEOUT
 	}
 };
 
+extern CONFIG_DSOUNDOUT Config_DSoundOut;
 extern CONFIG_WAVEOUT Config_WaveOut;
 extern CONFIG_XAUDIO2 Config_XAudio2;
 

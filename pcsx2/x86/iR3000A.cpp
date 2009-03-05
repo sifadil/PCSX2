@@ -23,7 +23,6 @@
 
 #include "PrecompiledHeader.h"
 
-#include "iR3000A.h"
 #include <time.h>
 
 #ifndef _WIN32
@@ -32,10 +31,12 @@
 
 #include "PsxCommon.h"
 #include "VU.h"
+
+#include "ix86/ix86.h"
 #include "iCore.h"
+#include "iR3000A.h"
 
 #include "SamplProf.h"
-#include "NakedAsm.h"
 
 extern u32 g_psxNextBranchCycle;
 extern void psxBREAK();
@@ -43,6 +44,15 @@ extern void zeroEx();
 
 u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
+
+//Using assembly code from an external file.
+#ifdef __LINUX__
+extern "C" {
+#endif
+void psxRecRecompile(u32 startpc);
+#ifdef __LINUX__
+}
+#endif
 
 uptr *psxRecLUT;
 
@@ -90,6 +100,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch);
 void psxRecompileNextInstruction(int delayslot);
 
 extern void (*rpsxBSC[64])();
+extern void (*rpsxBSC_co[64])();
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 
 #ifdef _DEBUG
@@ -123,6 +134,7 @@ using namespace R3000A;
 static void iIopDumpBlock( int startpc, u8 * ptr )
 {
 	FILE *f;
+	char filename[ g_MaxPath ];
 #ifdef __LINUX__
 	char command[256];
 #endif
@@ -132,16 +144,20 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	int numused, count;
 
 	SysPrintf( "dump1 %x:%x, %x\n", startpc, psxpc, psxRegs.cycle );
-	Path::CreateDirectory( "dumps" );
-
-	string filename( Path::Combine( "dumps", fmt_string( "psxdump%.8X.txt", startpc ) ) );
+#ifdef _WIN32
+	CreateDirectory("dumps", NULL);
+	sprintf_s( filename, g_MaxPath, "dumps\\psxdump%.8X.txt", startpc);
+#else
+	mkdir("dumps", 0755);
+	sprintf( filename, "dumps/psxdump%.8X.txt", startpc);
+#endif
 
 	fflush( stdout );
 
-	f = fopen( filename.c_str(), "w" );
+	f = fopen( filename, "w" );
 	assert( f != NULL );
 	for ( i = startpc; i < s_nEndBlock; i += 4 ) {
-		fprintf( f, "%s\n", disR3000Fasm( iopMemRead32( i ), i ) );
+		fprintf( f, "%s\n", disR3000Fasm( *(u32*)PSXM( i ), i ) );
 	}
 
 	// write the instruction info
@@ -149,7 +165,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 
 	memzero_obj(used);
 	numused = 0;
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( s_pInstCache->regs[i] & EEINST_USED ) {
 			used[i] = 1;
 			numused++;
@@ -157,13 +173,13 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	}
 
 	fprintf(f, "       ");
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( used[i] ) fprintf(f, "%2d ", i);
 	}
 	fprintf(f, "\n");
 
 	fprintf(f, "       ");
-	for(i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_pInstCache->regs); ++i) {
 		if( used[i] ) fprintf(f, "%s ", disRNameGPR[i]);
 	}
 	fprintf(f, "\n");
@@ -173,7 +189,7 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		fprintf(f, "%2d: %2.2x ", i+1, pcur->info);
 		
 		count = 1;
-		for(j = 0; j < ArraySize(s_pInstCache->regs); j++) {
+		for(j = 0; j < ARRAYSIZE(s_pInstCache->regs); j++) {
 			if( used[j] ) {
 				fprintf(f, "%2.2x%s", pcur->regs[j], ((count%8)&&count<numused)?"_":" ");
 				++count;
@@ -186,13 +202,13 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 #ifdef __LINUX__
     // dump the asm
     f = fopen( "mydump1", "wb" );
-	fwrite( ptr, 1, (uptr)x86Ptr[0] - (uptr)ptr, f );
+	fwrite( ptr, 1, (uptr)x86Ptr - (uptr)ptr, f );
 	fclose( f );
 	sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 | cat %s - > tempdump", filename );
 	system( command );
     sprintf(command, "mv tempdump %s", filename);
     system(command);
-    f = fopen( filename.c_str(), "a+" );
+    f = fopen( filename, "a+" );
 #endif
 }
 #endif
@@ -633,13 +649,23 @@ static void recShutdown()
 	safe_free(psxRecLUT);
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
+
+	x86Shutdown();
 }
 
 #pragma warning(disable:4731) // frame pointer register 'ebp' modified by inline assembly code
 
-/*
+static u32 s_uSaveESP = 0;
+
 static __forceinline void R3000AExecute()
 {
+#ifdef _DEBUG
+	u8* fnptr;
+	u32 oldesi;
+/*#else
+	R3000AFNPTR pfn;*/
+#endif
+
 	BASEBLOCK* pblock;
 
 	pblock = PSX_GETBLOCK(psxRegs.pc);
@@ -683,29 +709,40 @@ static __forceinline void R3000AExecute()
 #else
     ((R3000AFNPTR)pblock->GetFnptr())();
 #endif
-}*/
+}
 
 u32 g_psxlastpc = 0;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 
 static u32 g_temp;
 
 // jumped to when invalid psxpc address
-__declspec(naked) void psxDispatcher()
+__declspec(naked,noreturn) void psxDispatcher()
 {
 	// EDX contains the current psxpc to jump to, stack contains the jump addr to modify
 	__asm push edx
 
-	//jASSUME( psxRegs.pc <= PSX_MEMMASK );
-	s_pDispatchBlock = PSX_GETBLOCK( psxRegs.pc );
-
-	if( s_pDispatchBlock->startpc != psxRegs.pc )
-		psxRecRecompile(psxRegs.pc);
-
-	__asm
-	{
+	// calc PSX_GETBLOCK
+	s_pDispatchBlock = PSX_GETBLOCK(psxRegs.pc);
+	
+	__asm {
 		mov eax, s_pDispatchBlock
+
+		// check if startpc&PSX_MEMMASK == psxRegs.pc&PSX_MEMMASK
+		mov ecx, psxRegs.pc
+        mov edx, [eax+BLOCKTYPE_STARTPC];
+		and ecx, PSX_MEMMASK // remove higher bits
+        and edx, PSX_MEMMASK
+		cmp ecx, edx
+		je CheckPtr
+
+		// recompile
+		push psxRegs.pc // psxpc
+		call psxRecRecompile
+		add esp, 4 // pop old param
+		mov eax, s_pDispatchBlock
+CheckPtr:
 		mov eax, dword ptr [eax]
 	}
 
@@ -714,12 +751,11 @@ __declspec(naked) void psxDispatcher()
 	assert( g_temp );
 #endif
 
-	// Modify the prev block's jump address, and jump to the new block:
-	__asm
-	{
+	__asm {
+		//and eax, 0x0fffffff
 		shl eax,4
-		pop ecx // x86Ptr[0] to mod
 		mov edx, eax
+		pop ecx // x86Ptr to mod
 		sub edx, ecx
 		sub edx, 4
 		mov dword ptr [ecx], edx
@@ -728,23 +764,20 @@ __declspec(naked) void psxDispatcher()
 	}
 }
 
-__declspec(naked) void psxDispatcherClear()
+__declspec(naked,noreturn) void psxDispatcherClear()
 {
 	// EDX contains the current psxpc
 	__asm mov psxRegs.pc, edx
 	__asm push edx
 
-	//jASSUME( psxRegs.pc <= PSX_MEMMASK );
-
 	// calc PSX_GETBLOCK
 	s_pDispatchBlock = PSX_GETBLOCK(psxRegs.pc);
 
-	if( s_pDispatchBlock->startpc == psxRegs.pc ) {
+	if( (s_pDispatchBlock->startpc&PSX_MEMMASK) == (psxRegs.pc&PSX_MEMMASK) ) {
 		assert( s_pDispatchBlock->GetFnptr() != 0 );
 
 		// already modded the code, jump to the new place
-		__asm
-		{
+		__asm {
 			pop edx
 			add esp, 4 // ignore stack
 			mov eax, s_pDispatchBlock
@@ -755,8 +788,7 @@ __declspec(naked) void psxDispatcherClear()
 		}
 	}
 
-	__asm
-	{
+	__asm {
 		call psxRecRecompile
 		add esp, 4 // pop old param
 		mov eax, s_pDispatchBlock
@@ -777,18 +809,32 @@ __declspec(naked) void psxDispatcherClear()
 }
 
 // called when jumping to variable psxpc address
-__declspec(naked) void psxDispatcherReg()
+__declspec(naked,noreturn) void psxDispatcherReg()
 {
-	//jASSUME( psxRegs.pc <= PSX_MEMMASK );
-	s_pDispatchBlock = PSX_GETBLOCK( psxRegs.pc );
+	__asm {
+		//s_pDispatchBlock = PSX_GETBLOCK(psxRegs.pc);
+		mov edx, psxRegs.pc
+		mov ecx, edx
+	}
 
-	if( s_pDispatchBlock->startpc != psxRegs.pc )
-		psxRecRecompile(psxRegs.pc);
+	__asm {
+		shr edx, 14
+		and edx, 0xfffffffc
+		add edx, psxRecLUT
+		mov edx, dword ptr [edx]
 
-	__asm
-	{
-		mov eax, s_pDispatchBlock
-		mov eax, dword ptr [eax]
+		mov eax, ecx
+		and eax, 0xfffc
+		// edx += 2*eax
+		shl eax, 1
+		add edx, eax
+		
+		// check if startpc == psxRegs.pc
+		mov eax, ecx
+		cmp eax, dword ptr [edx+BLOCKTYPE_STARTPC]
+		jne recomp
+
+		mov eax, dword ptr [edx]
 	}
 
 #ifdef _DEBUG
@@ -796,65 +842,39 @@ __declspec(naked) void psxDispatcherReg()
 	assert( g_temp );
 #endif
 
-	__asm
-	{
-		shl eax, 4
-		jmp eax
-	}
-}
-#endif // _MSC_VER
+	__asm {
+		//and eax, 0x0fffffff
+		shl eax,4
+		jmp eax // fnptr
 
-static void recExecute()
-{
-	// note: this function is currently never used.
-	//for (;;) R3000AExecute();
-}
-
-static s32 recExecuteBlock( s32 eeCycles )
-{
-	psxBreak = 0;
-	psxCycleEE = eeCycles;
-
-	// Register freezing note:
-	//  The IOP does not use mmx/xmm registers, so we don't modify the status
-	//  of the g_EEFreezeRegs here.
-
-#ifdef _MSC_VER
-	__asm
-	{
-		push ebx
-		push esi
-		push edi
-		push ebp
-
-		call psxDispatcherReg
-
-		pop ebp
-		pop edi
-		pop esi
-		pop ebx
-	}
-#else
-	__asm__
-	(
-		".intel_syntax\n"
-		"push %ebx\n"
-		"push %esi\n"
-		"push %edi\n"
-		"push %ebp\n"
-
-		"call psxDispatcherReg\n"
+recomp:
+		sub esp, 8
+		mov dword ptr [esp+4], edx
+		mov dword ptr [esp], ecx
+		call psxRecRecompile
+		mov edx, dword ptr [esp+4]
+		add esp, 8
 		
-		"pop %ebp\n"
-		"pop %edi\n"
-		"pop %esi\n"
-		"pop %ebx\n"
-		".att_syntax\n"
-	);
+		mov eax, dword ptr [edx]
+		//and eax, 0x0fffffff
+		shl eax,4
+		jmp eax // fnptr
+	}
+}
+
+#else // _MSC_VER
+// Linux uses an assembly version of these routines.
+#ifdef __LINUX__
+extern "C" {
+#endif
+void psxDispatcher();
+void psxDispatcherClear();
+void psxDispatcherReg();
+#ifdef __LINUX__
+}
 #endif
 
-	return psxBreak + psxCycleEE;
-}
+#endif // _MSC_VER
 
 static void recClear(u32 Addr, u32 Size)
 {
@@ -896,14 +916,14 @@ void psxRecClearMem(BASEBLOCK* p)
 	assert( p->GetFnptr() != 0 );
 	assert( p->startpc );
 
-	x86Ptr[0] = (u8*)p->GetFnptr();
+	x86Ptr = (u8*)p->GetFnptr();
 
 	// there is a small problem: mem can be ored with 0xa<<28 or 0x8<<28, and don't know which
 	MOV32ItoR(EDX, p->startpc);
-	assert( (uptr)x86Ptr[0] <= 0xffffffff );
-	PUSH32I((uptr)x86Ptr[0]);
-	JMP32((uptr)psxDispatcherClear - ( (uptr)x86Ptr[0] + 5 ));
-	assert( x86Ptr[0] == (u8*)p->GetFnptr() + IOP_MIN_BLOCK_BYTES );
+	assert( (uptr)x86Ptr <= 0xffffffff );
+	PUSH32I((uptr)x86Ptr);
+	JMP32((uptr)psxDispatcherClear - ( (uptr)x86Ptr + 5 ));
+	assert( x86Ptr == (u8*)p->GetFnptr() + IOP_MIN_BLOCK_BYTES );
 
 	pstart = PSX_GETBLOCK(p->startpc);
 	pexblock = PSX_GETBLOCKEX(pstart);
@@ -950,7 +970,7 @@ void psxSetBranchReg(u32 reg)
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(0xffffffff, 1);
 
-	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 }
 
 void psxSetBranchImm( u32 imm )
@@ -965,13 +985,13 @@ void psxSetBranchImm( u32 imm )
 	iPsxBranchTest(imm, imm <= psxpc);
 
 	MOV32ItoR(EDX, 0);
-	ptr = (u32*)(x86Ptr[0]-4);
-	*ptr = (uptr)JMP32((uptr)psxDispatcher - ( (uptr)x86Ptr[0] + 5 ));
+	ptr = (u32*)(x86Ptr-4);
+	*ptr = (uptr)JMP32((uptr)psxDispatcher - ( (uptr)x86Ptr + 5 ));
 }
 
 //fixme : this is all a huge hack, we base the counter advancements on the average an opcode should take (wtf?)
 //		  If that wasn't bad enough we have default values like 9/8 which will get cast to int later
-//		  (yeah, that means all sync code couldn't have worked to begin with)
+//		  (yeah, that means all sync code couldn't have worked to beginn with)
 //		  So for now these are new settings that work.
 //		  (rama)
 
@@ -993,12 +1013,12 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 
 	j8Ptr[2] = JG8( 0 );	// jump if psxCycleEE > 0
 
-	RET();		// returns control to the EE
+	RET2();		// returns control to the EE
 
 	// Continue onward with branching here:
 	x86SetJ8( j8Ptr[2] );
 
-	// check if an event is pending
+	// check if should branch
 	SUB32MtoR(ECX, (uptr)&g_psxNextBranchCycle);
 	j8Ptr[0] = JS8( 0 );
 
@@ -1007,14 +1027,14 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	if( newpc != 0xffffffff )
 	{
 		CMP32ItoM((uptr)&psxRegs.pc, newpc);
-		JNE32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 6 ));
+		JNE32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 6 ));
 	}
 
 	// Skip branch jump target here:
 	x86SetJ8( j8Ptr[0] );
 }
 
-static const int *s_pCode;
+static int *s_pCode;
 
 #if !defined(_MSC_VER)
 static void checkcodefn()
@@ -1043,7 +1063,7 @@ void rpsxSYSCALL()
 
 	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
 	SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
-	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 
 	// jump target for skipping blockCycle updates
 	x86SetJ8(j8Ptr[0]);
@@ -1063,7 +1083,7 @@ void rpsxBREAK()
 	j8Ptr[0] = JE8(0);
 	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
 	SUB32ItoM((uptr)&psxCycleEE, psxScaleBlockCycles()*8 );
-	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+	JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
 	//if (!psxbranch) psxbranch = 2;
@@ -1099,22 +1119,22 @@ void psxRecompileNextInstruction(int delayslot)
 				
 //			if( pexblock->pOldFnptr ) {
 //				// code already in place, so jump to it and exit recomp
-//				JMP32((uptr)pexblock->pOldFnptr - ((uptr)x86Ptr[0] + 5));
+//				JMP32((uptr)pexblock->pOldFnptr - ((uptr)x86Ptr + 5));
 //				branch = 3;
 //				return;
 //			}
 			
-			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr[0] + 5));
+			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr + 5));
 			psxbranch = 3;
 			return;
 		}
 		else {
 
 			if( !(delayslot && pblock->startpc == psxpc) ) {
-				u8* oldX86 = x86Ptr[0];
+				u8* oldX86 = x86Ptr;
 				//__Log("clear block %x\n", pblock->startpc);
 				psxRecClearMem(pblock);
-				x86Ptr[0] = oldX86;
+				x86Ptr = oldX86;
 				if( delayslot )
 					SysPrintf("delay slot %x\n", psxpc);
 			}
@@ -1128,7 +1148,10 @@ void psxRecompileNextInstruction(int delayslot)
 	MOV32ItoR(EAX, psxpc);
 #endif
 
-	psxRegs.code = iopMemRead32( psxpc );
+	s_pCode = (int *)PSXM( psxpc );
+	assert(s_pCode);
+
+	psxRegs.code = *(int *)s_pCode;
 	s_psxBlockCycles++;
 	psxpc += 4;
 
@@ -1143,6 +1166,10 @@ void psxRecompileNextInstruction(int delayslot)
 
 	g_pCurInstInfo++;
 
+#ifdef PCSX2_VM_COISSUE
+	assert( g_pCurInstInfo->info & EEINSTINFO_COREC );
+#endif
+
 	g_iopCyclePenalty = 0;
 	rpsxBSC[ psxRegs.code >> 26 ]();
 	s_psxBlockCycles += g_iopCyclePenalty;
@@ -1156,6 +1183,18 @@ void psxRecompileNextInstruction(int delayslot)
 	else s_bFlushReg = 1;
 
 	_clearNeededX86regs();
+}
+
+static void recExecute() {
+	for (;;) R3000AExecute();
+}
+
+static s32 recExecuteBlock( s32 eeCycles )
+{
+	psxBreak = 0;
+	psxCycleEE = eeCycles;
+	R3000AExecute();
+	return psxBreak + psxCycleEE;
 }
 
 #include "IopHw.h"
@@ -1278,12 +1317,12 @@ void psxRecRecompile(u32 startpc)
 	
 	x86SetPtr( recPtr );
 	x86Align(16);
-	recPtr = x86Ptr[0];
+	recPtr = x86Ptr;
 
     psxbranch = 0;
 
 	s_pCurBlock->startpc = startpc;
-	s_pCurBlock->SetFnptr( (uptr)x86Ptr[0] );
+	s_pCurBlock->SetFnptr( (uptr)x86Ptr );
 	s_psxBlockCycles = 0;
 
 	// reset recomp state variables
@@ -1315,7 +1354,7 @@ void psxRecRecompile(u32 startpc)
 			}
 		}
 
-		psxRegs.code = iopMemRead32(i);
+		psxRegs.code = *(int *)PSXM(i);
 
 		switch(psxRegs.code >> 26) {
 			case 0: // special
@@ -1375,7 +1414,7 @@ StartRecomp:
 		pcur->info = 0;
 
 		for(i = s_nEndBlock; i > startpc; i -= 4 ) {
-			psxRegs.code = iopMemRead32(i-4);
+			psxRegs.code = *(int *)PSXM(i-4);
 			pcur[-1] = pcur[0];
 			rpsxpropBSC(pcur-1, pcur);
 			pcur--;
@@ -1384,7 +1423,7 @@ StartRecomp:
 
 #ifdef _DEBUG
 	// dump code
-	for(i = 0; i < ArraySize(s_psxrecblocks); ++i) {
+	for(i = 0; i < ARRAYSIZE(s_psxrecblocks); ++i) {
 		if( startpc == s_psxrecblocks[i] ) {
 			iIopDumpBlock(startpc, recPtr);
 		}
@@ -1429,7 +1468,7 @@ StartRecomp:
 
 		iPsxBranchTest(0xffffffff, 1);	
 
-		JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+		JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	}
 	else {
 		assert( psxbranch != 3 );
@@ -1445,7 +1484,7 @@ StartRecomp:
 			assert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			MOV32ItoM((uptr)&psxRegs.pc, psxpc);			
-			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr[0] + 5));
+			JMP32((uptr)pblock->GetFnptr() - ((uptr)x86Ptr + 5));
 			psxbranch = 3;
 		}
 		else if( !psxbranch ) {
@@ -1455,14 +1494,14 @@ StartRecomp:
 			_psxFlushCall(FLUSH_EVERYTHING);
 
 			ptr = JMP32(0);
-			//JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr[0] + 5 ));
+			//JMP32((uptr)psxDispatcherReg - ( (uptr)x86Ptr + 5 ));
 		}
 	}
 
-	assert( x86Ptr[0] >= (u8*)s_pCurBlock->GetFnptr() + IOP_MIN_BLOCK_BYTES );
-	assert( x86Ptr[0] < recMem+RECMEM_SIZE );
+	assert( x86Ptr >= (u8*)s_pCurBlock->GetFnptr() + IOP_MIN_BLOCK_BYTES );
+	assert( x86Ptr < recMem+RECMEM_SIZE );
 
-	recPtr = x86Ptr[0];
+	recPtr = x86Ptr;
 
 	assert( (g_psxHasConstReg&g_psxFlushedConstReg) == g_psxHasConstReg );
 

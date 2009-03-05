@@ -128,6 +128,14 @@ struct V_Voice
 	s8 Modulated;
 // Source (Wave/Noise)
 	s8 Noise;
+// Direct Output for Left Channel
+	s32 DryL;
+// Direct Output for Right Channel
+	s32 DryR;
+// Effect Output for Left Channel
+	s32 WetL;
+// Effect Output for Right Channel
+	s32 WetR;
 // Loop Start address (also Reg_LSAH/L)
 	u32 LoopStartA; 
 // Sound Start address (also Reg_SSAH/L)
@@ -187,6 +195,7 @@ struct V_VoiceDebug
 	s32 PeakX;
 	s32 displayPeak;
 	s32 lastSetStartA;
+	s32 lastStopReason;
 };
 
 struct V_CoreDebug
@@ -301,50 +310,17 @@ struct V_CoreRegs
 	u16 _1AC;
 };
 
-struct V_VoiceGates
-{
-	s16 DryL;	// 'AND Gate' for Direct Output to Left Channel
-	s16 DryR;	// 'AND Gate' for Direct Output for Right Channel
-	s16 WetL;	// 'AND Gate' for Effect Output for Left Channel
-	s16 WetR;	// 'AND Gate' for Effect Output for Right Channel
-};
-
-union V_CoreGates
-{
-	struct
-	{
-		u64 lo;
-		u64 hi;
-	} v128;
-
-	struct  
-	{
-		s16 InpL;	// Sound Data Input to Direct Output (Left)
-		s16 InpR;	// Sound Data Input to Direct Output (Right)
-		s16 SndL;	// Voice Data to Direct Output (Left)
-		s16 SndR;	// Voice Data to Direct Output (Right)
-		s16 ExtL;	// External Input to Direct Output (Left)
-		s16 ExtR;	// External Input to Direct Output (Right)
-	};
-};
-
 struct V_Core
 {
-	static const uint NumVoices = 24;
+// Core Voices
+	V_Voice Voices[24];
 
-	// Voice Gates -- These are SSE-related values, and must always be
-	// first to ensure 16 byte alignment
-
-	V_VoiceGates VoiceGates[NumVoices];
-	V_CoreGates DryGate;
-	V_CoreGates WetGate;
 
 	V_VolumeSlideLR MasterVol;// Master Volume
+	
 	V_VolumeLR ExtVol;		// Volume for External Data Input
 	V_VolumeLR InpVol;		// Volume for Sound Data Input
 	V_VolumeLR FxVol;		// Volume for Output from Effects 
-
-	V_Voice Voices[NumVoices];
 	
 // Interrupt Address
 	u32 IRQA;
@@ -352,7 +328,30 @@ struct V_Core
 	u32 TSA;  
 // DMA Transfer Data Address (Internal...)
 	u32 TDA;  
-
+// External Input to Direct Output (Left)
+	s32 ExtDryL;
+// External Input to Direct Output (Right)
+	s32 ExtDryR;
+// External Input to Effects (Left)
+	s32 ExtWetL;
+// External Input to Effects (Right)
+	s32 ExtWetR;
+// Sound Data Input to Direct Output (Left)
+	s32 InpDryL;
+// Sound Data Input to Direct Output (Right)
+	s32 InpDryR;
+// Sound Data Input to Effects (Left)
+	s32 InpWetL;
+// Sound Data Input to Effects (Right)
+	s32 InpWetR;
+// Voice Data to Direct Output (Left)
+	s32 SndDryL;
+// Voice Data to Direct Output (Right)
+	s32 SndDryR;
+// Voice Data to Effects (Left)
+	s32 SndWetL;
+// Voice Data to Effects (Right)
+	s32 SndWetR;
 // Interrupt Enable
 	s8 IRQEnable;
 // DMA related?
@@ -429,17 +428,5 @@ extern s16 InputPos;
 // SPU Mixing Cycles ("Ticks mixed" counter)
 extern u32 Cycles;
 
-#ifdef __LINUX__
-
-#include <sys/types.h>
-#include <sys/timeb.h>
-
-static __forceinline u32 timeGetTime()
-{
-	struct timeb t;
-	ftime(&t);
-	return (u32)(t.time*1000+t.millitm);
-}
-#endif
 
 #endif // DEFS_H_INCLUDED //

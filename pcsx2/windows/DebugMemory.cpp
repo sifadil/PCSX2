@@ -16,8 +16,11 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "PrecompiledHeader.h"
+
 #include "Win32.h"
 #include "Common.h"
+#include "resource.h"
 
 unsigned long memory_addr;
 BOOL mem_inupdate = FALSE;
@@ -33,7 +36,7 @@ unsigned char Debug_Read8(unsigned long addr)//just for anycase..
 	{
 #endif
       u8 val8;
-      val8 = memRead8(addr);
+      memRead8(addr, &val8);
 		return val8;
 #ifdef _WIN32
 	}
@@ -132,7 +135,7 @@ BOOL APIENTRY DumpMemProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				else
 				{
 					for (addr = start_pc; addr < end_pc; addr ++) {
-						data = memRead8( addr );
+						memRead8( addr, &data );
 						fwrite(&data, 1, 1, fp);
 					}
 

@@ -540,7 +540,7 @@ int loadElfFile(const char *filename)
 	// Reset all recompilers prior to initiating a BIOS or new ELF.  The cleaner the
 	// slate, the happier the recompiler!
 
-	SysClearExecutionCache();
+	SysResetExecutionState();
 
 	if( filename == NULL || filename[0] == 0 )
 	{

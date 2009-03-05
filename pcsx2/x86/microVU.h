@@ -1,27 +1,26 @@
 /*  Pcsx2 - Pc Ps2 Emulator
- *  Copyright (C) 2009  Pcsx2-Playground Team
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
- */
+*  Copyright (C) 2009  Pcsx2-Playground Team
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*  
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*  
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+*/
 
 #pragma once
-#define _EmitterId_ (vuIndex+1)
 #include "Common.h"
 #include "VU.h"
-#include "ix86/ix86.h"
-#include "microVU_Alloc.h"
+#include "microVU_Tables.h"
+//#include <vector>
 
 struct microBlock {
 	u32 pipelineState; // FMACx|y|z|w | FDiv | EFU | IALU | BRANCH // Still thinking of how I'm going to do this
@@ -83,8 +82,8 @@ template<u32 progSize>
 struct microProgram {
 	u8 data[progSize];
 	u32 used;	// Number of times its been used
+	//int cached;	// Has been Cached? (can be omitted because every new program will be cached?)
 	microBlockManager* block[progSize];
-	microAllocInfo<progSize> allocInfo;
 };
 
 #define mMaxProg 16 // The amount of Micro Programs Recs will 'remember' (For n = 1, 2, 4, 8, 16, etc...)
@@ -109,7 +108,6 @@ struct microVU {
 	VURegs*	regs;	// VU Regs Struct
 	u8*		cache;	// Dynarec Cache Start (where we will start writing the recompiled code to)
 	u8*		ptr;	// Pointer to next place to write recompiled code to
-	u32		code;	// Contains the current Instruction
 /*
 	uptr x86eax; // Accumulator register. Used in arithmetic operations.
 	uptr x86ecx; // Counter register. Used in shift/rotate instructions.
@@ -123,24 +121,23 @@ struct microVU {
 	microProgManager<0x800> prog; // Micro Program Data
 };
 
-// microVU rec structs
-extern PCSX2_ALIGNED16(microVU microVU0);
-extern PCSX2_ALIGNED16(microVU microVU1);
+// Template Stuff
+#define mVUx (vuIndex ? &microVU1 : &microVU0)
+#define microVUt(aType) template<int vuIndex> __forceinline aType
 
 // Opcode Tables
 extern void (*mVU_UPPER_OPCODE[64])( VURegs* VU, s32 info );
 extern void (*mVU_LOWER_OPCODE[128])( VURegs* VU, s32 info );
 
+//void invalidateBlocks(u32 addr, u32 size); // Invalidates Blocks in the range [addr, addr+size)
+//__forceinline void mVUinit(microVU* mVU, VURegs* vuRegsPtr, const int vuIndex);
+//__forceinline void mVUreset(microVU* mVU);
+//__forceinline void mVUclose(microVU* mVU);
+//__forceinline void mVUclear(microVU* mVU, u32 addr, u32 size); // Clears part of a Micro Program (must use before modifying micro program!)
+//void* mVUexecute(microVU* mVU, u32 startPC, u32 cycles); // Recompiles/Executes code for the number of cycles indicated (will always run for >= 'cycles' amount unless 'finished')
+//void* mVUexecuteF(microVU* mVU, u32 startPC); // Recompiles/Executes code till finished
+
 __forceinline void	mVUclearProg(microVU* mVU, int progIndex);
 __forceinline int	mVUfindLeastUsedProg(microVU* mVU);
 __forceinline int	mVUsearchProg(microVU* mVU);
 __forceinline void	mVUcacheProg(microVU* mVU, int progIndex);
-
-#ifdef __LINUX__
-microVUt(void) mVUreset();
-microVUt(void) mVUclose();
-#endif
-
-#include "microVU_Misc.h"
-#include "microVU_Alloc.inl"
-#include "microVU_Tables.inl"

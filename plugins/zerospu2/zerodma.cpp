@@ -112,12 +112,12 @@ int ADMASWrite(int core)
 	
 	if (interrupt & 0x2)
 	{
-		WARN_LOG("%d returning for interrupt\n", dma);
+		printf("%d returning for interrupt\n", dma);
 		return 0;
 	}
 	if (Adma->AmountLeft <= 0)
 	{
-		WARN_LOG("%d amount left is 0\n", dma);
+		printf("%d amount left is 0\n", dma);
 		return 1;
 	}
 
@@ -133,14 +133,14 @@ int ADMASWrite(int core)
 	if ((spu2Ru16(REG_C0_CTRL + offset) & 0x40) && ((spuaddr + 0x2400) <= C_IRQA(core) &&  (spuaddr + 0x2400 + 256) >= C_IRQA(core)))
 	{
 		IRQINFO |= (4 * (core + 1));
-		WARN_LOG("ADMA %d Mem access:interrupt\n", dma);
+		printf("ADMA %d Mem access:interrupt\n", dma);
 		irqCallbackSPU2();
 	}
 	
 	if ((spu2Ru16(REG_C0_CTRL + offset) & 0x40) && ((spuaddr + 0x2600) <= C_IRQA(core) &&  (spuaddr + 0x2600 + 256) >= C_IRQA(core)))
 	{
 		IRQINFO |= (4 * (core + 1));
-		WARN_LOG("ADMA %d Mem access:interrupt\n", dma);
+		printf("ADMA %d Mem access:interrupt\n", dma);
 		irqCallbackSPU2();
 	}
 
@@ -199,7 +199,7 @@ void CALLBACK SPU2writeDMAMem(u16* pMem, int size, int core)
 		return;
 	}
 
-#ifdef ZEROSPU2_DEVBUILD
+#ifdef _DEBUG
 	if ((conf.Log && conf.options & OPTION_RECORDING) && (core == 1))
 		LogPacketSound(pMem, 0x8000);
 #endif

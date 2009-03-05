@@ -26,8 +26,6 @@
 #include "deci2_netmp.h"
 #include "deci2_ttyp.h"
 
-#include "Threading.h"
-
 #define PROTO_DCMP		0x0001
 #define PROTO_ITTYP		0x0110
 #define PROTO_IDBGP		0x0130
@@ -60,7 +58,9 @@ extern int ebrk_count, ibrk_count;
 extern volatile long runStatus;
 extern int runCode, runCount;
 
-extern Threading::Semaphore* runEvent;
+#ifdef _WIN32
+extern HANDLE			runEvent;					//i don't like this;
+#endif
 
 extern int		connected;
 													//when add linux code this might change

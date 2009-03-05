@@ -42,7 +42,7 @@ extern BOOL g_bIsLost;
 extern BOOL g_bUpdateStencil;
 extern u32 s_uFramebuffer;
 
-#ifndef ZEROGS_DEVBUILD
+#ifdef RELEASE_TO_PUBLIC
 #define INC_RESOLVE()
 #else
 #define INC_RESOLVE() ++g_nResolve
@@ -204,7 +204,7 @@ void ZeroGS::CRenderTarget::Resolve()
 		glGetTexImage(GL_TEXTURE_RECTANGLE_NV, 0, GL_RGBA, GL_UNSIGNED_BYTE, psys);
 		GL_REPORT_ERRORD();
 
-#if defined(ZEROGS_DEVBUILD) && defined(_DEBUG)
+#if !defined(RELEASE_TO_PUBLIC) && defined(_DEBUG)
 		if( g_bSaveResolved ) {
 			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, fbw<<s_AAx, fbh<<s_AAy);
 			g_bSaveResolved = 0;
@@ -227,7 +227,7 @@ void ZeroGS::CRenderTarget::Resolve(int startrange, int endrange)
 		if( vb[0].prndr == this || vb[0].pdepth == this ) Flush(0);
 		if( vb[1].prndr == this || vb[1].pdepth == this ) Flush(1);
 
-#if defined(ZEROGS_DEVBUILD) && defined(_DEBUG)
+#if !defined(RELEASE_TO_PUBLIC) && defined(_DEBUG)
 		if( g_bSaveResolved ) {
 			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, fbw<<s_AAx, fbh<<s_AAy);
 			g_bSaveResolved = 0;
@@ -333,10 +333,9 @@ void ZeroGS::CRenderTarget::Update(int context, ZeroGS::CRenderTarget* pdepth)
 		cgGLEnableTextureParameter(ppsBaseTexture.sFinal);
 
 		//assert( ittarg->second->fbw == fbw );
-		int offset = (fbp-ittarg->second->fbp)*64/fbw; 
-		
-		// 16 bit
-		if (psm & 2) offset *= 2;
+		int offset = (fbp-ittarg->second->fbp)*64/fbw;
+		if( psm & 2 ) // 16 bit
+			offset *= 2;
 
 		v.x = (float)(fbw << s_AAx);
 		v.y = (float)(fbh << s_AAy);
@@ -668,7 +667,7 @@ void ZeroGS::CRenderTarget::ConvertTo16()
 	SAFE_RELEASE_TEX(ptexFeedback);
 	ptex = ptexConv;
 
-	_aligned_free(psys);
+	free(psys);
 	psys = _aligned_malloc( (fbh<<s_AAy) * (fbw<<s_AAx) * (GetRenderFormat() == RFT_float16 ? 8 : 4), 16 );
 
 	if( conf.options & GSOPTION_WIREFRAME ) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -1150,7 +1149,7 @@ CRenderTarget* ZeroGS::CRenderTargetMngr::GetTarg(const frameInfo& frame, u32 op
 		else {
 			// certain variables have to be reset every time
 			if( (it->second->psm&~1) != (frame.psm&~1) ) {
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 				WARN_LOG("bad formats 2: %d %d\n", frame.psm, it->second->psm);
 #endif
 				it->second->psm = frame.psm;
@@ -1848,7 +1847,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 		targ->ptex->ref = 1;
 	}
 
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 	g_TransferredToGPU += GPU_TEXWIDTH * channels * 4 * targ->height;
 #endif
 	
@@ -2519,7 +2518,7 @@ void InitTransferHostLocal()
 	if( g_bIsLost )
 		return;
 
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 	if( gs.trxpos.dx+gs.imageWnew > gs.dstbuf.bw )
 		WARN_LOG("Transfer error, width exceeds\n");
 #endif
@@ -2650,7 +2649,7 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
 	}
 	else s_vTransferCache.resize(0);
 
-#if defined(ZEROGS_DEVBUILD) && defined(_DEBUG)
+#if !defined(RELEASE_TO_PUBLIC) && defined(_DEBUG)
 	if( g_bSaveTrans ) {
 		tex0Info t;
 		t.tbp0 = gs.dstbuf.bp;
@@ -2790,7 +2789,7 @@ void InitTransferLocalHost()
 {
 	assert( gs.trxpos.sx+gs.imageWnew <= 2048 && gs.trxpos.sy+gs.imageHnew <= 2048 );
 
-#ifdef ZEROGS_DEVBUILD
+#ifndef RELEASE_TO_PUBLIC
 	if( gs.trxpos.sx+gs.imageWnew > gs.srcbuf.bw )
 		WARN_LOG("Transfer error, width exceeds\n");
 #endif
@@ -3083,7 +3082,7 @@ void TransferLocalLocal()
 
 	g_MemTargs.ClearRange(dststart, dstend);
 
-#if defined(ZEROGS_DEVBUILD) && defined(_DEBUG)
+#if !defined(RELEASE_TO_PUBLIC) && defined(_DEBUG)
 	if( g_bSaveTrans ) {
 		tex0Info t;
 		t.tbp0 = gs.dstbuf.bp;

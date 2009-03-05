@@ -32,7 +32,6 @@ int iopsifbusy[2] = { 0, 0 };
 static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _SPU2writeDMA4Mem spu2WriteFunc, _SPU2readDMA4Mem spu2ReadFunc )
 {
 	const char dmaNum = spuCore ? '7' : '4';
-
     /*if (chcr & 0x400) DevCon::Status("SPU 2 DMA %c linked list chain mode! chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);
     if (chcr & 0x40000000) DevCon::Notice("SPU 2 DMA %c Unusual bit set on 'to' direction chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);
     if ((chcr & 0x1) == 0) DevCon::Status("SPU 2 DMA %c loading from spu2 memory chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);*/
@@ -43,7 +42,9 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 
 	if(SPU2async)
 	{
+		FreezeMMXRegs( 1 );
 		SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);	
+		FreezeMMXRegs( 0 );
 		//Console::Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
 		
 		psxCounters[6].sCycleT = psxRegs.cycle;
@@ -58,18 +59,18 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 	switch (chcr)
 	{
 		case 0x01000201: //cpu to spu2 transfer
-			PSXDMA_LOG("*** DMA %c - mem2spu *** %x addr = %x size = %x\n", dmaNum, chcr, madr, bcr);
-			spu2WriteFunc((u16 *)iopPhysMem(madr), size*2);
+			PSXDMA_LOG("*** DMA %c - mem2spu *** %lx addr = %lx size = %lx\n", dmaNum, chcr, madr, bcr);
+			spu2WriteFunc((u16 *)PSXM(madr), size*2);
 		break;
 
 		case 0x01000200: //spu2 to cpu transfer
-			PSXDMA_LOG("*** DMA %c - spu2mem *** %x addr = %x size = %x\n", dmaNum, chcr, madr, bcr);
-			spu2ReadFunc((u16 *)iopPhysMem(madr), size*2);
+			PSXDMA_LOG("*** DMA %c - spu2mem *** %lx addr = %lx size = %lx\n", dmaNum, chcr, madr, bcr);
+			spu2ReadFunc((u16 *)PSXM(madr), size*2);
 			psxCpu->Clear(spuCore ? HW_DMA7_MADR : HW_DMA4_MADR, size);
 		break;
 
 		default:
-			Console::Error("*** DMA %c - SPU unknown *** %x addr = %x size = %x\n", params dmaNum, chcr, madr, bcr);
+			Console::Error("*** DMA %c - SPU unknown *** %lx addr = %lx size = %lx\n", params dmaNum, chcr, madr, bcr);
 		break;
 	}
 }
@@ -95,7 +96,7 @@ void psxDma2(u32 madr, u32 bcr, u32 chcr)		// GPU
 
 void psxDma6(u32 madr, u32 bcr, u32 chcr)
 {
-	u32 *mem = (u32 *)iopPhysMem(madr);
+	u32 *mem = (u32 *)PSXM(madr);
 
 	PSXDMA_LOG("*** DMA 6 - OT *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
 
@@ -164,12 +165,12 @@ void psxDma8(u32 madr, u32 bcr, u32 chcr) {
 	switch (chcr & 0x01000201) {
 		case 0x01000201: //cpu to dev9 transfer
 			PSXDMA_LOG("*** DMA 8 - DEV9 mem2dev9 *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
-			DEV9writeDMA8Mem((u32*)iopPhysMem(madr), size);
+			DEV9writeDMA8Mem((u32*)PSXM(madr), size);
 		break;
 
 		case 0x01000200: //dev9 to cpu transfer
 			PSXDMA_LOG("*** DMA 8 - DEV9 dev9mem *** %lx addr = %lx size = %lx\n", chcr, madr, bcr);
-			DEV9readDMA8Mem((u32*)iopPhysMem(madr), size);
+			DEV9readDMA8Mem((u32*)PSXM(madr), size);
 		break;
 
 		default:

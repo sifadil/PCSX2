@@ -1,8 +1,6 @@
 #define __USE_LARGEFILE64
 #define __USE_FILE_OFFSET64
 #define _FILE_OFFSET_BITS 64
-#define _LARGEFILE_SOURCE 
-#define _LARGEFILE64_SOURCE
 
 #ifdef _WIN32
 #include <windows.h>
@@ -14,8 +12,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "zlib/zlib.h"
-#include "bzip2/bzlib.h"
+#include "3rdparty/zlib/zlib.h"
+#include "3rdparty/bzip2/bzlib.h"
 
 #include "CDVDiso.h"
 #include "libiso.h"
@@ -189,7 +187,7 @@ void *_openfile(const char *filename, int flags)
 
 u64 _tellfile(void *handle)
 {
-	s64 cursize = ftell(handle);
+	u64 cursize = ftell(handle);
 	if (cursize == -1)
 	{
 		// try 64bit
@@ -285,7 +283,9 @@ int _isoReadZ2table(isoFile *iso)
 	void *handle;
 	char table[256];
 	u32 *Ztable;
-	int ofs, size,  i;
+	int ofs;
+	int size;
+	int i;
 
 	sprintf(table, "%s.table", iso->filename);
 	handle = _openfile(table, O_RDONLY);

@@ -68,7 +68,7 @@ FILE *MemoryCard::Load( uint mcd )
 	string str( Config.Mcd[mcd].Filename );
 
 	if( str.empty() )
-		str = Path::Combine( MEMCARDS_DIR, fmt_string( "Mcd00%d.ps2", mcd ) );
+		Path::Combine( str, MEMCARDS_DIR, fmt_string( "Mcd00%d.ps2", mcd ) );
 
 	if( !Path::Exists(str) )
 		Create( str.c_str() );

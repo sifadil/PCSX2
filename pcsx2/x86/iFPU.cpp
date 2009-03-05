@@ -20,8 +20,12 @@
 
 #include "Common.h"
 #include "R5900OpcodeTables.h"
+#include "ix86/ix86.h"
 #include "iR5900.h"
 #include "iFPU.h"
+
+extern PCSX2_ALIGNED16_DECL(u32 g_minvals[4]);
+extern PCSX2_ALIGNED16_DECL(u32 g_maxvals[4]);
 
 //------------------------------------------------------------------
 // Misc...
@@ -61,33 +65,6 @@ namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
 namespace COP1 {
-
-namespace DOUBLE {
-
-void recABS_S_xmm(int info);
-void recADD_S_xmm(int info);
-void recADDA_S_xmm(int info);
-void recC_EQ_xmm(int info);
-void recC_LE_xmm(int info);
-void recC_LT_xmm(int info);
-void recCVT_S_xmm(int info);
-void recDIV_S_xmm(int info);
-void recMADD_S_xmm(int info);
-void recMADDA_S_xmm(int info);
-void recMAX_S_xmm(int info);
-void recMIN_S_xmm(int info);
-void recMOV_S_xmm(int info);
-void recMSUB_S_xmm(int info);
-void recMSUBA_S_xmm(int info);
-void recMUL_S_xmm(int info);
-void recMULA_S_xmm(int info);
-void recNEG_S_xmm(int info);
-void recSUB_S_xmm(int info);
-void recSUBA_S_xmm(int info);
-void recSQRT_S_xmm(int info);
-void recRSQRT_S_xmm(int info);
-
-};
 
 //------------------------------------------------------------------
 // Helper Macros
