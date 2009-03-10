@@ -1,53 +1,45 @@
 #!/bin/sh
-
-# Usage: sh build.sh [option]
-# option can be all (rebuilds everything), clean, or nothing (incremental build)
-# Modify the individual build.sh for specific program options like debug symbols
-# Uncomment if building by itself, rather then with all the plugins
+# Pcsx2 - Pc Ps2 Emulator
+# Copyright (C) 2002-2009  Pcsx2 Team
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#
 
 #Normal
-#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"
+#export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse3 --enable-sse4 --prefix `pwd`"
 
-#Optimized, but a devbuild
-#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --enable-devbuild --prefix `pwd`"
+echo ---------------
+echo Building Pcsx2 
+echo ---------------
 
-#Debug / Devbuild version
-#export PCSX2OPTIONS="--enable-debug --enable-devbuild --enable-sse3 --prefix `pwd`"
-
-#Optimized, but a devbuild - with memcpy_fast_ enabled. - EXPERIMENTAL
-export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --enable-devbuild --enable-memcpyfast --prefix `pwd`"
-
-#ZeroGS Normal mode
-export ZEROGSOPTIONS="--enable-sse2"
-
-#ZeroGS Debug mode
-#export ZEROGSOPTIONS="--enable-debug --enable-devbuild --enable-sse2"
-
-#ZeroSPU2 Debug mode (Don't enable right now)
-#export ZEROSPU2OPTIONS="--enable-debug --enable-devbuild"
-
-option=$@
-export PCSX2PLUGINS="`pwd`/bin/plugins"
-curdir=`pwd`
-
-echo "Building the Pcsx2 Suite."
-echo "Note: will not compile on Linux x64."
-cd ${curdir}/plugins
-sh build.sh $option
-
-if [ $? -ne 0 ]
+if [ $# -gt 0 ] && [ $1 = "all" ]
 then
-echo Error with building plugins
-exit 1
+
+aclocal
+automake
+autoconf
+chmod +x configure
+./configure ${PCSX2OPTIONS}
+make clean
+make install
+
+else
+make $@
 fi
 
-echo "Building Pcsx2."
-echo "Note: will not compile on Linux x64."
-cd ${curdir}/pcsx2
-sh build.sh $option
-
 if [ $? -ne 0 ]
 then
-echo Error with building pcsx2
 exit 1
 fi
