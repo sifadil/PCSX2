@@ -1,0 +1,87 @@
+/*  Pcsx2 - Pc Ps2 Emulator
+ *  Copyright (C) 2002-2009  Pcsx2 Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+#include "PrecompiledHeader.h"
+#include "BaseblockEx.h"
+
+BASEBLOCKEX* BaseBlocks::New(u32 startpc, uptr fnptr)
+{
+	if (blocks.size() == size)
+		return 0;
+
+	BASEBLOCKEX newblock;
+	std::vector<BASEBLOCKEX>::iterator iter;
+	memset(&newblock, 0, sizeof newblock);
+	newblock.startpc = startpc;
+	newblock.fnptr = fnptr;
+
+	int imin = 0, imax = blocks.size(), imid;
+
+	while (imin < imax) {
+		imid = (imin+imax)>>1;
+
+		if (blocks[imid].startpc > startpc)
+			imax = imid;
+		else
+			imin = imid + 1;
+	}
+
+	assert(imin == blocks.size() || blocks[imin].startpc > startpc);
+	iter = blocks.insert(blocks.begin() + imin, newblock);
+
+	std::pair<linkiter_t, linkiter_t> range = links.equal_range(startpc);
+	for (linkiter_t i = range.first; i != range.second; ++i)
+		*(u32*)i->second = fnptr - (i->second + 4);
+
+	return &*iter;
+}
+
+int BaseBlocks::LastIndex(u32 startpc) const
+{
+	if (0 == blocks.size())
+		return -1;
+
+	int imin = 0, imax = blocks.size() - 1, imid;
+
+	while(imin != imax) {
+		imid = (imin+imax+1)>>1;
+
+		if (blocks[imid].startpc > startpc)
+			imax = imid - 1;
+		else
+			imin = imid;
+	}
+
+	return imin;
+}
+
+BASEBLOCKEX* BaseBlocks::GetByX86(uptr ip) const
+{
+	// TODO
+	return 0;
+}
+
+void BaseBlocks::Link(u32 pc, uptr jumpptr)
+{
+	BASEBLOCKEX *targetblock = Get(pc);
+	if (targetblock && targetblock->startpc == pc)
+		*(u32*)jumpptr = targetblock->fnptr - (jumpptr + 4);
+	else
+		*(u32*)jumpptr = recompiler - (jumpptr + 4);
+	links.insert(std::pair<u32, uptr>(pc, jumpptr));
+}
