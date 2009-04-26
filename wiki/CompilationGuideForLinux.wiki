@@ -1,0 +1,68 @@
+#summary A guide to compiling pcsx2 on Linux.
+
+= Introduction =
+
+This is intended to give you an idea of how to compile pcsx2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported my the pcsx2 team. If you have issues following this guide, I'd reccommend going through this thread for help:
+http://forums.pcsx2.net/thread-2373.html
+
+This is loosely based on the compilation guide in that thread, though it should be more up to date.
+
+Note: This is still a rough draft, and subject to change.
+
+= Details =
+
+First, there are various dependencies you will need. This is the list if you are using debian based distributions. Some of these may be named somewhat differently on other distributions:
+  * libbz-dev
+  * libglew1.5-dev
+  * libxxf86vm-dev
+  * nvidia-cg-toolkit
+  * libasound2-dev
+  * joystick
+  * libsdl1.2-dev
+  * libgtk2.0-dev
+  * autoconf
+  * automake
+
+Additionally, you will need gcc & gcc++. It currently expects gcc 4.3 or higher, though I may lower that requirement at some point.
+
+Now, pcsx2 currently likes to reside in one folder. This may change in the future, but for now, go to the area you plan to have it reside.
+
+now, in a terminal window, type the following:
+`svn checkout http://pcsx2.googlecode.com/svn/trunk/ pcsx2-read-only`
+
+Optional:
+If you also want to use Zeydlitz's ZeroGS fork, ZZOgl, which I recommend, do the following:
+go into the plugin folder.
+Type:
+`svn http://sanechka.spb.ru/svnroot/ruslan/zerogs/ zzogl`
+Then open the build.sh file in the plugin directory. If there is a # in front of `buildplugin zzogl $@`, remove it:
+
+Now, go back to the pcsx2-read-only folder.
+
+Type in the following command:
+`sh build.sh all`
+
+This should build pcsx2 and all plugins in the bin directory.
+
+At this point, you can drop in your bios, and you should be set (though you'll need to configure everything the first time you open it, of course.)
+
+Other useful things you can do from the pcsx2-read-only folder:
+
+  * Typing `svn up` will update you to the latest svn (and doing the same thing in the zzogl folder updates zzogl).
+
+  * Typing `svn up -r <revision number>` will roll your copy of pcsx2 back to the revision number you specify, in case a particular revision has something broken.
+
+  * Typing `sh build.sh install`} will only compile the changes from the last version you compiled, which is quicker, though if you run into problems, run "sh build.sh all".
+
+  * Typing `sh build.sh clean` is a good idea if none of the other `sh build.sh <something>` commands is working, as it'll get rid of all the extra accumulated object files, and might be enough to get `sh build.sh all` working again.
+
+  * If you go into the build.sh file in pcsx2-read-only, you will note there are several lines that look like this:
+  `#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"`
+
+  The # means its commented out. You can customize how it's built by changing which one is commented out, and changing the options passed to it. What all the options mean is probably beyond the scope of this document. 
+
+  Generally, the Normal build is the one most users would use. 
+
+  The Developer build adds special options for logging and such, usually used either by developers, or for reporting issues.
+
+  The Debug build also turns off optimizations, and is a lot slower, but generally the most helpful version to use when reporting bugs to the devs.
