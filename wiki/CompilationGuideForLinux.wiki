@@ -12,7 +12,7 @@ Note: This is still a rough draft, and subject to change.
 = Details =
 
 First, there are various dependencies you will need. This is the list if you are using debian based distributions. Some of these may be named somewhat differently on other distributions:
-  * libbz-dev
+  * libbz2-dev
   * libglew1.5-dev
   * libxxf86vm-dev
   * nvidia-cg-toolkit
@@ -23,7 +23,7 @@ First, there are various dependencies you will need. This is the list if you are
   * autoconf
   * automake
 
-Additionally, you will need gcc & gcc++. It currently expects gcc 4.3 or higher, though I may lower that requirement at some point.
+Additionally, you will need gcc & g++. It currently expects gcc 4.3 or higher, though I may lower that requirement at some point.
 
 Now, pcsx2 currently likes to reside in one folder. This may change in the future, but for now, go to the area you plan to have it reside.
 
