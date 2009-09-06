@@ -252,7 +252,7 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
    C:\Development\Project Source\PCSX2-wxGUI\deps\Win32\Release\w32pthreads.lib
    }}}
    This is because some of the code refers to w32pthreads.exp and w32pthreads.lib even though a new library is being used.  As some of the other code also refers to them as w32pthreads.v2.exp and w32pthreads.v2.lib, it is not recommended that you rename the files.
-   == Compiling Legacy GUI SVN Builds of PCSX2 ==
+ == Compiling Legacy GUI SVN Builds of PCSX2 ==
  Open the PCSX2-legacy SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2-legacy) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><br><br>
   === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
    At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><br><br>
@@ -289,7 +289,7 @@ As with any project, the PCSX2 project has several configurable options in relat
  == Stopping Unwanted Components from Compiling ==
  If you are developing a specific project and do not want to compile the other projects every time you re-build the solution, or if you just don't want to compile a specific plug-in for some reason or another, you can easily accomplish this.<br>
  Open the pcsx2_suite_2008.sln Solution file and right-click on the Project you wish not to compile.  Select "Unload" from the context menu.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/1.jpg"><br><br>
- You will now see that the project is listed as "(Unavailable)", as shown in this picture:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/1.jpg"><br><br>
+ You will now see that the project is listed as "(Unavailable)", as shown in this picture:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/2.jpg"><br><br>
  When you compile, this solution will be skipped.  Best of all, this option is persistent, but does not write to the Solution (.sln) file, so making this change will not cause you to get warned of a Version Conflict every time you update your SVN in the future.
 ----
 = 7. Running PCSX2 from the Visual Studio Debugger =
