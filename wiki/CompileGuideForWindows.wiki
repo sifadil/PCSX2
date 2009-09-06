@@ -1,5 +1,5 @@
 #summary Guide to using Visual Studio to compile Pcsx2 and its plugins for Windows.
-#labels Featured,Phase-Implementation
+#labels Phase-Implementation
 
 = Introduction =
 

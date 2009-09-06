@@ -1,0 +1,50 @@
+#summary PCSX2 Coding Strategies Using wxWidgets
+#labels Featured,Phase-Implementation
+
+The new trunk of PCSX2 is now based on *_wxWidgets_*, and this makes for some pretty significant changes to how the code of PCSX2 is structured and, more importantly, sets up a few rules and guidelines for writing happy wx code that's functional, portable, and thread-safe.
+
+== Lean on wx as much as possible ==
+The new wx-based codebase for PCSX2 is designed to “lean” heavily on wxWidgets, meaning that PCSX2 will whenever possible use wx-provided tools and classes instead of re-inventing our own.  This decision was made as it allows us take full advantage of the cross-platform tools offered by wxWidgets, which ensures more correct behavior on Windows and Linux alike and, in turn makes life simpler for all PCSX2 developers.
+
+This means that you should, whenever possible, use the following classes instead of other common alternatives:
+
+ * `wxString` instead of std::string or std::wstring.
+ * `wxChar` instead of TCHAR
+ * `wxString::Format` and `wxString::Printf` (available also via the shortcut `wxsFormat`) instead of `sprintf, snprintf`, or `ssprintf`.
+ * `wxDateTime` instead of POSIX ctime or Windows date functions.
+ * `wxFile` instead of `FILE` or Windows `OpenFile` (yes `wxFile` supports files over 4gb).
+ * Use the `wx*` alternatives for any ANSI C library function, such as `wxGetCwd, wxStrlen`, etc. (as wx should provide platform independent versions of almost everything).
+
+=== There are some exceptions to this last rule: ===
+
+ * We use our own internal Thread class instead of `wxThread`, mostly due to the w32pthreads library being much more robust and efficient than wx's cross-platform threading. (some `wxThread` static functions still are of use, however, such as `wxThread::IsMain()`).
+
+ * Console logging and devel/debug messages do not need to be translated, and do not need to use `wxString` to maintain proper cross-platform unicode support.  All logging functions can use either plain `ASCII-Z (char*)` string and functions or `wxString`; depending on whichever is more convenient at the time.
+
+ * Forego the use of `_T()` or `wxT()`, in favor of the now-standard L”” for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so L”” is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a “perfectly” optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
+(any others...?)
+
+== Maintain 'Emulation Core' and 'User Interface' Separation ==
+
+As of the writing of this doc, this topic is still a work-in-progress on the wx branch, but it's something I'm hoping we can trend toward instead of trend away from.  The idea is that in an ideal code configuration, the PCSX2 core libraries can be used from 3rd party user interfaces.  This is not mean to be a plugin-scope separation!  What that means is there there's no need for a plugin standard interface that's built to be version compatible, or that includes plugin-style enumerations or complicated and ugly DLL export mnemonics.  It's meant as a static linking scenario only.  If a DLL interface is provided in the future, it will be done using a separate project that provides a DLL interface layer to the static PCSX2 core static library.  That is, the goal here is not to complicate code, but rather to simplify it and reduce inter-dependent clutter that can wreak havoc on thread safety and also makes future improvements and upgrades more difficult.
+
+Currently however there is no distinct separation between the emulation core and wx-based GUI, since there are still several intertwined dependencies that still need to be dealt with in a nice manner.  There are some items in the wxgui branch geared with core/ui separation in mind, however, and these you'll want to be aware of:
+
+The emulator core and GUI are now threaded, which means the GUI cannot simply change the emulator's settings whenever it feels like it.  This will result in nasty bugs caused by obscure threading race conditions.  To solve this, Core and UI settings have been separated into two structures, `Pcsx2Config` (for core emu options), and `AppConfig` (wx-UI options).  `AppConfig` contains its own copy of `Pcsx2Config` since, as a UI, it needs to maintain both its own options and the options it uses to invoke emulation.  The emu core uses its own local copy of settings, however.  The core's internal settings copy is called `EmuConfig`, (defined as `extern Pcsx2Config EmuConfig`), and should never be read or written to by UI code directly.
+
+== Guidelines when Using Windows/Linux Specific Code ==
+
+The simple rule is to not use any windows or linux specific code unless absolutely necessary.  Most of the time _wxWidgets_ provisions us with cross-platform alternatives for most tasks, so always make sure to check the wx documentation first.  But, of course, there are still cases of advanced coding that wx doesn't cover, and these will need platform specific implementations.  For example, there is no direct Linux equivalent of Windows Structured Exception Handling (SEH), and PCSX2 code that uses SEH must either be coded to use Linux signals (if possible) or `#ifdef`'d out under Linux.
+
+=== There are two ways to handle separate Windows and Linux implementations ===
+
+  * Create two separate files, one under /Windows and one under /Linux, that each implement a function as according to the platform needs. _(preferred)_
+
+  * Use inline #ifdefs to separate behavior. _(useful for very simple/short differences)_
+
+As noted, it's generally preferred to create implementations in platform specific files over using `#ifdef`.  This helps keep code much cleaner and saner, and is more friendly toward code editors/IDEs as well (most editors handle `#ifdef` poorly, either failing to gray out the unused defines, or by enforcing an ugly tabbing layout that is only suited to function-level codeblock removal).  When using platform specific files it's usually preferred to have each filename assigned the platform's tag.  Example:
+{{{
+/Windows/WinSpecific.cpp
+/Linux/LnxSpecific.cpp
+}}}
+… as this provides a clear identifier to cross-platform programmers which files they're looking at when they use things like Find-in-Files and other global search tools.
