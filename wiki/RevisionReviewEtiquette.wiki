@@ -1,9 +1,9 @@
 #summary ... or "How to post comments without making everyone else not like you."
-#labels Featured
+#labels Featured,Phase-Support
 
-One of the grand benefits of GoogleCode is it's Revision Review feature, which is more or less a fancy term for "user feedback on code changes."
+One of the grand benefits of GoogleCode is it's *_Revision Review_* feature, which is more or less a fancy term for "user feedback on code changes."
 
-Through Revision Review users and Beta Testers of Pcsx2 are able to leave specific comments regarding a particular change to the repository.  This can be highly useful for developers, and can greatly simplify many troubleshooting tasks that the Pcsx2 devs have to go through.  As such we prefer to leave this feature open to the public, so that public review of changes can be recorded and digested quickly.
+Through Revision Review users and Beta Testers of PCSX2 are able to leave specific comments regarding a particular change to the repository.  This can be highly useful for developers, and can greatly simplify many troubleshooting tasks that the PCSX2 devs have to go through.  As such we prefer to leave this feature open to the public, so that public review of changes can be recorded and digested quickly.
 
 == Keeping it real ==
 
@@ -15,7 +15,7 @@ There are a few rules an guidelines that we all need to follow in order for this
 
   * At the very least comments should be relevant to recent code changes or planned future code changes.
 
-  * If you're having general problems with Pcsx2 and don't really know what revision causes it, please use our Issues section or our Public Forum, so that we can discuss and troubleshoot the issue in depth.
+  * If you're having general problems with PCSX2 and don't really know what revision causes it, please use our [http://forums.pcsx2.net Public Forum] or our [http://code.google.com/p/pcsx2/issues/list Issues] section, so that we can discuss and troubleshoot the issue in depth.
 
   * Statements like "Please make it faster" or "please fix my game" are not acceptable and will be deleted.
 
@@ -23,4 +23,4 @@ There are a few rules an guidelines that we all need to follow in order for this
 
   * If we delete your post, there was a good reason for it.  Deleting posts without justification would be counter-productive, much the same way that allowing posts with no relevant content would also be counter-productive.
 
-  * If you find yourself thinking that the Pcsx2 Team is some group of irrational dictators who delete posts simply because we don't like your opinion, then you _probably shouldn't be posting._
+  * If you find yourself thinking that the PCSX2 Team is some group of irrational dictators who delete posts simply because we don't like your opinion, then you _probably shouldn't be posting._
