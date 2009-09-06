@@ -4,7 +4,7 @@
 The new trunk of PCSX2 is now based on *_wxWidgets_*, and this makes for some pretty significant changes to how the code of PCSX2 is structured and, more importantly, sets up a few rules and guidelines for writing happy wx code that's functional, portable, and thread-safe.
 
 == Lean on wx as much as possible ==
-The new wx-based codebase for PCSX2 is designed to “lean” heavily on wxWidgets, meaning that PCSX2 will whenever possible use wx-provided tools and classes instead of re-inventing our own.  This decision was made as it allows us take full advantage of the cross-platform tools offered by wxWidgets, which ensures more correct behavior on Windows and Linux alike and, in turn makes life simpler for all PCSX2 developers.
+The new wx-based codebase for PCSX2 is designed to 'lean' heavily on wxWidgets, meaning that PCSX2 will whenever possible use wx-provided tools and classes instead of re-inventing our own.  This decision was made as it allows us take full advantage of the cross-platform tools offered by wxWidgets, which ensures more correct behavior on Windows and Linux alike and, in turn makes life simpler for all PCSX2 developers.
 
 This means that you should, whenever possible, use the following classes instead of other common alternatives:
 
@@ -21,7 +21,7 @@ This means that you should, whenever possible, use the following classes instead
 
  * Console logging and devel/debug messages do not need to be translated, and do not need to use `wxString` to maintain proper cross-platform unicode support.  All logging functions can use either plain `ASCII-Z (char*)` string and functions or `wxString`; depending on whichever is more convenient at the time.
 
- * Forego the use of `_T()` or `wxT()`, in favor of the now-standard L”” for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so L”” is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a “perfectly” optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
+ * Forego the use of `_T()` or `wxT()`, in favor of the now-standard `L''` for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so L”” is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a 'perfectly” optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
 (any others...?)
 
 == Maintain 'Emulation Core' and 'User Interface' Separation ==

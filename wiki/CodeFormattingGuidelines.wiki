@@ -1,7 +1,7 @@
 #summary General Code Formatting Guidelines
 #labels Phase-Implementation
 
-Generally speaking the PCSX2 project does not make strict rules or guidelines on how code should be formatted.  Either same-line or next-line brace formatting is allowed, and most any variable naming convention is also allowed.  There are however a few basic code formatting strategies that unquestionably “good” as far as readability is concerned, and any contributing coder will do both yourself and the rest of the PCSX2 team a big favor by trying to stick to these guides:
+Generally speaking the PCSX2 project does not make strict rules or guidelines on how code should be formatted.  Either same-line or next-line brace formatting is allowed, and most any variable naming convention is also allowed.  There are however a few basic code formatting strategies that unquestionably 'good' as far as readability is concerned, and any contributing coder will do both yourself and the rest of the PCSX2 team a big favor by trying to stick to these guides:
 
 == Topic 1: Do not use variable type prefixes! ==
 
