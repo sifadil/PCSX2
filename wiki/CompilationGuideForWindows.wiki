@@ -42,10 +42,7 @@
   * PCSX2 Target Build Directory
   * Stopping Unwanted Components from Compiling
  # *Running PCSX2 from the Visual Studio Debugger*
-  * Visual Studio 2008 Standard
-   * _Setting PCSX2 to Run from the Debugger_
-   * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
-  * Visual C++ 2008 Express Edition
+  * Visual Studio 2008 Standard + Visual C++ 2008 Express Edition
    * _Setting PCSX2 to Run from the Debugger_
    * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
   * Visual Studio Team System 2010
@@ -187,6 +184,27 @@ In order to compile PCSX2 you will need to configure a working build environment
    }}}
    That should finish up all of the search directory modifications required for PCSX2 to build properly.  Now on to the next step!
   === Microsoft Visual C++ 2008 Express Edition ===
+   Visual C++ 2008 Express Edition has several limitations not found in either Visual Studio 2008 Standard or Visual Studio Team System 2010.  Because of this, there are special instructions specific to this build environment.
+   To begin, make all of the same changes that you would make for Visual Studio 2008 Standard, except ignore anything relating to the x64 builds and build directories, as Visual C++ Express cannot compile x64 builds.  Also note that you will get error about project folders not being supported in this version of the software every time you open the .sln file.  This will not interfere with your compiling, just click OK to them all.
+   In addition to the changes above, you will need to tell Visual C++ 2008 where to find the Microsoft Windows 2003 R2 Platform SDK we downloaded.  
+   To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><br>
+   Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><br><br>
+   Under the *Win32* Platform, you need to add the following to *Include files*:
+   {{{
+   $(ProgramFiles)\Microsoft Platform SDK for Windows Server 2003 R2\include\atl
+   $(ProgramFiles)\Microsoft Platform SDK for Windows Server 2003 R2\include\mfc
+   }}}
+   Next up is to get around a limitation regarding the compiling 32-bit ATL / MFC solutions in the Express editions of VS.
+   Open the file C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\include\atl\atlbase.h in a text editor and search for the following text:
+   {{{
+   #pragma comment(lib, "atlthunk.lib")
+   }}}
+   Comment this out, so that it reads:
+   {{{
+   // #pragma comment(lib, "atlthunk.lib")
+   }}}
+   Save the file and exit your text editor.
+   Once you have done this, you should be able to continue on to the next steps.
   === Microsoft Visual Studio Team System 2010 (Beta 1) ===
 ----
 = 3. Getting the Source Code =
@@ -294,16 +312,13 @@ As with any project, the PCSX2 project has several configurable options in relat
 ----
 = 7. Running PCSX2 from the Visual Studio Debugger =
 It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if you feel so compelled to do so.  See below for instructions on how to do it for each supported version of Visual Studio. 
- == Visual Studio 2008 Standard ==
+ == Visual Studio 2008 Standard + Visual C++ 2008 Express dition ==
   === Setting PCSX2 to Run from the Debugger ===
-   Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><br><br>
+   Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 / Visual C++ 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><br><br>
    Once you've done this, hit OK.  Once you're back to the main screen, hitting F5 will cause PCSX2 to run in the debugger.
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
    If you are debugging specific plugins, you can do so with the Command Arguments variable, and when that plugin is set as the _Start-up Project_, PCSX2 will know to load it regardless of the selected configuration or target types.  See the following example which is used for debugging SPU2-X:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg"><br><br>
    Notice that *-spu $(TargetPath)* is used as the parameter.  This tells PCSX2 to load whichever copy of SPU2-X that was just built -- whether it be Debug, Devel, or Release.  This saves a trip into the Configuration Dialog of PCSX2 to select the built plugin manually.
- == Visual C++ 2008 Express Edition ==
-  === Setting PCSX2 to Run from the Debugger ===
-  === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
  == Visual Studio Team System 2010 ==
   === Setting PCSX2 to Run from the Debugger ===
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
