@@ -1,4 +1,4 @@
 #summary Formerly a crappy compilation guide for windows...
-#labels Depreciated
+#labels Deprecated
 
 *This guide has been removed.  Please redirect yourself to the new CompilationGuideForWindows.  Enjoy!*
