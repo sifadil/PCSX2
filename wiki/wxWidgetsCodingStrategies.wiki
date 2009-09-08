@@ -21,7 +21,7 @@ This means that you should, whenever possible, use the following classes instead
 
  * Console logging and devel/debug messages do not need to be translated, and do not need to use `wxString` to maintain proper cross-platform unicode support.  All logging functions can use either plain `ASCII-Z (char*)` string and functions or `wxString`; depending on whichever is more convenient at the time.
 
- * Forego the use of `_T()` or `wxT()`, in favor of the now-standard `L''` for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so L”” is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a 'perfectly” optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
+ * Forego the use of `_T()` or `wxT()`, in favor of the now-standard `L''` for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so `L""` is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a 'perfectly' optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
 (any others...?)
 
 == Maintain 'Emulation Core' and 'User Interface' Separation ==
@@ -31,6 +31,41 @@ As of the writing of this doc, this topic is still a work-in-progress on the wx 
 Currently however there is no distinct separation between the emulation core and wx-based GUI, since there are still several intertwined dependencies that still need to be dealt with in a nice manner.  There are some items in the wxgui branch geared with core/ui separation in mind, however, and these you'll want to be aware of:
 
 The emulator core and GUI are now threaded, which means the GUI cannot simply change the emulator's settings whenever it feels like it.  This will result in nasty bugs caused by obscure threading race conditions.  To solve this, Core and UI settings have been separated into two structures, `Pcsx2Config` (for core emu options), and `AppConfig` (wx-UI options).  `AppConfig` contains its own copy of `Pcsx2Config` since, as a UI, it needs to maintain both its own options and the options it uses to invoke emulation.  The emu core uses its own local copy of settings, however.  The core's internal settings copy is called `EmuConfig`, (defined as `extern Pcsx2Config EmuConfig`), and should never be read or written to by UI code directly.
+
+== Be Careful when Sending Events to Other Windows ==
+
+There are several ways to send events between windows in wxWidgets, and only one of them is typically the _correct_ way:
+
+{{{
+// This method ensures cross-platform consistency and thread safety, but cannot be
+// used to get a return code.
+myWidget->GetEventHandler()->AddPendingEvent( evt );
+
+// This one performs an immediate handling of the event, and should only be used
+// if you need a return code, or know for sure the caller is on the Main/GUI thread
+myWidget->GetEventHandler()->ProcessEvent( evt );
+
+// The wxApp class does not have a GetEventHandler() so for it you use this:
+wxGetApp()->AddPendingEvent( evt );    // safe from any thread
+wxGetApp()->PocessEvent( evt );        // safe form GUI thread only
+}}}
+
+This can be a bit confusing because wx has several other options for sending events, and most of them have caveats as noted below:
+
+{{{
+// This one works but is depreciated, and can lead to cross-platform inconsistencies:
+myWidget->AddPendingEvent( evt );
+
+// This one has the same problem as above.
+wxPostEvent( myWidget, evt );
+
+// This one actually works correctly, but might as well just use the more direct
+// example of myWidget->GetEventHandler()->AddPendingEvent( evt );
+wxPostEvent( myWidget->GetEventHandler(), evt );
+}}}
+
+... So the moral of the story is: 
+Use `GetEventHandler()` when possible (basically anything except the `wxApp` object), and use `AddPendingEvent()` unless you need a return code _and_ know you're on the main GUI thread.
 
 == Guidelines when Using Windows/Linux Specific Code ==
 
@@ -47,4 +82,4 @@ As noted, it's generally preferred to create implementations in platform specifi
 /Windows/WinSpecific.cpp
 /Linux/LnxSpecific.cpp
 }}}
-… as this provides a clear identifier to cross-platform programmers which files they're looking at when they use things like Find-in-Files and other global search tools.
+... as this provides a clear identifier to cross-platform programmers which files they're looking at when they use things like Find-in-Files and other global search tools.
