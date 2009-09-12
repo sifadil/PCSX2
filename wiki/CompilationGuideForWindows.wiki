@@ -32,9 +32,15 @@
  # *Compiling PCSX2's Binary*
   * Compiling Trunk SVN Builds of PCSX2
    * _Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds)_
-   * _wxGUI Specific Workarounds_
   * Compiling Legacy GUI SVN Builds of PCSX2
    * _Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds)_
+ # *Effective Build Troubleshooting Steps*
+  * So, your build failed.  What now?
+   * _If at first you don't succeed..._
+   * _CL.EXE Compiling Errors w/ Visual Studio 2008 Standard_
+   * _Clean your Dev Environment_
+   * _Re-download the Source_
+   * _Read the Logs - Trace The Errors_
  # *Files Necessary from Build for PCSX2's Execution*^*At the time of posting^
   * Trunk SVN Build Files
   * Legacy GUI SVN Build Files
@@ -53,6 +59,7 @@
   * Packaging PCSX2 with NULL Plugins
   * Packaging PCSX2 with all Plugins
   * Packaging the PCSX2 wxGUI Branch
+
 
 ----
 
@@ -76,7 +83,7 @@ In order to compile PCSX2 you will need to configure a working build environment
   === Microsoft Visual Studio 2008 Standard Edition ===
    Insert your Visual Studio 2008 Standard CD (or download the Trial from the link above).  Run setup and click next at the Welcome Screen (shown below).  It's your choice as to sending information about the setup experience to Microsoft.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/1.jpg"><br><br>
    Accept the terms of the EULA and enter your product key.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/2.jpg"><br><br>
-   The Visual Web Developer and Visual Basic features are not required in order to compile PCSX2, however, if you program in any of these languages, you may elect to install them and it will not cause any problems.  Make sure to install Visual C++ and Visual C#.  I recommend keeping the default installation paths.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/3.jpg"><br><br>
+   The Visual Web Developer and Visual Basic features are not required in order to compile PCSX2, however, if you program in any of these languages, you may elect to install them and it will not cause any problems.  Make sure to install Visual C++.  I recommend keeping the default installation paths.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/3.jpg"><br><br>
    Visual Studio will begin installing.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg"><br><br>
    Once setup is complete, you will be presented with the following screen.  Click Finish.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg"><br><br>
    Now that Visual Studio is installed, your system needs a few patches in order to be current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg"><br><br>
@@ -157,14 +164,6 @@ In order to compile PCSX2 you will need to configure a working build environment
    To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/2.jpg"><br><br>
    Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><br><br>
    Several changes need to be made here.<br><br>
-   Under the *Win32* Platform, you need to add the following to *Executable files*:
-   {{{
-   $(ProgramFiles)\NVIDIA Corporation\Cg\bin
-   }}}
-   Under the *x64* Platform, you need to add the following to *Executable files*:^*Only available or necessary if compiling on a 64-bit OS^
-   {{{
-   $(ProgramFiles)\NVIDIA Corporation\Cg\bin.x64
-   }}}
    Under the *Win32* Platform, you need to add the following to *Include files*:^*If you installed GLEW elsewhere, reflect here^
    {{{
    $(DXSDK_DIR)\Include
@@ -206,6 +205,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    Save the file and exit your text editor.
    Once you have done this, you should be able to continue on to the next steps.
   === Microsoft Visual Studio Team System 2010 (Beta 1) ===
+   Coming soon!
 ----
 = 3. Getting the Source Code =
 In order to compile PCSX2, you will need to first download all of the current source code to your local machine.  Depending on which branch you are downloading, the repository locations may change.
@@ -257,19 +257,7 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
    At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><br><br>
    This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  The Release Build Target does not specify an instruction set target for the gsDX compile and will not compile gsDX.  It is recommended that you choose all three (SSE2, SSSE3, and SSE4) as a build target (Release is unnecessary) if preparing a release build to ensure that all users have available versions of the plugin.<br>
    Once you have selected the Build Target, it is time to build the solution.  You can either select the Build Menu from the top menu, and choose Build Solution, or you can hit CTRL-SHIFT-B.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/3.jpg"><br><br>
-   This is the moment of truth!  If you've followed the instructions properly and configured all of the search directories for Visual Studio properly, this process should finish with 0 errors.  Warnings are usually nothing to worry about, so, as long as the solution compiles with 0 errors and you have the output files, you should be good to go.  Congratulations!
-  === wxGUI Specific Workarounds ===
-   Depending on whether this has been fixed in SVN by the time you attempt this, you may need to COPY the following two files:
-   {{{
-   C:\Development\Project Source\PCSX2-wxGUI\deps\Win32\Release\w32pthreads.v2.exp
-   C:\Development\Project Source\PCSX2-wxGUI\deps\Win32\Release\w32pthreads.v2.lib
-   }}}
-   to
-   {{{
-   C:\Development\Project Source\PCSX2-wxGUI\deps\Win32\Release\w32pthreads.exp
-   C:\Development\Project Source\PCSX2-wxGUI\deps\Win32\Release\w32pthreads.lib
-   }}}
-   This is because some of the code refers to w32pthreads.exp and w32pthreads.lib even though a new library is being used.  As some of the other code also refers to them as w32pthreads.v2.exp and w32pthreads.v2.lib, it is not recommended that you rename the files.
+   This is the moment of truth!  If you've followed the instructions properly and configured all of the search directories for Visual Studio properly, this process should finish with 0 errors.  Warnings are usually nothing to worry about, so, as long as the solution compiles with 0 errors and you have the output files, you should be good to go.  Congratulations!<br>
  == Compiling Legacy GUI SVN Builds of PCSX2 ==
  Open the PCSX2-legacy SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2-legacy) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><br><br>
   === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
@@ -277,7 +265,21 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
    This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  It is recommended that you choose all three as a build target if preparing a release build to ensure that all users have available versions of the plugin.<br>
    Build the branch release just like you would the main Trunk release.
 ----
-= 5. Files Necessary from Build for PCSX2's Execution =
+= 5. Effective Build Troubleshooting Steps =
+ == So, your build failed.  What now? ==
+ Even in the most perfect of circumstances, there is always the possibility that your build is going to fail for some reason or another.  I've included a few things to try that should take care of almost all of the common compiling issues that users have.
+  === If at first you don't succeed... ===
+   Re-try the build, at least once.  Visual Studio is notorious for spamming errors about files being in use, access denied, or errors returned from mt.exe.  If this happens to you, or frankly in pretty much any other case, make sure to retry the build at least once to ensure you have a reproducible build failure!
+  === CL.EXE Compiling Errors w/ Visual Studio 2008 Standard === 
+   If you are using Visual Studio 2008 Standard and have followed this guide from start to finish and are experiencing build errors in relation to CL.EXE, a workaround is to put the VS2008 install disc in and to modify your installation of VS and add Visual C#.  Note that you're not installing C# because any of PCSX2 is programmed in C#, you're installing C# because for some reason, the C++ install doesn't put the necessary version of CL.EXE in your build environment.  I'm investigating why this is and will update the guide if I find a better way to solve the missing CL.EXE problem.  I had this problem in two specific cases but I've been shown instances where it was unnecessary.  As such, I pulled it from the main steps and added it as a possible workaround in case anyone else encounters it.  It seems to only occur when running under a Virtual PC in Virtual PC 2007.
+  === Clean your Dev Environment ===
+   It is good practice to clean your build environment of Visual Studio build-process temporary files and post-build remnants of the solution if you encounter errors while building.  This is a quick and painless process.  To begin, open the pcsx2_suite_2008.sln Solution file.  Once Visual Studio has opened, select the build of PCSX2 that you are having trouble building from the Build Target dropdown (e.g., SSE2, SSSE3, SSE4, etc.)  Click on the Build menu and select Clean Solution from the list.  Once this has completed, run clean_mvsc.cmd in the main PCSX2 SVN directory.  This will clean out more unneeded data that Visual Studio leaves behind in a clean.  Retry the build and see if this solves your problem.
+  === Re-download the Source ===
+   It is possible (though very uncommon) for such drastic changes to be made to the source tree in SVN that you may have stale code or remnants of previous SVN revisions that have ended up sitting in your SVN directory.  A quick and non-destructive way to test this is to create a new build directory and re-checkout the source from the SVN repository.  After a full fresh checkout, attempt the build again.
+  === Read the Logs - Trace the Errors ===
+   When all else fails, the error log and output screens can be a wealth of information.  Even if you're not a developer, you can look at the error log and extrapolate what files are involved in the error you're having.  Once you know that, search for the files and see if any of them are in the directories that are supposed to be configured in the search paths -- if so, go verify in your VC++ Directories setting that you have properly entered the dependency directories.  Mistyping the directory names, including the wrong directory, or overlooking a directory is one of the most common causes of build failure and can be easily and quickly fixed.  If that doesn't work, post about your experiences on the PCSX2 forum under the revelant topic and someone should be able to help you out.
+----
+= 6. Files Necessary from Build for PCSX2's Execution =
 PCSX2 only requires a few files in order to execute.  Other files are required in order for it to function as an emulator, such as the plug-in files, but in this section I am referring only to which files are required in order for PCSX2 to execute successfully without errors.
  == Trunk SVN Build Files ==
  The current Trunk SVN build requires the following files in order to execute:
@@ -294,7 +296,7 @@ PCSX2 only requires a few files in order to execute.  Other files are required i
  gnu_gettext.dll
  }}}
 ----
-= 6. Miscellaneous PCSX2 Compiling Options =
+= 7. Miscellaneous PCSX2 Compiling Options =
 As with any project, the PCSX2 project has several configurable options in relation to compiling.
  == PCSX2 Target Build Directory ==
  One of the options is a configurable _post-build event_ that can optionally copy the .EXE file and required .DLL files into a folder of your choice.  The files are copied both as their original filename (e.g., PCSX2.EXE) and also as a revision-tagged filename for easy regression testing (e.g. PCSX2-r1750.EXE)  You will need to specify the PCSX2_TARGET_COPY Environment Variable.<br>
@@ -310,9 +312,9 @@ As with any project, the PCSX2 project has several configurable options in relat
  You will now see that the project is listed as "(Unavailable)", as shown in this picture:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/2.jpg"><br><br>
  When you compile, this solution will be skipped.  Best of all, this option is persistent, but does not write to the Solution (.sln) file, so making this change will not cause you to get warned of a Version Conflict every time you update your SVN in the future.
 ----
-= 7. Running PCSX2 from the Visual Studio Debugger =
+= 8. Running PCSX2 from the Visual Studio Debugger =
 It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if you feel so compelled to do so.  See below for instructions on how to do it for each supported version of Visual Studio. 
- == Visual Studio 2008 Standard + Visual C++ 2008 Express dition ==
+ == Visual Studio 2008 Standard + Visual C++ 2008 Express Edition ==
   === Setting PCSX2 to Run from the Debugger ===
    Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 / Visual C++ 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><br><br>
    Once you've done this, hit OK.  Once you're back to the main screen, hitting F5 will cause PCSX2 to run in the debugger.
@@ -323,7 +325,7 @@ It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if
   === Setting PCSX2 to Run from the Debugger ===
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
 ----
-= 8. Packaging PCSX2 with Nullsoft Scriptable Install System =
+= 9. Packaging PCSX2 with Nullsoft Scriptable Install System =
  == Just Because It Compiles Doesn't Mean It Works! ==
  The steps included in this guide will pretty much guarantee that you can set up an environment in which you can compile the .NSI file included in the PCSX2 source to a .exe installer, but PLEASE NOTE THE FOLLOWING:  Just because you can get it to compile without erroring does not mean that the output file will be a functional installer!  Just like any other piece of code, the .NSI installer needs maintenance whenever there are changes to the file and directory structure of PCSX2.  The installer is not the highest priority on the list, so it is possible that the .NSI is out of date and may be including out-dated files, or may not be including new files.  It may complete compilation but net an installation that crashes every time it's run due to missing or unlinked .DLLs.  With that said, it is NOT recommended that you use these installers without testing them in a sandbox / virtualized environment first to ensure that they properly install!  A successful .NSI file compile does NOT equate to a truly successful installer build!
  == Installing the Nullsoft Scriptable Install System ==
