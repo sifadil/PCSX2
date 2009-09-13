@@ -62,7 +62,7 @@
 
 
 ----
-
+Note:  Click on the thumbnails for full-sized screenshots!
 = 1. Setting up the Build Environment =
 In order to compile PCSX2 you will need to configure a working build environment based on Microsoft's Visual Studio.  There are a lot of things to download, so I've placed links to them at the front of the guide so you can get everything you'll need as the first step.
  == Downloading the Prerequisites ==
@@ -81,46 +81,46 @@ In order to compile PCSX2 you will need to configure a working build environment
  == Installing Microsoft Visual Studio ==
  At present, there are three versions of Microsoft Visual Studio that are capable of compiling PCSX2.  Depending on whether or not you develop professionally, as well as other factors, you may or may not have access to a copy of Microsoft Visual Studio 2008 Standard.  To ensure the widest applicable audience, this guide will cover the installation and configuration of all three of these versions.  Note, however, that it is only required for you to install one of them!  
   === Microsoft Visual Studio 2008 Standard Edition ===
-   Insert your Visual Studio 2008 Standard CD (or download the Trial from the link above).  Run setup and click next at the Welcome Screen (shown below).  It's your choice as to sending information about the setup experience to Microsoft.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/1.jpg"><br><br>
-   Accept the terms of the EULA and enter your product key.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/2.jpg"><br><br>
-   The Visual Web Developer and Visual Basic features are not required in order to compile PCSX2, however, if you program in any of these languages, you may elect to install them and it will not cause any problems.  Make sure to install Visual C++.  I recommend keeping the default installation paths.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/3.jpg"><br><br>
-   Visual Studio will begin installing.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg"><br><br>
-   Once setup is complete, you will be presented with the following screen.  Click Finish.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg"><br><br>
-   Now that Visual Studio is installed, your system needs a few patches in order to be current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg"><br><br>
+   Insert your Visual Studio 2008 Standard CD (or download the Trial from the link above).  Run setup and click next at the Welcome Screen (shown below).  It's your choice as to sending information about the setup experience to Microsoft.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the terms of the EULA and enter your product key.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/2.jpg" width="200px" /></a><br><br>
+   The Visual Web Developer and Visual Basic features are not required in order to compile PCSX2, however, if you program in any of these languages, you may elect to install them and it will not cause any problems.  Make sure to install Visual C++.  I recommend keeping the default installation paths.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/3.jpg" width="200px" /></a><br><br>
+   Visual Studio will begin installing.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg" width="200px" /></a><br><br>
+   Once setup is complete, you will be presented with the following screen.  Click Finish.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg" width="200px" /></a><br><br>
+   Now that Visual Studio is installed, your system needs a few patches in order to be current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg" width="200px" /></a><br><br>
    Install all of the updates and then Visual Studio 2008 is ready to go.  Skip the Visual C++ 2008 Express and Visual Studio Team System 2010 sections and continue below with Installing SDKs.
   === Microsoft Visual C++ 2008 Express Edition ===
-   Download the Visual C++ 2008 Express Edition Installer from the link above.  Run it, and click next at the Welcome Screen (shown below).<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/1.jpg"><br><br>
-   Accept the EULA.  It's your choice whether or not you allow it to display online and RSS content, it doesn't make a difference to the compiling of PCSX2.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/2.jpg"><br><br>
-   You do not need Microsoft SQL Server 2008 Express Edition in order to compile PCSX2, however, if you are doing development in any other capacity that requires a local SQL Database, you may choose to install this component.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/3.jpg"><br><br>
-   I recommend keeping the default installation location.  Click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/4.jpg"><br><br>
-   The components will be downloaded to your computer.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/5.jpg"><br><br>
-   Once done downloading, they will then be installed.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/6.jpg"><br><br>
-   Once the installation has finished, you will see the following screen.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/7.jpg"><br><br>
-   Click Finish and the installer will close.  Now that Visual C++ is installed, your system needs a few patches in order to remain current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/8.jpg"><br><br>
+   Download the Visual C++ 2008 Express Edition Installer from the link above.  Run it, and click next at the Welcome Screen (shown below).<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA.  It's your choice whether or not you allow it to display online and RSS content, it doesn't make a difference to the compiling of PCSX2.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/2.jpg" width="200px" /></a><br><br>
+   You do not need Microsoft SQL Server 2008 Express Edition in order to compile PCSX2, however, if you are doing development in any other capacity that requires a local SQL Database, you may choose to install this component.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/3.jpg" width="200px" /></a><br><br>
+   I recommend keeping the default installation location.  Click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/4.jpg" width="200px" /></a><br><br>
+   The components will be downloaded to your computer.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/5.jpg" width="200px" /></a><br><br>
+   Once done downloading, they will then be installed.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/6.jpg" width="200px" /></a><br><br>
+   Once the installation has finished, you will see the following screen.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/7.jpg" width="200px" /></a><br><br>
+   Click Finish and the installer will close.  Now that Visual C++ is installed, your system needs a few patches in order to remain current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/8.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/8.jpg" width="200px" /></a><br><br>
    Download and install the updates, and then skip past Installing Visual Studio Team System 2010 and continue with the SDK installations.
   === Microsoft Visual Studio Team System 2010 ===
-   Download the Visual Studio Team System Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below). <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg"><br><br>
-   Accept the EULA and enter your Product Key, then hit Next. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/2.jpg"><br><br>
-   The .NET Development Environment is NOT required in order to configure PCSX2, but you can choose to install it if you plan on doing .NET Development.  I recommend installing Visual Studio in the default location to ensure there are no problems later on. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/3.jpg"><br><br>
-   Visual Studio's installer will begin downloading the installation components.  <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/4.jpg"><br><br>
-   Once it has finished downloading the components, it will begin installing them.  <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/5.jpg"><br><br>
-   Soon after beginning the installation, I was prompted to reboot in order to continue. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/6.jpg"><br><br>
-   After I rebooted and logged on, I got the following at system startup: <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/7.jpg"><br><br>
-   The installer then launched and continued installing where it had left off. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/8.jpg"><br><br>
-   After that finishes, you should be presented with the following screen: <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/9.jpg"><br><br>
-   Click finish and the installer will close.  Now that Visual Studio is installed, your machine needs several more patches in order to be current.  Visit Windows Update with Microsoft Update enabled and you'll be presented with the following updates <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/10.jpg"><br><br>
-   <img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/11.jpg"><br><br>
+   Download the Visual Studio Team System Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below). <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA and enter your Product Key, then hit Next. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/2.jpg" width="200px" /></a><br><br>
+   The .NET Development Environment is NOT required in order to configure PCSX2, but you can choose to install it if you plan on doing .NET Development.  I recommend installing Visual Studio in the default location to ensure there are no problems later on. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/3.jpg" width="200px" /></a><br><br>
+   Visual Studio's installer will begin downloading the installation components.  <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/4.jpg" width="200px" /></a><br><br>
+   Once it has finished downloading the components, it will begin installing them.  <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/5.jpg" width="200px" /></a><br><br>
+   Soon after beginning the installation, I was prompted to reboot in order to continue. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/6.jpg" width="200px" /></a><br><br>
+   After I rebooted and logged on, I got the following at system startup: <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/7.jpg" width="200px" /></a><br><br>
+   The installer then launched and continued installing where it had left off. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/8.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/8.jpg" width="200px" /></a><br><br>
+   After that finishes, you should be presented with the following screen: <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/9.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/9.jpg" width="200px" /></a><br><br>
+   Click finish and the installer will close.  Now that Visual Studio is installed, your machine needs several more patches in order to be current.  Visit Windows Update with Microsoft Update enabled and you'll be presented with the following updates <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/10.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/10.jpg" width="200px" /></a><br><br>
+   <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/11.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/11.jpg" width="200px" /></a><br><br>
    The SQL Server update isn't required for PCSX2, but is recommended in general to keep your machine as up-to-date as possible.  After the updates have installed, Visual Studio Team System 2010 is now installed on your computer.  Go ahead on to the next step.
  == Installing SDKs ==
  The PCSX2 codebase makes use of several freely available SDKs that must be downloaded and installed in order to successfully compile PCSX2.  If you are intending to compile the PCSX2 plugins as well, you will need additional SDKs.  Each of the requisite SDKs is listed below. 
   === DirectX SDK ===
-   Download the Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below.) <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/1.jpg"><br><br>
-   Accept the EULA as shown. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/2.jpg"><br><br>
-   You will be prompted to join the Windows Customer Experience Improvement Program.  I chose not to, but the decision is yours to make.  It won't impact anything you'll be doing with the software. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/2.jpg"><br><br>
-   You will then be prompted for a destination folder, I recommend choosing the default to make life easier later on. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/4.jpg"><br><br>
-   You will be prompted with a list of components.  The default selection will suffice for building PCSX2, so go ahead and click Next. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/5.jpg"><br><br>
-   The DirectX SDK will then begin installing. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/6.jpg"><br><br>
-   You should then be presented with this screen. <br><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/7.jpg"><br><br>
+   Download the Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below.) <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA as shown. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/2.jpg" width="200px" /></a><br><br>
+   You will be prompted to join the Windows Customer Experience Improvement Program.  I chose not to, but the decision is yours to make.  It won't impact anything you'll be doing with the software. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/3.jpg" width="200px" /></a><br><br>
+   You will then be prompted for a destination folder, I recommend choosing the default to make life easier later on. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/4.jpg" width="200px" /></a><br><br>
+   You will be prompted with a list of components.  The default selection will suffice for building PCSX2, so go ahead and click Next. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/5.jpg" width="200px" /></a><br><br>
+   The DirectX SDK will then begin installing. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/6.jpg" width="200px" /></a><br><br>
+   You should then be presented with this screen. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/7.jpg" width="200px" /></a><br><br>
    Click finish and move on to the next step.
   === OpenGL Extension Wrangler (GLEW) ===
    Download the OpenGL Extension Wrangler binaries from the website listed above.  Extract the files into a directory of your choice.  In this case, I have extracted them to 
@@ -128,41 +128,41 @@ In order to compile PCSX2 you will need to configure a working build environment
    C:\Development\Add-On Libraries\GLEW\  
    }}}
   === Windows 2003 R2 Platform SDK (Visual C++ 2008 Express ONLY) ===
-   If you are compiling using Visual C++ 2008 Express, in order to compile several of the plugins, you will need files that are not included with your version of Visual Studio by default.  Download the Windows 2003 R2 Platform SDK Web Installer from the link above, and run the installer.  Click Next at the Welcome Screen shown below.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/1.jpg"><br><br>
-   Accept the EULA and click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/2.jpg"><br><br>
-   Choose the Typical install when prompted and click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/3.jpg"><br><br>
-   I recommend leaving the installation at the default directory to ensure there are no problems in the future.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/4.jpg"><br><br>
-   The installer will then ask you to confirm that you are installing.... ?<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/5.jpg"><br><br>
-   Then it will install.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/6.jpg"><br><br>
-   After the installation has completed, you will see the following screen.  Click Finish and the installer will close.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/7.jpg"><br><br>
+   If you are compiling using Visual C++ 2008 Express, in order to compile several of the plugins, you will need files that are not included with your version of Visual Studio by default.  Download the Windows 2003 R2 Platform SDK Web Installer from the link above, and run the installer.  Click Next at the Welcome Screen shown below.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA and click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/2.jpg" width="200px" /></a><br><br>
+   Choose the Typical install when prompted and click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/3.jpg" width="200px" /></a><br><br>
+   I recommend leaving the installation at the default directory to ensure there are no problems in the future.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/4.jpg" width="200px" /></a><br><br>
+   The installer will then ask you to confirm that you are installing.... ?<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/5.jpg" width="200px" /></a><br><br>
+   Then it will install.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/6.jpg" width="200px" /></a><br><br>
+   After the installation has completed, you will see the following screen.  Click Finish and the installer will close.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/7.jpg" width="200px" /></a><br><br>
    Continue to the next prerequisite.
   === nVidia's CG Toolkit ===
-   Download the nVidia CG Toolkit from the link above and run the installer.  Click next at the Welcome Screen as shown.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/1.jpg"><br><br>
-   Accept the EULA and click next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/2.jpg"><br><br>
-   Accept the default installation destination and click next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/3.jpg"><br><br>
-   The default component selection will suffice for PCSX2 compilation, however, you can add anything that is not selected if you want it.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/4.jpg"><br><br>
-   Review the confirmation screen and click Next to continue.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/5.jpg"><br><br>
-   The installer will begin the install process.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/6.jpg"><br><br>
-   You will be presented with the following screen when the installer has finished:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/7.jpg"><br><br>
+   Download the nVidia CG Toolkit from the link above and run the installer.  Click next at the Welcome Screen as shown.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA and click next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/2.jpg" width="200px" /></a><br><br>
+   Accept the default installation destination and click next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/3.jpg" width="200px" /></a><br><br>
+   The default component selection will suffice for PCSX2 compilation, however, you can add anything that is not selected if you want it.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/4.jpg" width="200px" /></a><br><br>
+   Review the confirmation screen and click Next to continue.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/5.jpg" width="200px" /></a><br><br>
+   The installer will begin the install process.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/6.jpg" width="200px" /></a><br><br>
+   You will be presented with the following screen when the installer has finished:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NVCG_INSTALL/7.jpg" width="200px" /></a><br><br>
    Continue on to the next section.
  == Installing an SVN Client ==
  An SVN client is not _required_ in order to build PCSX2, but it is strongly recommended and is the only supported way of obtaining the current revision of PCSX2 source code.  In this case, we're using TortoiseSVN
   === TortoiseSVN ===
-   Visit the TortoiseSVN website listed above and go to the Downloads page.  Download the latest version of TortoiseSVN and run the installer.  You will be presented with the following Welcome screen.  Click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/1.jpg"><br><br>
-   Accept the EULA and click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/2.jpg"><br><br>
-   The default components will suffice for the purposes of this installation.  Click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/3.jpg"><br><br>
-   Review the Confirmation Screen to ensure the information is correct, and click Next to begin the install proces.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/4.jpg"><br><br>
-   You will see the current progress while TortoiseSVN is installing.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/5.jpg"><br><br>
-   Once complete, you will see this screen.  Click Finish.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/6.jpg"><br><br>
-   You will be prompted to reboot your computer.  Save your work and reboot, then continue to the next section.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/7.jpg"><br><br>
+   Visit the TortoiseSVN website listed above and go to the Downloads page.  Download the latest version of TortoiseSVN and run the installer.  You will be presented with the following Welcome screen.  Click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Accept the EULA and click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/2.jpg" width="200px" /></a><br><br>
+   The default components will suffice for the purposes of this installation.  Click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/3.jpg" width="200px" /></a><br><br>
+   Review the Confirmation Screen to ensure the information is correct, and click Next to begin the install proces.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/4.jpg" width="200px" /></a><br><br>
+   You will see the current progress while TortoiseSVN is installing.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/5.jpg" width="200px" /></a><br><br>
+   Once complete, you will see this screen.  Click Finish.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/6.jpg" width="200px" /></a><br><br>
+   You will be prompted to reboot your computer.  Save your work and reboot, then continue to the next section.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_INSTALL/7.jpg" width="200px" /></a><br><br>
 ----
 = 2. Configuring the Build Environment = 
  == Configuring the SDK Library and Include Directories ==
  Before PCSX2 will compile successfully, we need to ensure that all of the include, library, and header directories for the SDKs that we have installed are configured in our respective version of Visual Studio. 
   === Microsoft Visual Studio 2008 Standard Edition ===
-   Navigate to your C:\Development\Project Source\PCSX2\ directory and double click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 and you will be presented with a screen that should look similar (it may not look exact) to the one here:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/1.jpg"><br><br>
-   To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/2.jpg"><br><br>
-   Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><br><br>
+   Navigate to your C:\Development\Project Source\PCSX2\ directory and double click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 and you will be presented with a screen that should look similar (it may not look exact) to the one here:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/1.jpg" width="200px" /></a><br><br>
+   To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/2.jpg" width="200px" /></a><br><br>
+   Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg" width="200px" /></a><br><br>
    Several changes need to be made here.<br><br>
    Under the *Win32* Platform, you need to add the following to *Include files*:^*If you installed GLEW elsewhere, reflect here^
    {{{
@@ -187,7 +187,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    To begin, make all of the same changes that you would make for Visual Studio 2008 Standard, except ignore anything relating to the x64 builds and build directories, as Visual C++ Express cannot compile x64 builds.  Also note that you will get error about project folders not being supported in this version of the software every time you open the .sln file.  This will not interfere with your compiling, just click OK to them all.
    In addition to the changes above, you will need to tell Visual C++ 2008 where to find the Microsoft Windows 2003 R2 Platform SDK we downloaded.  
    To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><br>
-   Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><br><br>
+   Expand "Projects and Solutions" from the left-hand side and then select "VC++ Directories".  This will bring up the dialog that allows you to modify the search paths for your VC++ solutions.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INCLUDE/3.jpg" width="200px" /></a><br><br>
    Under the *Win32* Platform, you need to add the following to *Include files*:
    {{{
    $(ProgramFiles)\Microsoft Platform SDK for Windows Server 2003 R2\include\atl
@@ -205,7 +205,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    Save the file and exit your text editor.
    Once you have done this, you should be able to continue on to the next steps.
   === Microsoft Visual Studio Team System 2010 (Beta 1) ===
-   Coming soon!
+   Coming soon...
 ----
 = 3. Getting the Source Code =
 In order to compile PCSX2, you will need to first download all of the current source code to your local machine.  Depending on which branch you are downloading, the repository locations may change.
@@ -217,17 +217,17 @@ In order to compile PCSX2, you will need to first download all of the current so
    }}}
    You can choose whatever directory you like, just make sure that you substitute it in any location that I have included the above directory.
   === Configure the Directory as an SVN Directory and Download the Latest Revision ===
-   Open the parent folder to your new PCSX2 directory and right click on the PCSX2 directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/1.jpg"><br><br>
+   Open the parent folder to your new PCSX2 directory and right click on the PCSX2 directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/1.jpg" width="200px" /></a><br><br>
    You will be presented with an SVN Checkout configuration page, which will ask you for the "URL of Repository".  Enter the following:
    {{{
    http://pcsx2.googlecode.com/svn/trunk/
    }}}
-   As shown in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/2.jpg"><br><br>
-   You will see information similar to the following when the checkout is complete:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/3.jpg"><br><br>
-   You can verify the existence of the Source code by visiting the PCSX2 directory.  You'll see something like this:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/4.jpg"><br><br>
+   As shown in the following screenshot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/2.jpg" width="200px" /></a><br><br>
+   You will see information similar to the following when the checkout is complete:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/3.jpg" width="200px" /></a><br><br>
+   You can verify the existence of the Source code by visiting the PCSX2 directory.  You'll see something like this:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/4.jpg" width="200px" /></a><br><br>
   === Download Updated Revisions ===
-   After you have configured this directory as an SVN directory, all you need to do in the future is right click on it from Explorer and select "SVN Update" from the context menu as shown in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/5.jpg"><br><br>
-   TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/6.jpg"><br><br>
+   After you have configured this directory as an SVN directory, all you need to do in the future is right click on it from Explorer and select "SVN Update" from the context menu as shown in the following screenshot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/5.jpg" width="200px" /></a><br><br>
+   TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/6.jpg" width="200px" /></a><br><br>
    If you are interested in what changes have been made since your last source download, click the "Show Log" button.
  == Downloading the PCSX2 Legacy GUI Branch SVN Code ==
   === Make the Build Directory ===
@@ -237,31 +237,31 @@ In order to compile PCSX2, you will need to first download all of the current so
    }}}
    You can choose whatever directory you like, but as before, make sure that you substitute it in any location that I have included the above directory.
   === Configure the Directory as an SVN Directory and Download the Latest Revision ===
-   Open the parent folder to your new PCSX2-legacy directory and right click on the PCSX2-legacy directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/1.jpg"><br><br>
+   Open the parent folder to your new PCSX2-legacy directory and right click on the PCSX2-legacy directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/1.jpg" width="200px" /></a><br><br>
    You will be presented with an SVN Checkout configuration page, which will ask you for the "URL of Repository".  Enter the following:
    {{{
    http://pcsx2.googlecode.com/svn/branches/legacy_gui
    }}}
-   As shown in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/2.jpg"><br><br>
-   You will see information similar to the following when the checkout is complete:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/3.jpg"><br><br>
+   As shown in the following screenshot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/2.jpg" width="200px" /></a><br><br>
+   You will see information similar to the following when the checkout is complete:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/3.jpg" width="200px" /></a><br><br>
   === Download Updated Revisions ===
-   Downloading updates is the same as it is with any other SVN directory, but for posterity's sake, after you have configured this directory as an SVN directory, right click on it from Explorer and select "SVN Update" from the context menu as shown in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/5.jpg"><br><br>
-   TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/6.jpg"><br><br>
+   Downloading updates is the same as it is with any other SVN directory, but for completeness's sake, after you have configured this directory as an SVN directory, right click on it from Explorer and select "SVN Update" from the context menu as shown in the following screenshot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/5.jpg" width="200px" /></a><br><br>
+   TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/6.jpg" width="200px" /></a><br><br>
    If you are interested in what changes have been made since your last source download, click the "Show Log" button.
 ----
 = 4. Compiling PCSX2's Binary =
 You've now completed all of the "leg work" required in order to compile PCSX2 on your machine.  Congratulations!
  == Compiling Trunk SVN Builds of PCSX2 ==
- Open the PCSX2 SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><br><br>
+ Open the PCSX2 SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg" width="200px" /></a><br><br>
   === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
-   At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><br><br>
+   At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg" width="200px" /></a><br><br>
    This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  The Release Build Target does not specify an instruction set target for the gsDX compile and will not compile gsDX.  It is recommended that you choose all three (SSE2, SSSE3, and SSE4) as a build target (Release is unnecessary) if preparing a release build to ensure that all users have available versions of the plugin.<br>
-   Once you have selected the Build Target, it is time to build the solution.  You can either select the Build Menu from the top menu, and choose Build Solution, or you can hit CTRL-SHIFT-B.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/3.jpg"><br><br>
+   Once you have selected the Build Target, it is time to build the solution.  You can either select the Build Menu from the top menu, and choose Build Solution, or you can hit CTRL-SHIFT-B.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/3.jpg" width="200px" /></a><br><br>
    This is the moment of truth!  If you've followed the instructions properly and configured all of the search directories for Visual Studio properly, this process should finish with 0 errors.  Warnings are usually nothing to worry about, so, as long as the solution compiles with 0 errors and you have the output files, you should be good to go.  Congratulations!<br>
  == Compiling Legacy GUI SVN Builds of PCSX2 ==
- Open the PCSX2-legacy SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2-legacy) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><br><br>
+ Open the PCSX2-legacy SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2-legacy) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg" width="200px" /></a><br><br>
   === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
-   At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><br><br>
+   At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown here:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/2.jpg" width="200px" /></a><br><br>
    This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  It is recommended that you choose all three as a build target if preparing a release build to ensure that all users have available versions of the plugin.<br>
    Build the branch release just like you would the main Trunk release.
 ----
@@ -300,26 +300,26 @@ PCSX2 only requires a few files in order to execute.  Other files are required i
 As with any project, the PCSX2 project has several configurable options in relation to compiling.
  == PCSX2 Target Build Directory ==
  One of the options is a configurable _post-build event_ that can optionally copy the .EXE file and required .DLL files into a folder of your choice.  The files are copied both as their original filename (e.g., PCSX2.EXE) and also as a revision-tagged filename for easy regression testing (e.g. PCSX2-r1750.EXE)  You will need to specify the PCSX2_TARGET_COPY Environment Variable.<br>
- To do this, open the Run dialog (Hit the Windows key and R at the same time) and type "sysdm.cpl" (without quotes) and hit enter.  You will be presented with a screen similar to the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/1.jpg"><br><br>
- Switch to the Advanced Tab and you will see the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/2.jpg"><br><br>
- Click on the Environment Variables button at the bottom and you will see the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/3.jpg"><br><br>
- Click on New under the User Variables section and enter the information as shown in the following screen shot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/4.jpg"><br><br>
- Do the same thing under the System Variables section and click OK, you should see the following:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg"><br><br>
+ To do this, open the Run dialog (Hit the Windows key and R at the same time) and type "sysdm.cpl" (without quotes) and hit enter.  You will be presented with a screen similar to the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/1.jpg" width="200px" /></a><br><br>
+ Switch to the Advanced Tab and you will see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/2.jpg" width="200px" /></a><br><br>
+ Click on the Environment Variables button at the bottom and you will see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/3.jpg" width="200px" /></a><br><br>
+ Click on New under the User Variables section and enter the information as shown in the following screen shot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/4.jpg" width="200px" /></a><br><br>
+ Do the same thing under the System Variables section and click OK, you should see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg" width="200px" /></a><br><br>
  Now, when you compile PCSX2, a build copy will be placed in the directory you specified!  (Make sure it exists!)  You will need to log off and log back in for this to take effect!
  == Stopping Unwanted Components from Compiling ==
  If you are developing a specific project and do not want to compile the other projects every time you re-build the solution, or if you just don't want to compile a specific plug-in for some reason or another, you can easily accomplish this.<br>
- Open the pcsx2_suite_2008.sln Solution file and right-click on the Project you wish not to compile.  Select "Unload" from the context menu.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/1.jpg"><br><br>
- You will now see that the project is listed as "(Unavailable)", as shown in this picture:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/2.jpg"><br><br>
+ Open the pcsx2_suite_2008.sln Solution file and right-click on the Project you wish not to compile.  Select "Unload" from the context menu.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/1.jpg" width="200px" /></a><br><br>
+ You will now see that the project is listed as "(Unavailable)", as shown in this picture:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_UNLOAD/2.jpg" width="200px" /></a><br><br>
  When you compile, this solution will be skipped.  Best of all, this option is persistent, but does not write to the Solution (.sln) file, so making this change will not cause you to get warned of a Version Conflict every time you update your SVN in the future.
 ----
 = 8. Running PCSX2 from the Visual Studio Debugger =
 It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if you feel so compelled to do so.  See below for instructions on how to do it for each supported version of Visual Studio. 
  == Visual Studio 2008 Standard + Visual C++ 2008 Express Edition ==
   === Setting PCSX2 to Run from the Debugger ===
-   Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 / Visual C++ 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the following screenshot:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><br><br>
+   Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 / Visual C++ 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the following screenshot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg" width="200px" /></a><br><br>
    Once you've done this, hit OK.  Once you're back to the main screen, hitting F5 will cause PCSX2 to run in the debugger.
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
-   If you are debugging specific plugins, you can do so with the Command Arguments variable, and when that plugin is set as the _Start-up Project_, PCSX2 will know to load it regardless of the selected configuration or target types.  See the following example which is used for debugging SPU2-X:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg"><br><br>
+   If you are debugging specific plugins, you can do so with the Command Arguments variable, and when that plugin is set as the _Start-up Project_, PCSX2 will know to load it regardless of the selected configuration or target types.  See the following example which is used for debugging SPU2-X:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg" width="200px" /></a><br><br>
    Notice that *-spu $(TargetPath)* is used as the parameter.  This tells PCSX2 to load whichever copy of SPU2-X that was just built -- whether it be Debug, Devel, or Release.  This saves a trip into the Configuration Dialog of PCSX2 to select the built plugin manually.
  == Visual Studio Team System 2010 ==
   === Setting PCSX2 to Run from the Debugger ===
@@ -329,11 +329,11 @@ It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if
  == Just Because It Compiles Doesn't Mean It Works! ==
  The steps included in this guide will pretty much guarantee that you can set up an environment in which you can compile the .NSI file included in the PCSX2 source to a .exe installer, but PLEASE NOTE THE FOLLOWING:  Just because you can get it to compile without erroring does not mean that the output file will be a functional installer!  Just like any other piece of code, the .NSI installer needs maintenance whenever there are changes to the file and directory structure of PCSX2.  The installer is not the highest priority on the list, so it is possible that the .NSI is out of date and may be including out-dated files, or may not be including new files.  It may complete compilation but net an installation that crashes every time it's run due to missing or unlinked .DLLs.  With that said, it is NOT recommended that you use these installers without testing them in a sandbox / virtualized environment first to ensure that they properly install!  A successful .NSI file compile does NOT equate to a truly successful installer build!
  == Installing the Nullsoft Scriptable Install System ==
- Download the installation package from the link above and run it.  You will be presented with this Welcome Screen.  Click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/1.jpg"><br><br>
- Accept the terms of the EULA.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/2.jpg"><br><br>
- Select "Full Install", if it is not already checked.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/3.jpg"><br><br>
- It is recommended that you keep the default installation directory, and click Next.<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/4.jpg"><br><br>
- The Nullsoft Scriptable Install System will install very quickly and present you with the following final screen:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/5.jpg"><br><br>
+ Download the installation package from the link above and run it.  You will be presented with this Welcome Screen.  Click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/1.jpg" width="200px" /></a><br><br>
+ Accept the terms of the EULA.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/2.jpg" width="200px" /></a><br><br>
+ Select "Full Install", if it is not already checked.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/3.jpg" width="200px" /></a><br><br>
+ It is recommended that you keep the default installation directory, and click Next.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/4.jpg" width="200px" /></a><br><br>
+ The Nullsoft Scriptable Install System will install very quickly and present you with the following final screen:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_INSTALL/5.jpg" width="200px" /></a><br><br>
  Click Finish and the installer will close.
  Lastly, you need to copy the vc_redistx86.exe that you downloaded from the prerequisites above into the following directory:
  {{{
@@ -341,7 +341,7 @@ It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if
  }}}
  If you skip this step, the NSIS compile will fail.  This file must be present for any branch of PCSX2 as well, including wxGUI.
  == Packaging PCSX2 with NULL Plugins ==
- After you install NSIS and .NSI files are associated with the Nullsoft Scriptable Installer System, you can Right-Click on .NSI files and select "Compile NSIS Script", as shown in this picture:<br><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_COMPILE/1.jpg"><br><br>
+ After you install NSIS and .NSI files are associated with the Nullsoft Scriptable Installer System, you can Right-Click on .NSI files and select "Compile NSIS Script", as shown in this picture:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_COMPILE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/NSIS_COMPILE/1.jpg" width="200px" /></a><br><br>
  This will compile a PCSX2 installer and include all of the null plugins.  This will NOT include the additional plugins (gsDX, SPU-X, etc.)
  == Packaging PCSX2 with all Plugins == 
  In order to compile PCSX2 and include the Plugins, you must specify the INC_PLUGINS variable to makensis.exe.  To do this, run the following in a command prompt (assuming default installation directories):
