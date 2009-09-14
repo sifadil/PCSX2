@@ -7,7 +7,7 @@
   * Installing Microsoft Visual Studio
    * _Microsoft Visual Studio 2008 Standard Edition_
    * _Microsoft Visual C++ 2008 Express Edition_
-   * _Microsoft Visual Studio Team System 2010 (Beta 1)_
+   * _Microsoft Visual Studio 2010 Professional (Beta 1)_
   * Installing SDKs
    * _DirectX SDK_
    * _OpenGL Extension Wrangler (GLEW)_
@@ -19,7 +19,7 @@
   * Configuring the SDK Library and Include Directories
    * _Microsoft Visual Studio 2008 Standard Edition_
    * _Microsoft Visual C++ 2008 Express Edition_
-   * _Microsoft Visual Studio Team System 2010 (Beta 1)_
+   * _Microsoft Visual Studio 2010 Professional (Beta 1)_
  # *Getting the Source Code*
   * Downloading the PCSX2 Main Trunk SVN Code
    * _Make the Build Directory_
@@ -51,7 +51,7 @@
   * Visual Studio 2008 Standard + Visual C++ 2008 Express Edition
    * _Setting PCSX2 to Run from the Debugger_
    * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
-  * Visual Studio Team System 2010
+  * Visual Studio 2010 Professional
    * _Setting PCSX2 to Run from the Debugger_
    * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
  # *Packaging PCSX2 with Nullsoft Install System*
@@ -66,10 +66,10 @@ Note:  Click on the thumbnails for full-sized screenshots!
 = 1. Setting up the Build Environment =
 In order to compile PCSX2 you will need to configure a working build environment based on Microsoft's Visual Studio.  There are a lot of things to download, so I've placed links to them at the front of the guide so you can get everything you'll need as the first step.
  == Downloading the Prerequisites ==
- You know the drill -- download all of these.  You have your choice between Visual Studio 2008, Visual C++ 2008 Express and Visual Studio Team System 2010, but at present some plug-ins have incompatibility issues under Visual Studio 2010 (as discussed below).
+ You know the drill -- download all of these.  You have your choice between Visual Studio 2008, Visual C++ 2008 Express and Visual Studio 2010 Professional, but at present Visual Studio 2010 is not an officially supported build environment so users are discouraged from electing to use it to compile PCSX2 (more detail provided below).
  * <a href="http://www.microsoft.com/visualstudio/en-us/downloads/microsoft-downloads.mspx">Visual Studio 2008</a>
  * <a href="http://www.microsoft.com/express/vc/">Visual C++ 2008 Express Edition</a>
- * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=75cbcbcd-b0e8-40ea-adae-85714e8984e3&displaylang=en">Visual Studio Team System 2010 (Beta 1)</a>
+ * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=75cbcbcd-b0e8-40ea-adae-85714e8984e3&displaylang=en">Visual Studio 2010 Professional (Beta 1)</a>
  * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=0BAF2B35-C656-4969-ACE8-E4C0C0716ADB&displaylang=en">Windows Server 2003 R2 SDK</a>^* Only needed if you're compiling with Visual C++ 2008 Express Edition^
  * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=24a541d6-0486-4453-8641-1eee9e21b282&displaylang=en">DirectX SDK</a>
  * <a href="http://tortoisesvn.tigris.org/">TortoiseSVN</a>^* Recommended but not required - though you will need an SVN client^
@@ -87,7 +87,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    Visual Studio will begin installing.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/4.jpg" width="200px" /></a><br><br>
    Once setup is complete, you will be presented with the following screen.  Click Finish.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/5.jpg" width="200px" /></a><br><br>
    Now that Visual Studio is installed, your system needs a few patches in order to be current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_INSTALL/6.jpg" width="200px" /></a><br><br>
-   Install all of the updates and then Visual Studio 2008 is ready to go.  Skip the Visual C++ 2008 Express and Visual Studio Team System 2010 sections and continue below with Installing SDKs.
+   Install all of the updates and then Visual Studio 2008 is ready to go.  Skip the Visual C++ 2008 Express and Visual Studio 2010 Professional sections and continue below with Installing SDKs.
   === Microsoft Visual C++ 2008 Express Edition ===
    Download the Visual C++ 2008 Express Edition Installer from the link above.  Run it, and click next at the Welcome Screen (shown below).<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/1.jpg" width="200px" /></a><br><br>
    Accept the EULA.  It's your choice whether or not you allow it to display online and RSS content, it doesn't make a difference to the compiling of PCSX2.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/2.jpg" width="200px" /></a><br><br>
@@ -97,9 +97,10 @@ In order to compile PCSX2 you will need to configure a working build environment
    Once done downloading, they will then be installed.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/6.jpg" width="200px" /></a><br><br>
    Once the installation has finished, you will see the following screen.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/7.jpg" width="200px" /></a><br><br>
    Click Finish and the installer will close.  Now that Visual C++ is installed, your system needs a few patches in order to remain current.  Visiting Windows Update with Microsoft Update enabled shows the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/8.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VC2008_INSTALL/8.jpg" width="200px" /></a><br><br>
-   Download and install the updates, and then skip past Installing Visual Studio Team System 2010 and continue with the SDK installations.
-  === Microsoft Visual Studio Team System 2010 ===
-   Download the Visual Studio Team System Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below). <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg" width="200px" /></a><br><br>
+   Download and install the updates, and then skip past Installing Visual Studio 2010 Professional and continue with the SDK installations.
+  === Microsoft Visual Studio 2010 Professional (Beta 1) ===
+   <b>NOTE: Visual Studio 2010 is not presently a supported build environment for PCSX2.  The instructions and configuration information below are provided sheerly for completeness's sake as Visual Studio 2010 will ultimately be a supported build platform, and this information will be updated as it nears completion and release.  It is not recommended that you attempt to build PCSX2 with Visual Studio 2010 at this time.</b><br><br>
+   Download the Visual Studio 2010 Professional Web Installer from the link above.  Run it, and click next at the Welcome Screen (shown below).  Yes, it will have the Visual Studio Team System logo even though you downloaded Visual Studio 2010 Professional and the titlebar and actual text say so.  Don't ask me.  Ask Microsoft.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/1.jpg" width="200px" /></a><br><br>
    Accept the EULA and enter your Product Key, then hit Next. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/2.jpg" width="200px" /></a><br><br>
    The .NET Development Environment is NOT required in order to configure PCSX2, but you can choose to install it if you plan on doing .NET Development.  I recommend installing Visual Studio in the default location to ensure there are no problems later on. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/3.jpg" width="200px" /></a><br><br>
    Visual Studio's installer will begin downloading the installation components.  <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/4.jpg" width="200px" /></a><br><br>
@@ -110,7 +111,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    After that finishes, you should be presented with the following screen: <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/9.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/9.jpg" width="200px" /></a><br><br>
    Click finish and the installer will close.  Now that Visual Studio is installed, your machine needs several more patches in order to be current.  Visit Windows Update with Microsoft Update enabled and you'll be presented with the following updates <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/10.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/10.jpg" width="200px" /></a><br><br>
    <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/11.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2010_INSTALL/11.jpg" width="200px" /></a><br><br>
-   The SQL Server update isn't required for PCSX2, but is recommended in general to keep your machine as up-to-date as possible.  After the updates have installed, Visual Studio Team System 2010 is now installed on your computer.  Go ahead on to the next step.
+   The SQL Server update isn't required for PCSX2, but is recommended in general to keep your machine as up-to-date as possible.  After the updates have installed, Visual Studio 2010 Professional is now installed on your computer.  Go ahead on to the next step.
  == Installing SDKs ==
  The PCSX2 codebase makes use of several freely available SDKs that must be downloaded and installed in order to successfully compile PCSX2.  If you are intending to compile the PCSX2 plugins as well, you will need additional SDKs.  Each of the requisite SDKs is listed below. 
   === DirectX SDK ===
@@ -183,7 +184,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    }}}
    That should finish up all of the search directory modifications required for PCSX2 to build properly.  Now on to the next step!
   === Microsoft Visual C++ 2008 Express Edition ===
-   Visual C++ 2008 Express Edition has several limitations not found in either Visual Studio 2008 Standard or Visual Studio Team System 2010.  Because of this, there are special instructions specific to this build environment.
+   Visual C++ 2008 Express Edition has several limitations not found in either Visual Studio 2008 Standard or Visual Studio 2010 Professional.  Because of this, there are special instructions specific to this build environment.
    To begin, make all of the same changes that you would make for Visual Studio 2008 Standard, except ignore anything relating to the x64 builds and build directories, as Visual C++ Express cannot compile x64 builds.  Also note that you will get error about project folders not being supported in this version of the software every time you open the .sln file.  This will not interfere with your compiling, just click OK to them all.
    In addition to the changes above, you will need to tell Visual C++ 2008 where to find the Microsoft Windows 2003 R2 Platform SDK we downloaded.  
    To access the configuration that we need to change, we will need to open the Tools menu and select Options from it.<br><br>
@@ -204,7 +205,7 @@ In order to compile PCSX2 you will need to configure a working build environment
    }}}
    Save the file and exit your text editor.
    Once you have done this, you should be able to continue on to the next steps.
-  === Microsoft Visual Studio Team System 2010 (Beta 1) ===
+  === Microsoft Visual Studio (Beta 1) Professional ===
    Coming soon...
 ----
 = 3. Getting the Source Code =
@@ -273,7 +274,7 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
   === CL.EXE Compiling Errors w/ Visual Studio 2008 Standard === 
    If you are using Visual Studio 2008 Standard and have followed this guide from start to finish and are experiencing build errors in relation to CL.EXE, a workaround is to put the VS2008 install disc in and to modify your installation of VS and add Visual C#.  Note that you're not installing C# because any of PCSX2 is programmed in C#, you're installing C# because for some reason, the C++ install doesn't put the necessary version of CL.EXE in your build environment.  I'm investigating why this is and will update the guide if I find a better way to solve the missing CL.EXE problem.  I had this problem in two specific cases but I've been shown instances where it was unnecessary.  As such, I pulled it from the main steps and added it as a possible workaround in case anyone else encounters it.  It seems to only occur when running under a Virtual PC in Virtual PC 2007.
   === Clean your Dev Environment ===
-   It is good practice to clean your build environment of Visual Studio build-process temporary files and post-build remnants of the solution if you encounter errors while building.  This is a quick and painless process.  To begin, open the pcsx2_suite_2008.sln Solution file.  Once Visual Studio has opened, select the build of PCSX2 that you are having trouble building from the Build Target dropdown (e.g., SSE2, SSSE3, SSE4, etc.)  Click on the Build menu and select Clean Solution from the list.  Once this has completed, run clean_mvsc.cmd in the main PCSX2 SVN directory.  This will clean out more unneeded data that Visual Studio leaves behind in a clean.  Retry the build and see if this solves your problem.
+   It is good practice to clean your build environment of Visual Studio build-process temporary files and post-build remnants of the solution if you encounter errors while building.  This is a quick and painless process.  To begin, open the pcsx2_suite_2008.sln Solution file.  Once Visual Studio has opened, select the build of PCSX2 that you are having trouble building from the Build Target dropdown (e.g., SSE2, SSSE3, SSE4, etc.)  Click on the Build menu and select Clean Solution from the list.  Once this has completed, run clean_msvc.cmd in the main PCSX2 SVN directory.  This will clean out more unneeded data that Visual Studio leaves behind in a clean.  Retry the build and see if this solves your problem.
   === Re-download the Source ===
    It is possible (though very uncommon) for such drastic changes to be made to the source tree in SVN that you may have stale code or remnants of previous SVN revisions that have ended up sitting in your SVN directory.  A quick and non-destructive way to test this is to create a new build directory and re-checkout the source from the SVN repository.  After a full fresh checkout, attempt the build again.
   === Read the Logs - Trace the Errors ===
@@ -321,7 +322,7 @@ It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
    If you are debugging specific plugins, you can do so with the Command Arguments variable, and when that plugin is set as the _Start-up Project_, PCSX2 will know to load it regardless of the selected configuration or target types.  See the following example which is used for debugging SPU2-X:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg" width="200px" /></a><br><br>
    Notice that *-spu $(TargetPath)* is used as the parameter.  This tells PCSX2 to load whichever copy of SPU2-X that was just built -- whether it be Debug, Devel, or Release.  This saves a trip into the Configuration Dialog of PCSX2 to select the built plugin manually.
- == Visual Studio Team System 2010 ==
+ == Visual Studio 2010 Professional ==
   === Setting PCSX2 to Run from the Debugger ===
   === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
 ----
