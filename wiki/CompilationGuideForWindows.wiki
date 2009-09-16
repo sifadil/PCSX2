@@ -124,9 +124,13 @@ In order to compile PCSX2 you will need to configure a working build environment
    You should then be presented with this screen. <br><a href="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/7.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/DXSDK_INSTALL/7.jpg" width="200px" /></a><br><br>
    Click finish and move on to the next step.
   === OpenGL Extension Wrangler (GLEW) ===
-   Download the OpenGL Extension Wrangler binaries from the website listed above.  Extract the files into a directory of your choice.  In this case, I have extracted them to 
+   Download the OpenGL Extension Wrangler binaries from the website listed above.  Extract the files into a directory of your choice.  In this case, I have extracted them to:
    {{{
    C:\Development\Add-On Libraries\GLEW\  
+   }}}
+   Secondarily, if you intend to build and use the debug version of the gsDX plugin, you will need to manually copy glew32.dll to the \bin subdirectory of your pcsx2 installation.  For example, if you followed the defaults on a 32-bit system, you'd put it here:
+   {{{
+   C:\Program Files\pcsx2\bin
    }}}
   === Windows 2003 R2 Platform SDK (Visual C++ 2008 Express ONLY) ===
    If you are compiling using Visual C++ 2008 Express, in order to compile several of the plugins, you will need files that are not included with your version of Visual Studio by default.  Download the Windows 2003 R2 Platform SDK Web Installer from the link above, and run the installer.  Click Next at the Welcome Screen shown below.<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/W2K3SDK_INSTALL/1.jpg" width="200px" /></a><br><br>
@@ -289,12 +293,20 @@ PCSX2 only requires a few files in order to execute.  Other files are required i
  w32pthreads.v2.dll
  gnu_gettext.dll
  }}}
+ If you will be using a debug build of gsDX, the following additional file is necessary and must be put into your pcsx2\bin directory:
+ {{{
+ glew32.dll
+ }}}
  == Legacy GUI SVN Build Files ==
  The current Legacy GUI SVN build requires the following files in order to execute:
  {{{
  pcsx2.exe
  w32pthreads.dll
  gnu_gettext.dll
+ }}}
+ If you will be using a debug build of gsDX, the following additional file is necessary and must be put into your pcsx2\bin directory:
+ {{{
+ glew32.dll
  }}}
 ----
 = 7. Miscellaneous PCSX2 Compiling Options =
@@ -305,7 +317,7 @@ As with any project, the PCSX2 project has several configurable options in relat
  Switch to the Advanced Tab and you will see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/2.jpg" width="200px" /></a><br><br>
  Click on the Environment Variables button at the bottom and you will see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/3.jpg" width="200px" /></a><br><br>
  Click on New under the User Variables section and enter the information as shown in the following screen shot:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/4.jpg" width="200px" /></a><br><br>
- Do the same thing under the System Variables section and click OK, you should see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg" width="200px" /></a><br><br>
+ Once you have done that and click OK, you should see the following:<br><a href="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/SYSDM/5.jpg" width="200px" /></a><br><br>
  Now, when you compile PCSX2, a build copy will be placed in the directory you specified!  (Make sure it exists!)  You will need to log off and log back in for this to take effect!
  == Stopping Unwanted Components from Compiling ==
  If you are developing a specific project and do not want to compile the other projects every time you re-build the solution, or if you just don't want to compile a specific plug-in for some reason or another, you can easily accomplish this.<br>
