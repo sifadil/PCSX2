@@ -9,7 +9,7 @@
    * _Microsoft Visual C++ 2008 Express Edition_
    * _Microsoft Visual Studio 2010 Professional (Beta 1)_
   * Installing SDKs
-   * _DirectX SDK_
+   * _DirectX SDK (August 2009)_
    * _OpenGL Extension Wrangler (GLEW)_
    * _Windows 2003 R2 Platform SDK_
    * _nvidia's CG Toolkit_
@@ -71,7 +71,7 @@ In order to compile PCSX2 you will need to configure a working build environment
  * <a href="http://www.microsoft.com/express/vc/">Visual C++ 2008 Express Edition</a>
  * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=75cbcbcd-b0e8-40ea-adae-85714e8984e3&displaylang=en">Visual Studio 2010 Professional (Beta 1)</a>
  * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=0BAF2B35-C656-4969-ACE8-E4C0C0716ADB&displaylang=en">Windows Server 2003 R2 SDK</a>^* Only needed if you're compiling with Visual C++ 2008 Express Edition^
- * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=24a541d6-0486-4453-8641-1eee9e21b282&displaylang=en">DirectX SDK</a>
+ * <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=b66e14b8-8505-4b17-bf80-edb2df5abad4&displaylang=en">DirectX SDK (August 2009)</a>
  * <a href="http://tortoisesvn.tigris.org/">TortoiseSVN</a>^* Recommended but not required - though you will need an SVN client^
  * <a href="http://glew.sourceforge.net/">OpenGL Extension Wrangler</a>^* Only needed if you're compiling plugins as well^
  * <a href="http://developer.nvidia.com/object/cg_download.html">nVidia's CG Toolkit</a>^* Only needed if you're compiling plugins as well^
