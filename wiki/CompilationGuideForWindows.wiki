@@ -1,65 +1,7 @@
 #summary PCSX2 Compilation Guide for Windows.
 #labels Featured
 
-= Table of Contents =
- # *Setting up the Build Environment*
-  * Downloading the Prerequisites
-  * Installing Microsoft Visual Studio
-   * _Microsoft Visual Studio 2008 Standard Edition_
-   * _Microsoft Visual C++ 2008 Express Edition_
-   * _Microsoft Visual Studio 2010 Professional (Beta 1)_
-  * Installing SDKs
-   * _DirectX SDK (August 2009)_
-   * _OpenGL Extension Wrangler (GLEW)_
-   * _Windows 2003 R2 Platform SDK_
-   * _nvidia's CG Toolkit_
-  * Installing an SVN Client
-   * _TortoiseSVN_
- # *Configuring the Build Environment*
-  * Configuring the SDK Library and Include Directories
-   * _Microsoft Visual Studio 2008 Standard Edition_
-   * _Microsoft Visual C++ 2008 Express Edition_
-   * _Microsoft Visual Studio 2010 Professional (Beta 1)_
- # *Getting the Source Code*
-  * Downloading the PCSX2 Main Trunk SVN Code
-   * _Make the Build Directory_
-   * _Configure the Directory as an SVN Directory and Download the Latest Revision_
-   * _Download Updated Revisions_
-  * Downloading the PCSX2 Legacy GUI Branch SVN Code
-   * _Make the Build Directory_
-   * _Configure the Directory as an SVN Directory and Download the Latest Revision_
-   * _Download Updated Revisions_
- # *Compiling PCSX2's Binary*
-  * Compiling Trunk SVN Builds of PCSX2
-   * _Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds)_
-  * Compiling Legacy GUI SVN Builds of PCSX2
-   * _Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds)_
- # *Effective Build Troubleshooting Steps*
-  * So, your build failed.  What now?
-   * _If at first you don't succeed..._
-   * _CL.EXE Compiling Errors w/ Visual Studio 2008 Standard_
-   * _Clean your Dev Environment_
-   * _Re-download the Source_
-   * _Read the Logs - Trace The Errors_
- # *Files Necessary from Build for PCSX2's Execution*^*At the time of posting^
-  * Trunk SVN Build Files
-  * Legacy GUI SVN Build Files
- # *Miscellaneous PCSX2 Compiling Options*
-  * PCSX2 Target Build Directory
-  * Stopping Unwanted Components from Compiling
- # *Running PCSX2 from the Visual Studio Debugger*
-  * Visual Studio 2008 Standard + Visual C++ 2008 Express Edition
-   * _Setting PCSX2 to Run from the Debugger_
-   * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
-  * Visual Studio 2010 Professional
-   * _Setting PCSX2 to Run from the Debugger_
-   * _Specifying Plugins on the PCSX2 Command Line for the Debugger_
- # *Packaging PCSX2 with Nullsoft Install System*
-  * Installing the Nullsoft Install System
-  * Packaging PCSX2 with NULL Plugins
-  * Packaging PCSX2 with all Plugins
-  * Packaging the PCSX2 wxGUI Branch
-
+<wiki:toc max_depth="3" />
 
 ----
 Note:  Click on the thumbnails for full-sized screenshots!
