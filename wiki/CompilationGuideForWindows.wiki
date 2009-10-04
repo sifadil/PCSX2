@@ -247,7 +247,7 @@ PCSX2 only requires a few files in order to execute.  Other files are required i
  The current Trunk SVN build requires the following files in order to execute:
  {{{
  pcsx2.exe
- w32pthreads.v2.dll
+ w32pthreads.v3.dll
  gnu_gettext.dll
  }}}
  If you will be using a debug build of gsDX, the following additional file is necessary and must be put into your pcsx2\bin directory:
