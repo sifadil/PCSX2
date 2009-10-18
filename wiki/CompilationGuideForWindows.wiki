@@ -166,13 +166,13 @@ In order to compile PCSX2 you will need to configure a working build environment
 = 3. Getting the Source Code =
 In order to compile PCSX2, you will need to first download all of the current source code to your local machine.  Depending on which branch you are downloading, the repository locations may change.
  == Downloading the PCSX2 Main Trunk SVN Code ==
-  === Make the Build Directory ===
+  === Make the Trunk Build Directory ===
    The first thing you will need to do is make a directory that will ultimately house your SVN Source Code for PCSX2.  I have chosen the following directory:
    {{{
    C:\Development\Project Source\PCSX2\
    }}}
    You can choose whatever directory you like, just make sure that you substitute it in any location that I have included the above directory.
-  === Configure the Directory as an SVN Directory and Download the Latest Revision ===
+  === Configure the Trunk Directory as an SVN Directory and Download the Latest Revision ===
    # Open the parent folder to your new PCSX2 directory and right click on the PCSX2 directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.
    # You will be presented with an SVN Checkout configuration page, which will ask you for the "URL of Repository".  Enter the following, as shown in the screenshot:
    {{{
@@ -181,19 +181,19 @@ In order to compile PCSX2, you will need to first download all of the current so
    # You will see information similar to the screenshot when the checkout is complete.
    # You can verify the existence of the Source code by visiting the PCSX2 directory.  You'll see something like the screenshot.
    || <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/1.jpg" width="125px" /></a> 1|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/2.jpg" width="125px" /></a> 2|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/3.jpg" width="125px" /></a> 3|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/4.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/4.jpg" width="125px" /></a> 4||
-  === Download Updated Revisions ===
+  === Download Updated Trunk Revisions ===
    # After you have configured this directory as an SVN directory, all you need to do in the future is right click on it from Explorer and select "SVN Update" from the context menu as shown in the screenshot.
    # TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated.
    * If you are interested in what changes have been made since your last source download, click the "Show Log" button.
    || <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/5.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/5.jpg" width="125px" /></a> 1|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/6.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_TRUNKSVN/6.jpg" width="125px" /></a> 2||
  == Downloading the PCSX2 Legacy GUI Branch SVN Code ==
-  === Make the Build Directory ===
+  === Make the Legacy Build Directory ===
    Just like the main Trunk SVN branch, the first thing you will need to do is make a directory that will ultimately house your SVN Source Code for the Legacy GUI branch of PCSX2.  I have chosen the following directory:
    {{{
    C:\Development\Project Source\PCSX2-legacy\
    }}}
    You can choose whatever directory you like, but as before, make sure that you substitute it in any location that I have included the above directory.
-  === Configure the Directory as an SVN Directory and Download the Latest Revision ===
+  === Configure the Legacy Directory as an SVN Directory and Download the Latest Revision ===
    # Open the parent folder to your new PCSX2-legacy directory and right click on the PCSX2-legacy directory in the list.  Since TortoiseSVN is installed, you will now see "SVN Checkout" in the drop-down list.  Select it.
    # You will be presented with an SVN Checkout configuration page, which will ask you for the "URL of Repository".  Enter the following as shown in the screenshot.
    {{{
@@ -201,7 +201,7 @@ In order to compile PCSX2, you will need to first download all of the current so
    }}}
    # You will see information similar to the screenshot when the checkout is complete.
    || <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/1.jpg" width="125px" /></a> 1|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/2.jpg" width="125px" /></a> 2|| <a href="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/3.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/TORT_BRANCHSVN/3.jpg" width="125px" /></a> 3||
-  === Download Updated Revisions ===
+  === Download Updated Legacy Revisions ===
    # Downloading updates is the same as it is with any other SVN directory, but for completeness's sake, after you have configured this directory as an SVN directory, right click on it from Explorer and select "SVN Update" from the context menu as shown in the screenshot.
    # TortoiseSVN will then fetch the latest code and show you a log of all of the files that were updated.
    * If you are interested in what changes have been made since your last source download, click the "Show Log" button.
@@ -212,7 +212,7 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
  == Compiling Trunk SVN Builds of PCSX2 ==
  # Open the PCSX2 SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to this.
  || <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg" width="125px" /></a> 1||
-  === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
+  === Build Target Selection (Developer, Debug, Release, SSE2, SSSE3, or SSE4 Builds) ===
    # At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown in the screenshot.
     * This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  The Release Build Target does not specify an instruction set target for the gsDX compile and will not compile gsDX.  It is recommended that you choose all three (SSE2, SSSE3, and SSE4) as a build target (Release is unnecessary) if preparing a release build to ensure that all users have available versions of the plugin.
    # Once you have selected the Build Target, it is time to build the solution.  You can either select the Build Menu from the top menu, and choose Build Solution, or you can hit CTRL-SHIFT-B.
@@ -221,7 +221,7 @@ You've now completed all of the "leg work" required in order to compile PCSX2 on
  == Compiling Legacy GUI SVN Builds of PCSX2 ==
  # Open the PCSX2-legacy SVN directory you have downloaded the source code in to (in this case, C:\Development\Project Source\PCSX2-legacy) and double-click on the pcsx2_suite_2008.sln Solution file.  This will open Visual Studio 2008 (if it is not already open) and you will see a screen similar to the screenshot.
  || <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_COMPILE/1.jpg" width="125px" /></a> 1||
-  === Build Target Selection (Developer, SSE2, SSSE3, or SSE4 Builds) ===
+  === Build Target Selection (Developer, Debug, or Release Builds) ===
    # At the top of your screen, you will see a small drop down list which contains what is known as your "Build Target", as shown in the screenshot.
    * This menu corresponds to the build of PCSX2 that you will be compiling.  SSE2, SSSE3, and SSE4 refer to CPU instruction sets and only apply to the gsDX Plugin (though they compile the full solution as well).  It is recommended that you choose all three as a build target if preparing a release build to ensure that all users have available versions of the plugin.
    * Build the branch release just like you would the main Trunk release.
@@ -287,17 +287,17 @@ As with any project, the PCSX2 project has several configurable options in relat
 = 8. Running PCSX2 from the Visual Studio Debugger =
 It is possible (and quite easy) to run PCSX2 from the Visual Studio Debugger, if you feel so compelled to do so.  See below for instructions on how to do it for each supported version of Visual Studio. 
  == Visual Studio 2008 Standard + Visual C++ 2008 Express Edition ==
-  === Setting PCSX2 to Run from the Debugger ===
+  === Setting PCSX2 to Run from the VS2008 Debugger ===
    # Setting PCSX2 to run from the debugger is simple.  Open pcsx2_suite_2008.sln Solution file.  Once Visual Studio 2008 / Visual C++ 2008 has opened, right click on the PCSX2 project and select Properties.  Expand Configuration Properties on the left-hand side, and select the Debugging option.  Configure it to match the settings in the screenshot.
    || <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/1.jpg" width="125px" /></a> 1||
    Once you've done this, hit OK.  Once you're back to the main screen, hitting F5 will cause PCSX2 to run in the debugger.
-  === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
+  === Specifying Plugins on the PCSX2 Command Line for the VS2008 Debugger ===
    # If you are debugging specific plugins, you can do so with the Command Arguments variable, and when that plugin is set as the _Start-up Project_, PCSX2 will know to load it regardless of the selected configuration or target types.  See the following example screenshot which is used for debugging SPU2-X.
    || <a href="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg"><img src="http://pcsx2.googlecode.com/svn/wiki/images/VS2008_DEBUG/2.jpg" width="125px" /></a> 1||
    * Notice that *-spu $(TargetPath)* is used as the parameter.  This tells PCSX2 to load whichever copy of SPU2-X that was just built -- whether it be Debug, Devel, or Release.  This saves a trip into the Configuration Dialog of PCSX2 to select the built plugin manually.
  == Visual Studio 2010 Professional ==
-  === Setting PCSX2 to Run from the Debugger ===
-  === Specifying Plugins on the PCSX2 Command Line for the Debugger ===
+  === Setting PCSX2 to Run from the VS2010 Debugger ===
+  === Specifying Plugins on the PCSX2 Command Line for the VS2010 Debugger ===
 ----
 = 9. Packaging PCSX2 with Nullsoft Scriptable Install System =
  == Just Because It Compiles Doesn't Mean It Works! ==
