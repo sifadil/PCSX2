@@ -4,17 +4,30 @@
 
 Pending tasks so that we don't forget them.  Please add, but nothing vague like "rewrite SIF", only ideas which can be immediately implemented provided that all prerequisites are met.
 
-=R5900 Recompiler=
+==R5900 Recompiler==
 
 Rewrite block manager again for more reliable page clears.  Index blocks by pages covered. For simplicity block structures should stay at their original addresses.  Still need to lookup blocks by address of any R5900 (or R3000, block manager is shared) instruction for vtlb rewriting.  Lookup by x86 instruction address at block level is desirable for profiling but has no other use.
 
-==Optimizations==
+===Optimizations===
 
 Replace midblock constant flushes with a recompile-time write of all constants to a
 lookup table indexed by program counter, and flush from that table in exception,
 debugger breakpoint, vtlb rewriting and any other handlers.
 ----
 Separate recompiler cache for self-checking blocks in pages whose protection has been broken (less EE resets).  If the entire page is overwritten by dma (possible code upload), unflag the page so that blocks executed in it go back in the normal cache until the protection is broken again (this can be implemented first for an immediate performance boost from less self-checking blocks).  Track bottom and top addresses of code in a page so that partial page dma writes do not trigger clears.
+
+==MicroVU==
+
+===Optimisations===
+
+During recompilation, spot spins on integer registers (slightly more advanced: memory locations) and exit early if it starts spinning; ratchet and clank does this.  Find the longest unbroken (or broken only by loads that don't affect the addresses) sequence of branches that ends in a branch which points back into the sequence.  Ratchet and clank's looks like this:
+
+|| LOOP || nop || ibeq vi02, vi00, ANYWHERE_BUT_HERE ||
+|| || nop || nop ||
+|| || nop || b LOOP ||
+|| || nop || nop ||
+
+=Major undertakings=
 
 ==Rewrite IPU==
 
