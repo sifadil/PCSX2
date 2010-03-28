@@ -8,10 +8,14 @@ Pending tasks so that we don't forget them.  Please add, but nothing vague like 
 
 Rewrite block manager again for more reliable page clears.  Index blocks by pages covered. For simplicity block structures should stay at their original addresses.  Still need to lookup blocks by address of any R5900 (or R3000, block manager is shared) instruction for vtlb rewriting.  Lookup by x86 instruction address at block level is desirable for profiling but has no other use.
 
-==Optimisations==
+==Optimizations==
 
 Replace midblock constant flushes with a recompile-time write of all constants to a
 lookup table indexed by program counter, and flush from that table in exception,
 debugger breakpoint, vtlb rewriting and any other handlers.
 ----
 Separate recompiler cache for self-checking blocks in pages whose protection has been broken (less EE resets).  If the entire page is overwritten by dma (possible code upload), unflag the page so that blocks executed in it go back in the normal cache until the protection is broken again (this can be implemented first for an immediate performance boost from less self-checking blocks).  Track bottom and top addresses of code in a page so that partial page dma writes do not trigger clears.
+
+==Rewrite IPU==
+
+Partial/Complete rewrite of the IPU part of the emulator, possibly with integration of parts of the mpeg lib imported in to the main IPU files and commented on, with all unneeded parts removed for ease of reading.  Accompanied with a bitstream control re-evaluation (current implement is slightly clunky and can get errors/misscalculations under certain situations) and removal of co-routine function.  All new IPU commands will require passes for each part of the opcode to accept small amounts of data at a time in order to keep the bitstream, Input FIFO, Output FIFO and DMA's in sync.
