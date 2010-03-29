@@ -16,6 +16,10 @@ debugger breakpoint, vtlb rewriting and any other handlers.
 ----
 Separate recompiler cache for self-checking blocks in pages whose protection has been broken (less EE resets).  If the entire page is overwritten by dma (possible code upload), unflag the page so that blocks executed in it go back in the normal cache until the protection is broken again (this can be implemented first for an immediate performance boost from less self-checking blocks).  Track bottom and top addresses of code in a page so that partial page dma writes do not trigger clears.
 
+==Misc==
+
+Move block dumping out of linuz iso and into the core for use with any plugin or internal iso support.
+
 ==MicroVU==
 
 ===Optimisations===
