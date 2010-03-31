@@ -36,3 +36,7 @@ During recompilation, spot spins on integer registers (slightly more advanced: m
 ==Rewrite IPU==
 
 Partial/Complete rewrite of the IPU part of the emulator, possibly with integration of parts of the mpeg lib imported in to the main IPU files and commented on, with all unneeded parts removed for ease of reading.  Accompanied with a bitstream control re-evaluation (current implement is slightly clunky and can get errors/misscalculations under certain situations) and removal of co-routine function.  All new IPU commands will require passes for each part of the opcode to accept small amounts of data at a time in order to keep the bitstream, Input FIFO, Output FIFO and DMA's in sync.
+
+==Host filesystem memory card==
+
+The memory card library (and presumably the matching module, though this isn't confirmed) is actually very high level, if we have the hooks we can use the host filesystem instead.  Replace the mcman module or mcman imports in other modules with syscalls or a reserved instruction, catch this in pcsx2 and implement the functions with native code.
