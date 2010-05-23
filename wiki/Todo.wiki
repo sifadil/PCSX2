@@ -1,8 +1,12 @@
-#summary Todo list
+#summary Generalized list of both long and short term tasks
+#labels Phase-Design,Featured
 
 = Introduction =
 
-Pending tasks so that we don't forget them.  Please add, but nothing vague like "rewrite SIF", only ideas which can be immediately implemented provided that all prerequisites are met.
+Please add things to this list as you see fit; either personal goals or public service announcement goals, etc.  When adding items to the list, strive for things which can be immediately implemented provided that all prerequisites are met.  Avoid vague over over-generalized items such as like "rewrite SIF."
+
+Note that the Issues system can also be used a todo item tracker, which might be desirable for tasks that would benefit from public discussions, a series of patches or other (small!) attachments, etc.
+
 
 ==R5900 Recompiler==
 
@@ -18,7 +22,7 @@ Separate recompiler cache for self-checking blocks in pages whose protection has
 
 ==Misc==
 
-Move block dumping out of linuz iso and into the core for use with any plugin or internal iso support.
+Move block dumping out of linuz iso and into the core for use with any plugin or internal iso support. [partially supported already; core version needs improved/bugfixed and a proper user interface for selecting target dump file]
 
 ==MicroVU==
 
@@ -39,4 +43,10 @@ Partial/Complete rewrite of the IPU part of the emulator, possibly with integrat
 
 ==Host filesystem memory card==
 
+Premise: Use the host filesystem (NTFS/EXT3/etc) to store memorycard data, instead of emulating the raw flash memory of a physical memorycard.
+
 The memory card library (and presumably the matching module, though this isn't confirmed) is actually very high level, if we have the hooks we can use the host filesystem instead.  Replace the mcman module or mcman imports in other modules with syscalls or a reserved instruction, catch this in pcsx2 and implement the functions with native code.
+
+===Prereq: Memorycard Plugin System===
+
+Trunk currently has a hacked up implementation of a pluggable (dynamic) memorycard interface.  Completing this interface allows for the implementation of various storage formats and user interfaces for memorycard management.  The interface is based on the new PS2E.v2 API, and would need the addition of mcman hooks in order to implement high level host filesystem use.
