@@ -2,7 +2,7 @@
 
 = Introduction =
 
-This is intended to give you an idea of how to compile pcsx2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported my the pcsx2 team. If you have issues following this guide, I'd reccommend going through this thread for help:
+This is intended to give you an idea of how to compile pcsx2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported by the pcsx2 team. If you have issues following this guide, I'd reccommend going through this thread for help:
 http://forums.pcsx2.net/thread-2373.html
 
 This is loosely based on the compilation guide in that thread, though it should be more up to date.
@@ -66,3 +66,50 @@ Other useful things you can do from the pcsx2-read-only folder:
   The Developer build adds special options for logging and such, usually used either by developers, or for reporting issues.
 
   The Debug build also turns off optimizations, and is a lot slower, but generally the most helpful version to use when reporting bugs to the devs.
+
+----
+
+= Cmake build system =
+
+==*Warning it is experimental and not supported. The following informations are only a draft.*==
+
+=== Debian build dependancy for futur version 0.9.7 ===
+
+ * gcc-4.3 
+ * g++-4.3
+ * cmake
+ * zlib1g-dev
+ * libbz2-dev
+ * libsdl1.2-dev
+ * libjpeg-dev
+ * libwxbase2.8-dev
+ * libwxgtk2.8-dev
+ * libgtk2.0-dev
+ * libasound2-dev
+ * portaudio19-dev
+ * libsoundtouch1-dev
+ * libsparsehash-dev
+ * libxxf86vm-dev
+ * libglew1.5-dev
+ * nvidia-cg-toolkit
+
+=== Using cmake ===
+
+Build parameter that can be used:
+ * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
+ * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
+ * Force all         internal lib: -DFORCE_INTERNAL_ALL=TRUE
+ * Force a52         internal lib: -DFORCE_INTERNAL_A52=TRUE
+ * Force bzip        internal lib: -DFORCE_INTERNAL_BZIP2=TRUE
+ * Force soundtouch  internal lib: -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
+ * Force zlib        internal lib: -DFORCE_INTERNAL_ZLIB=TRUE
+
+Running Cmake to generate the makefile:
+  * cmake CMakeLists.txt "User Options see above"
+
+Using the makefile to compile:
+  * everything        : make
+  * just pcsx2        : make pcsx2
+  * just spu2x plugins: make spu2x
+  * just a plugin     : make "plugin name"
+
