@@ -75,41 +75,119 @@ Other useful things you can do from the pcsx2-read-only folder:
 
 === Debian build dependancy for futur version 0.9.7 ===
 
- * gcc-4.3 
- * g++-4.3
- * cmake
- * zlib1g-dev
- * libbz2-dev
- * libsdl1.2-dev
- * libjpeg-dev
- * libwxbase2.8-dev
- * libwxgtk2.8-dev
- * libgtk2.0-dev
- * libasound2-dev
- * portaudio19-dev
- * libsoundtouch1-dev
- * libsparsehash-dev
- * libxxf86vm-dev
- * libglew1.5-dev
- * nvidia-cg-toolkit
+ # build system
+   * gcc-4.3, gcc-4.3-multilib
+   * g++-4.3, g++-4.3-multilib
+   * cmake
+ # 32 bits libraries on x86
+   * liba52-0.7.4-dev
+   * libasound2-dev
+   * libbz2-dev
+   * libgl1-mesa-dev
+   * libglew1.5-dev
+   * libglu1-mesa-dev
+   * libgtk2.0-dev
+   * libjpeg-dev
+   * libsdl1.2-dev
+   * libsoundtouch1-dev
+   * libsparsehash-dev
+   * libwxbase2.8-dev
+   * libwxgtk2.8-dev
+   * libx11-dev
+   * libxxf86vm-dev
+   * nvidia-cg-toolkit
+   * portaudio19-dev
+   * zlib1g-dev
+ # 32 bits libraries on x86_64 (*NOT SUPPORTED & IMCOMPLETE*)
+   * ia32-libs
+   * ia32-libs-gtk
+   * lib32asound2
+   * lib32z1-dev
 
 === Using cmake ===
 
-Build parameter that can be used:
- * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
- * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
- * Force all         internal lib: -DFORCE_INTERNAL_ALL=TRUE
- * Force a52         internal lib: -DFORCE_INTERNAL_A52=TRUE
- * Force bzip        internal lib: -DFORCE_INTERNAL_BZIP2=TRUE
- * Force soundtouch  internal lib: -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
- * Force zlib        internal lib: -DFORCE_INTERNAL_ZLIB=TRUE
+ ==== Build parameter that can be used: ====
+  * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
+     # Release: Best in speed, but worst for debug
+     # Devel: a tradeoff between Release and Debug  
+     # Debug: no optimization. Very good for debug but slowwww
+  * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
+     # TRUE: Remove debugging information
+     # FALSE: Keep symbol. Better for debug.
+  * Force all         internal lib: -DFORCE_INTERNAL_ALL=TRUE
+  * Force bzip        internal lib: -DFORCE_INTERNAL_BZIP2=TRUE
+  * Force soundtouch  internal lib: -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
+  * Force zlib        internal lib: -DFORCE_INTERNAL_ZLIB=TRUE
 
-Running Cmake to generate the makefile:
+ ==== Running Cmake to generate the makefile: ====
   * cmake CMakeLists.txt "User Options see above"
+  * *WARNING* it must be call in the top directory. Not in pcsx2 directory neither the plugins one.
 
-Using the makefile to compile:
+ ==== Using the makefile to compile: ====
   * everything        : make
   * just pcsx2        : make pcsx2
   * just spu2x plugins: make spu2x
   * just a plugin     : make "plugin name"
 
+
+=== Report Cmake bug ===
+All distributions and configurations were not tested. In case you encounter a cmake bug that is really a cmake issue, you can report it. Please provide the following information.
+  # Linux distribution and the current kernel version (32 bits or 64 bits)
+  # The cmake commands. For example: cmake CMakeLists.txt
+  # All the output of cmake. Something like that is good:
+{{{
+-- The C compiler identification is GNU
+-- The CXX compiler identification is GNU
+-- Check for working C compiler: /usr/bin/gcc
+-- Check for working C compiler: /usr/bin/gcc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Found GTK2_GTK: /usr/lib/libgtk-x11-2.0.so
+-- Looking for XOpenDisplay in /usr/lib/libX11.so;/usr/lib/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/libX11.so;/usr/lib/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Found X11: /usr/lib/libX11.so
+-- Found ALSA: /usr/lib/libasound.so
+-- Found BZip2: /usr/lib/libbz2.so
+-- Looking for BZ2_bzCompressInit in /usr/lib/libbz2.so
+-- Looking for BZ2_bzCompressInit in /usr/lib/libbz2.so - found
+-- Looking for include files CMAKE_HAVE_PTHREAD_H
+-- Looking for include files CMAKE_HAVE_PTHREAD_H - found
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+-- Found wxWidgets: TRUE
+-- Found ZLIB: /usr/lib/libz.so
+-- Found A52: /usr/lib/liba52.so
+-- Found Cg: /usr/lib/libCg.so;/usr/lib/libCgGL.so
+-- Found PortAudio: /usr/lib/libportaudio.so
+-- Found SoundTouch: /usr/lib/libSoundTouch.so
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /mnt/playstation/emulateur/package/pcsx2.snapshot-3201
+
+}}}
+
+=== Build a deb package ===
+ TODO 
+
+ ==== Get a source tarball ====
+ ==== Update debian information ====
+ ==== Build the package ====
+
+  
