@@ -183,11 +183,44 @@ All distributions and configurations were not tested. In case you encounter a cm
 
 }}}
 
-=== Build a deb package ===
- TODO 
+=== Build a debian/ubuntu package ===
+* NOT SUPPORTED * : Building a package is difficult. For non-expert user, I advise you to compile pcsx2 with [CompilationGuideForLinux#Using_cmake cmake].
+
+For the purpose of the example, I use the version 3210 but it can be replaced with any later version. However in this situation some debian patches can be broken.
+ 
+ ==== Install some additional package ====
+     * dpkg-dev
+     * quilt
+     * debhelper
+     * fakeroot
 
  ==== Get a source tarball ====
+  First you need to create a tarball for the source package. A script is provided to do the job.
+   # `svn export http://pcsx2.googlecode.com/svn/trunk/debian_unofficial/create_pcsx2_tarball_from_svn_repository.sh`
+   # `./create_pcsx2_tarball_from_svn_repository.sh 3210`
+   # Check that you have a pcsx2.snapshot_3210.orig.tar.gz tarball.
+     
  ==== Update debian information ====
- ==== Build the package ====
+   Next step, add debian datas.
+     # `tar -xzf pcsx2.snapshot_3210.orig.tar.gz`
+     # `cd pcsx2.snapshot-3210`
+     # `cp -r debian_unofficial debian`
+     # Edit the file `debian/changelog` to change the origin version in the first line. Here it will become : "pcsx2.snapshot *(3210-1)* unstable; urgency=low"
+   Apply the debian patches and correct them if needed
+     # Check environment variable : QUILT_PATCHES=debian/patches
+     # `while quilt push ; do quilt refresh ; done`
+   In case of failure
+     * Solution 1: easiest way
+        # Remove the patch in the debian/patches/series
+        # Go back to previous step 2. To apply others patches
+     * Solution 2: fix the patch.
+        # quilt push -f (Look at the .rej file)
+        # Fix the code (before do a quilt add <file changed>
+        # quilt refresh (update the patch)
+        # Go back to previous step 2. To apply others patches
 
+ ==== Build the package ====
+   Everythings is clean, we can build the package without sign-it (-us -uc).
+     # You can tune the build with the variable DEB_BUILD_OPTIONS. Disable optimization and use your quad-core cpu : DEB_BUILD_OPTIONS="parallel=4 noopt"
+     # dpkg-buildpackage -rfakeroot -us -uc
   
