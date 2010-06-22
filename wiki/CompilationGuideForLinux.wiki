@@ -34,7 +34,7 @@ Optional:
 If you also want to use Zeydlitz's ZeroGS fork, ZZOgl, which I recommend, do the following:
 go into the plugin folder.
 Type:
-`svn http://sanechka.spb.ru/svnroot/ruslan/zerogs/ zzogl`
+`svn co http://sanechka.spb.ru/svnroot/ruslan/zerogs/ zzogl`
 Then open the build.sh file in the plugin directory. If there is a # in front of `buildplugin zzogl $@`, remove it:
 
 Now, go back to the pcsx2-read-only folder.
@@ -115,13 +115,17 @@ Other useful things you can do from the pcsx2-read-only folder:
      # TRUE: Remove debugging information
      # FALSE: Keep symbol. Better for debug.
   * Force all         internal lib: -DFORCE_INTERNAL_ALL=TRUE
-  * Force bzip        internal lib: -DFORCE_INTERNAL_BZIP2=TRUE
   * Force soundtouch  internal lib: -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
   * Force zlib        internal lib: -DFORCE_INTERNAL_ZLIB=TRUE
 
  ==== Running Cmake to generate the makefile: ====
-  * cmake CMakeLists.txt "User Options see above"
-  * *WARNING* it must be call in the top directory. Not in pcsx2 directory neither the plugins one.
+  * It is advice to use an out-source-build. Easier to delete all cmake stuff.
+    * mkdir my_build
+    * cd my_build
+    * cmake ../CMakeLists.txt "User Options see above"
+  * The 'pollute my source' method is 
+    * cmake CMakeLists.txt "User Options see above"
+  * *WARNING* In both case you must call the CMakeLists.txt in the top directory.
 
  ==== Using the makefile to compile: ====
   * everything        : make
