@@ -187,6 +187,9 @@ All distributions and configurations were not tested. In case you encounter a cm
 
 }}}
 
+----
+= Package build system =
+
 === Build a debian/ubuntu package ===
 * NOT SUPPORTED * : Building a package is difficult. For non-expert user, I advise you to compile pcsx2 with [CompilationGuideForLinux#Using_cmake cmake].
 
@@ -209,8 +212,9 @@ For the purpose of the example, I use the version 3210 but it can be replaced wi
      # `tar -xzf pcsx2.snapshot_3210.orig.tar.gz`
      # `cd pcsx2.snapshot-3210`
      # `cp -r debian_unofficial debian`
-     # Edit the file `debian/changelog` to change the origin version in the first line. Here it will become : "pcsx2.snapshot *(3210-1)* unstable; urgency=low"
+     # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 3210 for debian unstable : "pcsx2.snapshot *(3210-1)* *unstable*; urgency=low"
    Apply the debian patches and correct them if needed
+     # If you have the fglrx (ati/amd) drivers installed, you must use a special rule file to build the binary package: `cp debian/rules_fglrx debian/rules`
      # Check environment variable : QUILT_PATCHES=debian/patches
      # `while quilt push ; do quilt refresh ; done`
    In case of failure
@@ -225,6 +229,12 @@ For the purpose of the example, I use the version 3210 but it can be replaced wi
 
  ==== Build the package ====
    Everythings is clean, we can build the package without sign-it (-us -uc).
-     # You can tune the build with the variable DEB_BUILD_OPTIONS. Disable optimization and use your quad-core cpu : DEB_BUILD_OPTIONS="parallel=4 noopt"
+     # You can tune the build with the variable DEB_BUILD_OPTIONS. For example, disable optimization and use your quad-core cpu : DEB_BUILD_OPTIONS="parallel=4 noopt"
      # dpkg-buildpackage -rfakeroot -us -uc
   
+=== Additional note for ubuntu ppa ===
+     # Use the 32 bits control file : `cp debian/control_i386_only debian/control`
+     # Change the changelog to support ubuntu codename. Look at the first line of the template changelog_ubuntu_lucid
+     # Build the source package
+        * New version: `dpkg-buildpackage -S -sa`
+        * Update revision: `dpkg-buildpackage -S -sd`
