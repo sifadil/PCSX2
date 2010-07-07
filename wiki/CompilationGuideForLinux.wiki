@@ -9,7 +9,7 @@ This is loosely based on the compilation guide in that thread, though it should 
 
 Note: This is still a rough draft, and subject to change.
 
-= Details =
+= Details (more or less DEPRECATED) =
 
 First, there are various dependencies you will need. This is the list if you are using debian based distributions. Some of these may be named somewhat differently on other distributions:
   * libbz2-dev
@@ -107,16 +107,20 @@ Other useful things you can do from the pcsx2-read-only folder:
 === Using cmake ===
 
  ==== Build parameter that can be used: ====
-  * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
-     # Release: Best in speed, but worst for debug
-     # Devel: a tradeoff between Release and Debug  
-     # Debug: no optimization. Very good for debug but slowwww
-  * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
-     # TRUE: Remove debugging information
-     # FALSE: Keep symbol. Better for debug.
-  * Force all         internal lib: -DFORCE_INTERNAL_ALL=TRUE
-  * Force soundtouch  internal lib: -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
-  * Force zlib        internal lib: -DFORCE_INTERNAL_ZLIB=TRUE
+  * Basic parameter:
+     * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
+        # Release: Best in speed, but worst for debug
+        # Devel: a tradeoff between Release and Debug  
+        # Debug: no optimization. Very good for debug but slowwww
+     * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
+        # TRUE: Remove debugging information
+        # FALSE: Keep symbol. Better for debug.
+  * Expert parameter (not supported, the best is to use the default options):
+     * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
+     * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
+     * Force zlib        internal lib : -DFORCE_INTERNAL_ZLIB=TRUE
+     * Tune C flags : -DUSER_CMAKE_C_FLAGS="cflags"
+     * Tune C++ flags : -DUSER_CMAKE_CXX_FLAGS="cxxflags"
 
  ==== Running Cmake to generate the makefile: ====
   * It is advice to use an out-source-build. Easier to delete all cmake stuff.
@@ -233,7 +237,7 @@ For the purpose of the example, I use the version 3210 but it can be replaced wi
      # dpkg-buildpackage -rfakeroot -us -uc
   
 === Additional note for ubuntu ppa ===
-     # Use the 32 bits control file : `cp debian/control_i386_only debian/control`
+     # Use the 32 bits control file : `cp debian/control_ppa debian/control`
      # Change the changelog to support ubuntu codename. Look at the first line of the template changelog_ubuntu_lucid
      # Build the source package
         * New version: `dpkg-buildpackage -S -sa`
