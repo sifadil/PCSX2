@@ -1,0 +1,107 @@
+# Check that people use the good file
+if(NOT TOP_CMAKE_WAS_SOURCED)
+    message(FATAL_ERROR "
+    You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
+    It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
+endif(NOT TOP_CMAKE_WAS_SOURCED)
+
+
+# plugin name
+set(GSnullName GSnull)
+
+set(CommonFlags
+    -Wall
+    -m32
+    -msse2
+    )
+
+set(OptimizationFlags
+    -O2
+    -DNDEBUG
+    )
+
+# Debug - Build
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	# add defines
+    add_definitions(${CommonFlags} -g)
+endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+
+# Devel - Build
+if(CMAKE_BUILD_TYPE STREQUAL Devel)
+	# add defines
+	add_definitions(${CommonFlags} ${OptimizationFlags})
+endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+
+# Release - Build
+if(CMAKE_BUILD_TYPE STREQUAL Release)
+	# add defines
+	add_definitions(${CommonFlags} ${OptimizationFlags})
+endif(CMAKE_BUILD_TYPE STREQUAL Release)
+
+# GSnull sources
+set(GSnullSources
+	GifTransfer.cpp
+	GS.cpp)
+
+# GSnull headers
+set(GSnullHeaders
+	GifTransfer.h
+	GS.h
+	Registers.h)
+
+# GSnull Linux sources
+set(GSnullLinuxSources
+	Linux/Config.cpp
+	Linux/GSLinux.cpp
+	Linux/Linux.cpp)
+
+# GSnull Linux headers
+set(GSnullLinuxHeaders
+	Linux/Config.h
+	Linux/GSLinux.h
+	Linux/Linux.h)
+
+# GSnull null sources
+set(GSnullnullSources
+	null/GSnull.cpp)
+
+# GSnull null headers
+set(GSnullnullHeaders
+	null/GSnull.h)
+
+# GSnull Windows sources
+set(GSnullWindowsSources
+	Windows/Config.cpp
+	Windows/GS.def
+	Windows/GS.rc
+	Windows/GSwin.cpp
+	Windows/Win32.cpp)
+
+# GSnull Windows headers
+set(GSnullWindowsHeaders
+	)
+
+# add additional include directories
+include_directories(.)
+
+# add library
+add_library(${GSnullName} SHARED
+			${GSnullSources}
+			${GSnullHeaders}
+			${GSnullnullSources}
+			${GSnullnullHeaders}
+			${GSnullLinuxSources}
+			${GSnullLinuxHeaders})
+
+# Force the linker into 32 bits mode
+target_link_libraries(${GSnullName} -m32)
+
+# Linker strip option
+if (CMAKE_BUILD_STRIP)
+    target_link_libraries(${GSnullName} -s)
+endif (CMAKE_BUILD_STRIP)
+
+# set output directory
+set_target_properties(${GSnullName} PROPERTIES
+					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+

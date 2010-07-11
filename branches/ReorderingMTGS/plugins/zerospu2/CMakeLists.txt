@@ -1,0 +1,117 @@
+# Check that people use the good file
+if(NOT TOP_CMAKE_WAS_SOURCED)
+    message(FATAL_ERROR "
+    You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
+    It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
+endif(NOT TOP_CMAKE_WAS_SOURCED)
+
+
+# plugin name
+set(zerospu2Name zerospu2)
+
+set(CommonFlags
+    -Wall
+    -m32
+    -msse2
+    )
+
+set(OptimizationFlags
+    -O2
+    -DNDEBUG
+    )
+
+# Debug - Build
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	# add defines
+    add_definitions(${CommonFlags} -g)
+endif(CMAKE_BUILD_TYPE STREQUAL Debug)
+
+# Devel - Build
+if(CMAKE_BUILD_TYPE STREQUAL Devel)
+	# add defines
+	add_definitions(${CommonFlags} ${OptimizationFlags})
+endif(CMAKE_BUILD_TYPE STREQUAL Devel)
+
+# Release - Build
+if(CMAKE_BUILD_TYPE STREQUAL Release)
+	# add defines
+	add_definitions(${CommonFlags} ${OptimizationFlags})
+endif(CMAKE_BUILD_TYPE STREQUAL Release)
+
+# zerospu2 sources
+set(zerospu2Sources
+	voices.cpp
+	zerodma.cpp
+	zerospu2.cpp
+	zeroworker.cpp)
+
+# zerospu2 headers
+set(zerospu2Headers
+	misc.h
+	reg.h
+	zerodma.h
+	zerospu2.h
+	zeroworker.h)
+
+# zerospu2 Linux sources
+set(zerospu2LinuxSources
+	Linux/Linux.cpp
+	Targets/Alsa.cpp
+	Targets/OSS.cpp
+#	Targets/PortAudio.cpp
+	Targets/SoundTargets.cpp)
+
+# zerospu2 Linux headers
+set(zerospu2LinuxHeaders
+	Linux/Linux.h
+	Targets/Alsa.h
+	Targets/OSS.h
+#	Targets/PortAudio.h
+	Targets/SoundTargets.h)
+
+# zerospu2 Windows sources
+set(zerospu2WindowsSources
+	Targets/dsound51.cpp
+	Windows/Win32.cpp
+	Windows/ZeroSPU2.def
+	Windows/ZeroSPU2.rc)
+
+# zerospu2 Windows headers
+set(zerospu2WindowsHeaders
+	resources.h
+	Targets/dsound51.h)
+
+# add additional include directories
+include_directories(.
+					Linux
+					Targets)
+
+# add library
+add_library(${zerospu2Name} SHARED
+			${zerospu2Sources}
+			${zerospu2Headers}
+			${zerospu2LinuxSources}
+			${zerospu2LinuxHeaders})
+
+# set output directory
+set_target_properties(${zerospu2Name} PROPERTIES
+					  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/plugins)
+
+# link target with ALSA
+target_link_libraries(${zerospu2Name} ${ALSA_LIBRARIES})
+
+if(PORTAUDIO_FOUND)
+	# link target with PortAudio
+	#target_link_libraries(${zerospu2Name} ${PORTAUDIO_LIBRARIES})
+endif(PORTAUDIO_FOUND)
+
+# link target with SoundTouch
+target_link_libraries(${zerospu2Name} ${SOUNDTOUCH_LIBRARIES})
+
+# Force the linker into 32 bits mode
+target_link_libraries(${zerospu2Name} -m32)
+
+# Linker strip option
+if (CMAKE_BUILD_STRIP)
+    target_link_libraries(${zerospu2Name} -s)
+endif (CMAKE_BUILD_STRIP)

@@ -1,0 +1,78 @@
+# Project Name
+project(Pcsx2)
+
+# need cmake version >=2.6
+cmake_minimum_required(VERSION 2.6)
+
+# Variable to check that people use the good file
+set(TOP_CMAKE_WAS_SOURCED TRUE)
+
+# set module path
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+# include some generic functions
+include(Pcsx2Utils)
+
+# Detect current OS
+detectOperatingSystem()
+
+#-------------------------------------------------------------------------------
+# Include specific module
+# BuildParameters Must be done before SearchForStuff
+include(BuildParameters)
+# SearchForStuff be done before SelectPcsx2Plugins
+include(SearchForStuff)
+include(SelectPcsx2Plugins)
+
+# add additional project-wide include directories
+include_directories(${PROJECT_SOURCE_DIR}/common/include
+					${PROJECT_SOURCE_DIR}/common/include/Utilities
+					${PROJECT_SOURCE_DIR}/common/include/x86emitter)
+
+# make 3rdParty
+if(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty")
+    add_subdirectory(3rdparty)
+endif(EXISTS "${PROJECT_SOURCE_DIR}/3rdparty")
+
+# make common
+if(common_libs)
+    add_subdirectory(common)
+endif(common_libs)
+
+# make tools
+add_subdirectory(tools)
+
+# make pcsx2
+if(EXISTS "${PROJECT_SOURCE_DIR}/pcsx2" AND pcsx2_core)
+    add_subdirectory(pcsx2)
+endif(EXISTS "${PROJECT_SOURCE_DIR}/pcsx2" AND pcsx2_core)
+
+# make plugins
+if(EXISTS "${PROJECT_SOURCE_DIR}/plugins")
+    add_subdirectory(plugins)
+endif(EXISTS "${PROJECT_SOURCE_DIR}/plugins")
+
+#-------------------------------------------------------------------------------
+#								Resources
+#-------------------------------------------------------------------------------
+# Specify all binary images to convert them into c/c++ header files.
+#
+#-------------------------------------------------------------------------------
+# add resources here
+set(resourceList AppIcon16.png
+				 AppIcon32.png
+				 AppIcon64.png
+				 BackgroundLogo.png
+				 ButtonIcon_Camera.png
+				 ConfigIcon_Cpu.png
+				 ConfigIcon_Gamefixes.png
+				 ConfigIcon_MemoryCard.png
+				 ConfigIcon_Paths.png
+				 ConfigIcon_Plugins.png
+				 ConfigIcon_Speedhacks.png
+				 ConfigIcon_Video.png
+				 Dualshock.jpg)
+
+createResourceTarget(${resourceList})
+#-------------------------------------------------------------------------------
+
