@@ -1,13 +1,22 @@
 #summary A guide to compiling pcsx2 on Linux.
 
+= Index =
+
+  # [CompilationGuideForLinux#Introduction Introduction]
+  # [CompilationGuideForLinux#Using_cmake Cmake]
+  # [CompilationGuideForLinux#Package_build_system Create debian/ubuntu package]
+  # [CompilationGuideForLinux#Install_pcsx2_with_ubuntu_ppa  Install by ubuntu ppa]
+  
+----
+
 = Introduction =
 
 This is intended to give you an idea of how to compile pcsx2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported by the pcsx2 team. If you have issues following this guide, I'd reccommend going through this thread for help:
-http://forums.pcsx2.net/thread-2373.html
-
-This is loosely based on the compilation guide in that thread, though it should be more up to date.
+http://forums.pcsx2.net/Thread-Linux-Compile-Guide-and-Support
 
 Note: This is still a rough draft, and subject to change.
+
+----
 
 = Details (more or less DEPRECATED) =
 
@@ -29,13 +38,6 @@ Now, pcsx2 currently likes to reside in one folder. This may change in the futur
 
 now, in a terminal window, type the following:
 `svn checkout http://pcsx2.googlecode.com/svn/trunk/ pcsx2-read-only`
-
-Optional:
-If you also want to use Zeydlitz's ZeroGS fork, ZZOgl, which I recommend, do the following:
-go into the plugin folder.
-Type:
-`svn co http://sanechka.spb.ru/svnroot/ruslan/zerogs/ zzogl`
-Then open the build.sh file in the plugin directory. If there is a # in front of `buildplugin zzogl $@`, remove it:
 
 Now, go back to the pcsx2-read-only folder.
 
@@ -119,8 +121,9 @@ Other useful things you can do from the pcsx2-read-only folder:
      * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
      * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
      * Force zlib        internal lib : -DFORCE_INTERNAL_ZLIB=TRUE
-     * Tune C flags : -DUSER_CMAKE_C_FLAGS="cflags"
-     * Tune C++ flags : -DUSER_CMAKE_CXX_FLAGS="cxxflags"
+     * Tune C flags                   : -DUSER_CMAKE_C_FLAGS="cflags"
+     * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS="cxxflags"
+     * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS="ldflags"
 
  ==== Running Cmake to generate the makefile: ====
   * It is advice to use an out-source-build. Easier to delete all cmake stuff.
@@ -242,3 +245,26 @@ For the purpose of the example, I use the version 3210 but it can be replaced wi
      # Build the source package
         * New version: `dpkg-buildpackage -S -sa`
         * Update revision: `dpkg-buildpackage -S -sd`
+
+----
+
+= Install pcsx2 with ubuntu ppa =
+=== Note ===
+    Pcsx2 provides some ubuntu package through ppa. It is still experimental and it is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time.
+
+=== OS supported ===
+    * 32 bits ubuntu 10.04
+    * 32 bits ubuntu 10.10
+
+=== Add pcsx2 ppa on your system ===
+    * open a terminal
+    * sudo add-apt-repository ppa:gregory-hainaut/pcsx2.official.ppa
+ 
+=== Install the package on your system ===
+    * Main package
+      * pcsx2-unstable
+      * pcsx2-data-unstable
+      * pcsx2-plugins-unstable
+    * Debug package
+      * pcsx2-unstable-dbg
+      * pcsx2-plugins-unstable-dbg
