@@ -1,5 +1,8 @@
 #summary A guide to compiling pcsx2 on Linux.
 
+= *only 32bits OS is supported* =
+ Ia32libs miss several 32bits library (at least in debian/ubuntu). Nothings pcsx2 can do about that. So do not expect to run it on amd 64bits. The only solution for you is to install a full 32bits chroot.
+
 = Index =
 
   # [CompilationGuideForLinux#Introduction Introduction]
@@ -103,7 +106,7 @@ Other useful things you can do from the pcsx2-read-only folder:
  # 32 bits libraries on x86_64 (*NOT SUPPORTED & IMCOMPLETE*)
    * ia32-libs
    * ia32-libs-gtk
-   * lib32asound2
+   * lib32asound2-dev
    * lib32z1-dev
 
 === Using cmake ===
