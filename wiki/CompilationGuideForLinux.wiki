@@ -121,9 +121,9 @@ Other useful things you can do from the pcsx2-read-only folder:
      * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
      * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
      * Force zlib        internal lib : -DFORCE_INTERNAL_ZLIB=TRUE
-     * Tune C flags                   : -DUSER_CMAKE_C_FLAGS="cflags"
-     * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS="cxxflags"
-     * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS="ldflags"
+     * Tune C flags                   : -DUSER_CMAKE_C_FLAGS:STRING="cflags"
+     * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS:STRING="cxxflags"
+     * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
 
  ==== Running Cmake to generate the makefile: ====
   * It is advice to use an out-source-build. Easier to delete all cmake stuff.
