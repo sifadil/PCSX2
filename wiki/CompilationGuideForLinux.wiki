@@ -1,84 +1,33 @@
 #summary A guide to compiling pcsx2 on Linux.
 
 = *only 32bits OS is supported* =
- Ia32libs miss several 32bits library (at least in debian/ubuntu). Nothings pcsx2 can do about that. So do not expect to run it on amd 64bits. The only solution for you is to install a full 32bits chroot.
+Ia32libs is missing several 32bits libraries (at least in debian/ubuntu), and there is nothing PCSX2 can do about that. So do not expect to run PCSX2 on x64 Linux installs.  The only solution for you is to install a full 32bits chroot environment, and run PCSX2 from that.
 
 = Index =
 
-  # [CompilationGuideForLinux#Introduction Introduction]
-  # [CompilationGuideForLinux#Using_cmake Cmake]
-  # [CompilationGuideForLinux#Package_build_system Create debian/ubuntu package]
+  # [CompilationGuideForLinux#Introduction  Introduction]
+  # [CompilationGuideForLinux#Using_cmake  Cmake]
+  # [CompilationGuideForLinux#Package_build_system  Create debian/ubuntu package]
   # [CompilationGuideForLinux#Install_pcsx2_with_ubuntu_ppa  Install by ubuntu ppa]
+
+If you want download and build older 0.9.6 editions of PCSX2, see the [LegacyAutomakeGuide  Guide for Building 0.9.6 (r1762 and prior) via Automake].
   
 ----
 
 = Introduction =
 
-This is intended to give you an idea of how to compile pcsx2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported by the pcsx2 team. If you have issues following this guide, I'd reccommend going through this thread for help:
+This is intended to give you an idea of how to compile PCSX2 from svn in Linux. Some of the steps may be different on some versions of Linux, and this is not generally supported by the PCSX2 team. If you have issues following this guide, I'd recommend going through this thread for help:
 http://forums.pcsx2.net/Thread-Linux-Compile-Guide-and-Support
 
 Note: This is still a rough draft, and subject to change.
 
 ----
 
-= Details (more or less DEPRECATED) =
-
-First, there are various dependencies you will need. This is the list if you are using debian based distributions. Some of these may be named somewhat differently on other distributions:
-  * libbz2-dev
-  * libglew1.5-dev
-  * libxxf86vm-dev
-  * nvidia-cg-toolkit
-  * libasound2-dev
-  * joystick
-  * libsdl1.2-dev
-  * libgtk2.0-dev
-  * autoconf
-  * automake
-
-Additionally, you will need gcc & g++. It currently expects gcc 4.3 or higher, though I may lower that requirement at some point.
-
-Now, pcsx2 currently likes to reside in one folder. This may change in the future, but for now, go to the area you plan to have it reside.
-
-now, in a terminal window, type the following:
-`svn checkout http://pcsx2.googlecode.com/svn/trunk/ pcsx2-read-only`
-
-Now, go back to the pcsx2-read-only folder.
-
-Type in the following command:
-`sh build.sh all`
-
-This should build pcsx2 and all plugins in the bin directory.
-
-At this point, you can drop in your bios, and you should be set (though you'll need to configure everything the first time you open it, of course.)
-
-Other useful things you can do from the pcsx2-read-only folder:
-
-  * Typing `svn up` will update you to the latest svn (and doing the same thing in the zzogl folder updates zzogl).
-
-  * Typing `svn up -r <revision number>` will roll your copy of pcsx2 back to the revision number you specify, in case a particular revision has something broken.
-
-  * Typing `sh build.sh install`} will only compile the changes from the last version you compiled, which is quicker, though if you run into problems, run "sh build.sh all".
-
-  * Typing `sh build.sh clean` is a good idea if none of the other `sh build.sh <something>` commands is working, as it'll get rid of all the extra accumulated object files, and might be enough to get `sh build.sh all` working again.
-
-  * If you go into the build.sh file in pcsx2-read-only, you will note there are several lines that look like this:
-  `#export PCSX2OPTIONS="--enable-sse3 --enable-sse4 --prefix `pwd`"`
-
-  The # means its commented out. You can customize how it's built by changing which one is commented out, and changing the options passed to it. What all the options mean is probably beyond the scope of this document. 
-
-  Generally, the Normal build is the one most users would use. 
-
-  The Developer build adds special options for logging and such, usually used either by developers, or for reporting issues.
-
-  The Debug build also turns off optimizations, and is a lot slower, but generally the most helpful version to use when reporting bugs to the devs.
-
-----
-
 = Cmake build system =
 
-==*Warning it is experimental and not supported. The following informations are only a draft.*==
+==*Warning: this build system is experimental.  The following information is only a draft.*==
 
-=== Debian build dependancy for futur version 0.9.7 ===
+=== Debian build dependencies for future version 0.9.7 ===
 
  # build system
    * gcc-4.3, gcc-4.3-multilib
@@ -111,16 +60,16 @@ Other useful things you can do from the pcsx2-read-only folder:
 
 === Using cmake ===
 
- ==== Build parameter that can be used: ====
-  * Basic parameter:
+ ==== Build parameters that can be used: ====
+  * Basic parameters:
      * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
-        # Release: Best in speed, but worst for debug
-        # Devel: a tradeoff between Release and Debug  
-        # Debug: no optimization. Very good for debug but slowwww
+        # Release: Best in speed, but provides little or no debug/crash info.
+        # Devel: Adds detailed trace logging abilities, but still lacks debug/crash info.  
+        # Debug: No compiler optimizations. Very good for debug/crash info but also very slooowww.
      * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
-        # TRUE: Remove debugging information
-        # FALSE: Keep symbol. Better for debug.
-  * Expert parameter (not supported, the best is to use the default options):
+        # TRUE: Remove debugging information.
+        # FALSE: Keep symbols. Better for debug. (recommended since it should not have any impact on speed)
+  * Expert parameters (not supported, the best is to use the default options):
      * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
      * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
      * Force zlib        internal lib : -DFORCE_INTERNAL_ZLIB=TRUE
@@ -129,13 +78,13 @@ Other useful things you can do from the pcsx2-read-only folder:
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
 
  ==== Running Cmake to generate the makefile: ====
-  * It is advice to use an out-source-build. Easier to delete all cmake stuff.
+  * It is advised to use a build method that place build files outside the PCSX2 sources dirs, as it makes it easier to delete all cmake stuff:
     * mkdir my_build
     * cd my_build
     * cmake ../CMakeLists.txt "User Options see above"
-  * The 'pollute my source' method is 
+  * The 'pollute my source' method is:
     * cmake CMakeLists.txt "User Options see above"
-  * *WARNING* In both case you must call the CMakeLists.txt in the top directory.
+  * *WARNING* In both cases you must call the CMakeLists.txt in the top directory.
 
  ==== Using the makefile to compile: ====
   * everything        : make
@@ -144,11 +93,11 @@ Other useful things you can do from the pcsx2-read-only folder:
   * just a plugin     : make "plugin name"
 
 
-=== Report Cmake bug ===
+=== Reporting Cmake bugs ===
 All distributions and configurations were not tested. In case you encounter a cmake bug that is really a cmake issue, you can report it. Please provide the following information.
   # Linux distribution and the current kernel version (32 bits or 64 bits)
   # The cmake commands. For example: cmake CMakeLists.txt
-  # All the output of cmake. Something like that is good:
+  # All the output of cmake. Something like this is good:
 {{{
 -- The C compiler identification is GNU
 -- The CXX compiler identification is GNU
@@ -201,9 +150,9 @@ All distributions and configurations were not tested. In case you encounter a cm
 = Package build system =
 
 === Build a debian/ubuntu package ===
-* NOT SUPPORTED * : Building a package is difficult. For non-expert user, I advise you to compile pcsx2 with [CompilationGuideForLinux#Using_cmake cmake].
+* NOT SUPPORTED * : Building a package is difficult. For non-expert users, I advise you to compile PCSX2 with [CompilationGuideForLinux#Using_cmake cmake].
 
-For the purpose of the example, I use the version 3210 but it can be replaced with any later version. However in this situation some debian patches can be broken.
+For the purpose of the example, I use the version r3210 but it can be replaced with any later version. However in this situation some debian patches can be broken.
  
  ==== Install some additional package ====
      * dpkg-dev
