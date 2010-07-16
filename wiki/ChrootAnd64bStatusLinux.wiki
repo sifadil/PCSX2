@@ -1,0 +1,49 @@
+More and more linux user have a 64bits distributions. The purpose of this wiki page is to explain the situation and the possible solutions.
+
+* It is only a DRAFT for the moment *
+
+However Status update on following distribution are welcome : Debian / Fedora / Gentoo / Mandriva / Opensuse / Ubuntu / Slackware. Look at TODO mark.
+
+= Introduction =
+    PCSX2 does not support 64bits for various reasons.
+        * The code is architecture dependent (for performance reason). Supporting both 32bits and 64bits is too much work.
+        * It would need a complete rewrite of the emulator core.
+        * No gain in performance, actually it could be slower.
+        * ...
+
+     The only way to use PCSX2 on an amd64 distributions is the installation of 32bits libraries.
+
+= Chroot environment =
+    The recommended way.
+
+    === Standard library ===
+    The best way to install the 32bits is to create a 32 bits chroot. Each distributions have a specific way.
+      * Use Google ;)
+      * Some link that could help
+          # Ubuntu : http://ubuntuforums.org/showthread.php?t=24575
+          # TODO complete Others distribution : Debian / Fedora / Gentoo / Mandriva / Opensuse / Slackware
+
+
+    === Proprietary Driver ===
+      * NVIDIA
+          * Do not know ^^    
+      * ATI/AMD (note library paths depend on distributions)
+          # Use the 32bits glxinfo to check that direct rendering is enabled
+          # You need to overwrite the libGL.so.`*` libraries provided by mesa with the 32bits version in fglrx.
+          # You must add the 32bits fglrx_dri.so
+
+= IA32 libs =
+    Some distributions adds the possibility to install lots of 32bits library in a big package.
+       # Debian / Ubuntu: miss mutiple libraries.
+          * libportaudio
+          * libsoundtouch
+          * libglew
+          * libwxbase2.8 and libwxgtk2.8
+          * nvidia-cg-toolkit
+       # TODO complete Others distribution : Fedora / Gentoo / Mandriva / Opensuse /Slackware
+      
+= Multi arch support =
+    There is a project on Debian / Ubuntu to allow the installation in the same time of any architecture package on any system. It would allow easy cross-compilation.
+
+      * Debian / Ubuntu: not yet implemented. Would probably take at least one year :(
+      * TODO complete Others distribution : Fedora / Gentoo / Mandriva / OpensUse /Slackware
