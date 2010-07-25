@@ -1,4 +1,4 @@
-#pcsx2 status on linux amd64
+#summary pcsx2 status on linux amd64
 
 More and more linux user have a 64bits distributions. The purpose of this wiki page is to explain the situation and the possible solutions.
 
