@@ -1,3 +1,5 @@
+#pcsx2 status on linux amd64
+
 More and more linux user have a 64bits distributions. The purpose of this wiki page is to explain the situation and the possible solutions.
 
 * It is only a DRAFT for the moment *
@@ -33,14 +35,18 @@ However Status update on following distribution are welcome : Debian / Fedora / 
           # You must add the 32bits fglrx_dri.so
 
 = IA32 libs =
-    Some distributions adds the possibility to install lots of 32bits library in a big package.
-       # Debian / Ubuntu: miss mutiple libraries.
-          * libportaudio
-          * libsoundtouch
-          * libglew
-          * libwxbase2.8 and libwxgtk2.8
-          * nvidia-cg-toolkit
-       # TODO complete Others distribution : Fedora / Gentoo / Mandriva / Opensuse /Slackware
+    Some distributions adds the possibility to install lots of 32bits library in a big package. Note: it is still necessary to install the 64bits developpement packages.
+       # Debian / Ubuntu: not functional, miss mutiple libraries
+            * libportaudio
+            * libsoundtouch
+            * libglew
+            * libwxbase2.8 and libwxgtk2.8
+            * nvidia-cg-toolkit
+       # Fedora: Status unknow
+            * search package ending with ".i686"
+       # Opensuse: Status unknow
+            * search package ending with "-32bit"
+       # TODO complete Others distribution : Gentoo / Mandriva / Slackware
       
 = Multi arch support =
     There is a project on Debian / Ubuntu to allow the installation in the same time of any architecture package on any system. It would allow easy cross-compilation.
