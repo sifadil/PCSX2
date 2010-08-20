@@ -3,6 +3,9 @@
 = *only 32bits OS is supported* =
 Ia32libs is missing several 32bits libraries (at least in debian/ubuntu), and there is nothing PCSX2 can do about that. So do not expect to run PCSX2 on x64 Linux installs.  The only solution for you is to install a full 32bits chroot environment, and run PCSX2 from that.
 
+*64 bits users* please read [ChrootAnd64bStatusLinux pcsx2 status on 64 bits.]
+
+
 = Index =
 
   # [CompilationGuideForLinux#Introduction  Introduction]
