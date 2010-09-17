@@ -288,6 +288,8 @@ enum EERegisterAddresses
 	fromSPR_QWC		=	0x1000D020,
 
 //toSPR
+
+//toSPR
 	D9_CHCR			=	0x1000D400,
 	D9_MADR			=	0x1000D010,
 	D9_QWC			=	0x1000D020,
@@ -371,7 +373,29 @@ union tGS_SMODE2
 	bool IsInterlaced() const { return INT; }
 };
 
+static const uint FifoSize_Vif0		= 8;
+static const uint FifoSize_Vif1		= 16;
+static const uint FifoSize_Gif		= 16;
+static const uint FifoSize_Ipu0		= 8;
+static const uint FifoSize_Ipu1		= 8;
+static const uint FifoSize_Sif		= 8;
+
+struct PeripheralFifoPack
+{
+	u128 vif0[FifoSize_Vif0];
+	u128 vif1[FifoSize_Vif1];
+	u128 gif[FifoSize_Gif];
+	u128 ipu0[FifoSize_Ipu0];
+	u128 ipu1[FifoSize_Ipu1];
+
+	u128 sif[FifoSize_Sif];
+};
+
+extern __aligned16 PeripheralFifoPack g_fifo;
+
+
 extern void hwReset();
+extern void ProcessFifoEvent();
 
 extern const int rdram_devices;
 extern int rdram_sdevid;

@@ -7,7 +7,8 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "afxres.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -307,7 +308,8 @@ END
 #include "res/tfx.fx"
 #include "res/convert.fx"
 #include "res/interlace.fx"
-#include "res/merge.fx"
+#include "res/merge.fx"
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

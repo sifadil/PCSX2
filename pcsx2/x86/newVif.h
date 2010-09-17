@@ -31,13 +31,13 @@ typedef void (__fastcall *nVifrecCall)(uptr dest, uptr src);
 #include "newVif_BlockBuffer.h"
 #include "newVif_HashBucket.h"
 
+template< uint idx, bool doMask, uint upkType >
+extern void  dVifUnpack  (const u8 *data, bool isFill, uint vSize);
+
 extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
-extern void _nVifUnpack  (int idx, const u8* data, uint mode, bool isFill);
 extern void  dVifReset   (int idx);
 extern void  dVifClose   (int idx);
 extern void  VifUnpackSSE_Init();
-
-_vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 
 #define VUFT VIFUnpackFuncTable
 #define	_v0 0
@@ -59,29 +59,25 @@ struct __aligned16 nVifBlock {
 	u8   upkType;	// [01] Unpack Type [usn*1:mask*1:upk*4]
 	u8   mode;		// [02] Mode Field
 	u8   cl;		// [03] CL   Field
-	u32  mask;		// [04] Mask Field
-	u8   wl;		// [08] WL   Field
-	u8	 padding[3];// [09] through [11]
+	u8   wl;		// [04] WL   Field
+	u8	 padding[3];// [05] through [07]
+	u32  mask;		// [08] Mask Field
 	uptr startPtr;	// [12] Start Ptr of RecGen Code
-}; // 16 bytes
+};
 
 #define _hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
 #define _cmpS  (sizeof(nVifBlock) - (4))
 #define _tParams nVifBlock, _hSize, _cmpS
 struct nVifStruct {
-
-	// Buffer for partial transfers (should always be first to ensure alignment)
-	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
-	__aligned16 u8			buffer[256*16];
-	u32						bSize;			// Size of 'buffer'
-	u32						bPtr;
+	nVifBlock				Block;
+	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
+	int						numBlocks;		// # of Blocks Recompiled
 
 	u32						idx;			// VIF0 or VIF1
+	u32						bPtr;
 	u8*						recPtr;			// Cur Pos to recompile to
 	u8*						recEnd;			// 'Safe' End of Rec Cache
 	BlockBuffer*			vifCache;		// Block Buffer
-	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
-	int						numBlocks;		// # of Blocks Recompiled
 	
 	nVifStruct()
 	{
@@ -92,6 +88,12 @@ struct nVifStruct {
 		recEnd		=  NULL;
 	}
 };
+
+typedef void __fastcall FnType_VifUnpackLoop(uint vSize, const u8* src);
+typedef FnType_VifUnpackLoop* Fnptr_VifUnpackLoop;
+
+// [Idx][doMode][IsFill]
+extern __aligned16 const Fnptr_VifUnpackLoop VifUnpackLoopTable[2][2][2];
 
 extern __aligned16 nVifStruct nVif[2];
 extern __aligned16 nVifCall nVifUpk[(2*2*16)*4]; // ([USN][Masking][Unpack Type]) [curCycle]

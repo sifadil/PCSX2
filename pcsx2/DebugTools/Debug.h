@@ -373,6 +373,7 @@ extern void __Log( const char* fmt, ... );
 #define GIF_LOG			macTrace(EE.GIF)
 #define EECNT_LOG		macTrace(EE.Counters)
 #define VifCodeLog		macTrace(EE.VIFcode)
+#define DMAC_LOG		macTrace(EE.DMAC)
 
 
 #define PSXBIOS_LOG		macTrace(IOP.Bios)
@@ -388,8 +389,8 @@ extern void __Log( const char* fmt, ... );
 #define CDVD_LOG		macTrace(IOP.CDVD)
 
 
-#define ELF_LOG			SysConsole.ELF.IsActive()		&& SysConsole.ELF.Write
-#define eeRecPerfLog	SysConsole.eeRecPerf.IsActive()	&& SysConsole.eeRecPerf
-#define eeConLog		SysConsole.eeConsole.IsActive()	&& SysConsole.eeConsole.Write
-#define eeDeci2Log		SysConsole.deci2.IsActive()		&& SysConsole.deci2.Write
+#define ELF_LOG			SysConsole.ELF.IsActive() && SysConsole.ELF.Write
+#define eeRecPerfLog	SysConsole.eeRecPerf.IsActive() && SysConsole.eeRecPerf
+#define eeConLog		SysConsole.eeConsole.IsActive() && SysConsole.eeConsole.Write
+#define eeDeci2Log		SysConsole.deci2.IsActive() && SysConsole.deci2.Write
 #define iopConLog		SysConsole.iopConsole.IsActive()&& SysConsole.iopConsole.Write

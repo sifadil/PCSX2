@@ -16,6 +16,8 @@
 #ifndef __SIF_H__
 #define __SIF_H__
 
+#include "DmacLegacy.h"
+
 static const int FIFO_SIF_W = 128;
 
 static DMACh& sif0dma = (DMACh&)eeHw[0xc000];
@@ -43,7 +45,7 @@ struct sifFifo
 		return FIFO_SIF_W - size;
 	}
 
-	void write(u32 *from, int words)
+	__releaseinline void write(u32 *from, int words)
 	{
 		if (words > 0)
 		{
@@ -59,7 +61,7 @@ struct sifFifo
 		SIF_LOG("  SIF + %d = %d (pos=%d)", words, size, writePos);
 	}
 
-	void read(u32 *to, int words)
+	__releaseinline void read(u32 *to, int words)
 	{
 		if (words > 0)
 		{

@@ -220,7 +220,9 @@ void VifUnpackSSE_Base::xUPK_V4_5() const {
 	xPSRL.D		(destReg, 24); // single AND...
 }
 
-void VifUnpackSSE_Base::xUnpack( int upknum ) const
+// Returns TRUE if the unpack is valid and results in generated code.
+// Returns FALSE if the unpack is invalid (no code generated).
+bool VifUnpackSSE_Base::xUnpack( int upknum ) const
 {
 	switch( upknum )
 	{
@@ -241,12 +243,9 @@ void VifUnpackSSE_Base::xUnpack( int upknum ) const
 		case 14: xUPK_V4_8();	break;
 		case 15: xUPK_V4_5();	break;
 
-		case 3:
-		case 7:
-		case 11:
-			pxFailRel( wxsFormat( L"Vpu/Vif - Invalid Unpack! [%d]", upknum ) );
-		break;
+		default: return false;
 	}
+	return true;
 }
 
 // =====================================================================================================
@@ -281,11 +280,8 @@ static void nVifGen(int usn, int mask, int curCycle) {
 	for( int i=0; i<16; ++i )
 	{
 		nVifCall& ucall( nVifUpk[((usnpart+maskpart+i) * 4) + curCycle] );
-		ucall = NULL;
-		if( nVifT[i] == 0 ) continue;
-
 		ucall = (nVifCall)xGetAlignedCallTarget();
-		vpugen.xUnpack(i);
+		if (!vpugen.xUnpack(i)) continue;
 		vpugen.xMovDest();
 		xRET();
 

@@ -376,12 +376,20 @@ struct R5900cpu
 	void (*Clear)(u32 Addr, u32 Size);
 };
 
-extern R5900cpu *Cpu;
+extern R5900cpu* Cpu;
 extern R5900cpu intCpu;
 extern R5900cpu recCpu;
 
 enum EE_EventType
 {
+	// new dmac is a single-event-fits-all system!
+	DMAC_EVENT = 0,
+	FIFO_EVENT = 1,
+
+
+	// old legacy DMAC uses an event for each channel, and piggy backs the event id with
+	// the channel id in the D_STAT bitmask for IRQs.
+	
 	DMAC_VIF0	= 0,
 	DMAC_VIF1,
 	DMAC_GIF,
@@ -412,8 +420,6 @@ extern void cpuReset();		// can throw Exception::FileNotFound.
 extern void cpuException(u32 code, u32 bd);
 extern void cpuTlbMissR(u32 addr, u32 bd);
 extern void cpuTlbMissW(u32 addr, u32 bd);
-extern void cpuTestHwInts();
-extern void cpuClearInt(uint n);
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
@@ -421,9 +427,9 @@ extern int  cpuTestCycle( u32 startCycle, s32 delta );
 extern void cpuSetEvent();
 
 extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Ints inside R5900:
+extern bool cpuIntsEnabled(int Interrupt);
 
 extern void cpuTestINTCInts();
-extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
 
 ////////////////////////////////////////////////////////////////////

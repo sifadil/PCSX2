@@ -19,16 +19,6 @@
 #include "VUops.h"
 #include "R5900.h"
 
-static const uint VU0_MEMSIZE = 0x1000;
-static const uint VU0_PROGSIZE = 0x1000;
-static const uint VU1_MEMSIZE = 0x4000;
-static const uint VU1_PROGSIZE = 0x4000;
-
-static const uint VU0_MEMMASK = VU0_MEMSIZE-1;
-static const uint VU0_PROGMASK = VU0_PROGSIZE-1;
-static const uint VU1_MEMMASK = VU1_MEMSIZE-1;
-static const uint VU1_PROGMASK = VU1_PROGSIZE-1;
-
 #define vuRunCycles  (512*12)  // Cycles to run ExecuteBlockJIT() for (called from within recs)
 #define vu0RunCycles (512*12)  // Cycles to run vu0 for whenever ExecuteBlock() is called
 #define vu1RunCycles (3000000) // mVU1 uses this for inf loop detection on dev builds
@@ -134,6 +124,11 @@ public:
 	virtual void ExecuteBlock(bool startUp=0);
 
 	static void __fastcall ExecuteBlockJIT(BaseVUmicroCPU* cpu);
+
+	// VU1 sometimes needs to break execution on XGkick Path1 transfers if
+	// there is another gif path 2/3 transfer already taking place.
+	// Use this method to resume execution of VU1.
+	virtual void ResumeXGkick() {}
 };
 
 
@@ -174,6 +169,7 @@ public:
 	void Step();
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size) {}
+	void ResumeXGkick() {}
 };
 
 // --------------------------------------------------------------------------------------
@@ -212,6 +208,7 @@ public:
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
 	void Vsync() throw();
+	void ResumeXGkick();
 };
 
 // --------------------------------------------------------------------------------------
@@ -246,6 +243,7 @@ public:
 	void Reset();
 	void Execute(u32 cycles);
 	void Clear(u32 Addr, u32 Size);
+	void ResumeXGkick() {}
 };
 
 extern BaseVUmicroCPU* CpuVU0;

@@ -13,8 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GIF_H__
-#define __GIF_H__
+#pragma once
+
+union tGIF_P3TAG;
+union tGIF_TAG0;
 
 enum gifstate_t
 {
@@ -24,14 +26,12 @@ enum gifstate_t
 	GIF_STATE_EMPTY = 0x10
 };
 
-enum GSTransferModes //0 = Image Mode (DirectHL), 1 = transferring, 2 = Stopped at End of Packet
+enum gif_stat_flg
 {
-	PENDINGIMAGE_MODE = 0,
-	IMAGE_MODE = 1,
-	TRANSFER_MODE = 2,
-	PENDINGSTOP_MODE = 3,
-	IDLE_MODE = 4,
-	STOPPED_MODE = 5
+	GIF_FLG_PACKED	= 0,
+	GIF_FLG_REGLIST	= 1,
+	GIF_FLG_IMAGE	= 2,
+	GIF_FLG_IMAGE2	= 3
 };
 
 union tGSTransferStatus {
@@ -48,7 +48,7 @@ union tGSTransferStatus {
 	void set_flags	(u32 flags)			{ _u32 |=  flags; }
 	void clear_flags(u32 flags)			{ _u32 &= ~flags; }
 	void reset()						{ _u32 = 0; }
-	wxString desc() const				{ return wxsFormat(L"GSTransferStatus.PTH3: 0x%x", _u32); }
+	wxString desc() const				{ return pxsFmt(L"GSTransferStatus.PTH3: 0x%x", _u32); }
 };
 //GIF_STAT
 enum gif_stat_flags
@@ -72,7 +72,7 @@ enum gif_stat_flags
 enum gif_mode_flags
 {
 	GIF_MODE_M3R	= (1),
-	GIF_MODE_IMT		= (1<<2)
+	GIF_MODE_IMT	= (1<<2)
 };
 
 union tGIF_CTRL
@@ -80,43 +80,46 @@ union tGIF_CTRL
 	struct
 	{
 		u32 RST : 1;
-		u32 reserved1 : 2;
+		u32 _reserved1 : 2;
 		u32 PSE : 1;
-		u32 reserved2 : 28;
+		u32 _reserved2 : 28;
 	};
 	u32 _u32;
 
 	tGIF_CTRL(u32 val) { _u32 = val; }
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Ctrl: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return pxsFmt(L"Ctrl: 0x%x", _u32); }
 };
 
 union tGIF_MODE
 {
 	struct
 	{
+		// PATH3 Mask Register.
+		//  0 - Unmasked (transfer allowed)
+		//  1 - masked (transfer disabled)
 		u32 M3R : 1;
-		u32 reserved1 : 1;
+		u32 _reserved1 : 1;
 		u32 IMT : 1;
-		u32 reserved2 : 29;
+		u32 _reserved2 : 29;
 	};
 	u32 _u32;
 
 	tGIF_MODE(u32 val) { _u32 = val; }
 
-	void write(u32 val) { _u32 = val; }
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Mode: 0x%x", _u32); }
+	void write(u32 val)				{ _u32 = val; }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return pxsFmt(L"Mode: 0x%x", _u32); }
 };
 
-enum gif_paths
+enum gif_active_path
 {
     GIF_APATH_IDLE = 0,
     GIF_APATH1,
@@ -132,27 +135,45 @@ union tGIF_STAT
 		u32 M3P : 1;
 		u32 IMT : 1;
 		u32 PSE : 1;
-		u32 reserved1 : 1;
+		u32 _reserved1 : 1;
+		
+		// Interrupted PATH3 status?
+		//  Set to 1 when PATH3 is interrupted midst an IMAGE transfer (arbitration granted to
+		//    either PATH1 or PATH2).
 		u32 IP3 : 1;
-		u32 P3Q : 1;
-		u32 P2Q : 1;
-		u32 P1Q : 1;
+
+		u32 P3Q : 1;		// PATH3 transfer request in the queue?
+		u32 P2Q : 1;		// PATH2 transfer request int he queue?
+		u32 P1Q : 1;		// PATH1 transfer request in the queue?
 		u32 OPH : 1;
+		
+		// Indicates the currently active GIF path, either "idle", 1, 2, or 3.  See enum
+		// gif_active_path for valid values.
 		u32 APATH : 2;
+
 		u32 DIR : 1;
-		u32 reserved2 : 11;
-		u32 FQC : 5;
-		u32 reserved3 : 3;
+		u32 _reserved2 : 11;
+		u32 FQC : 5;		// Amount of data in the FIFO (0 to 16 QWC)
+		u32 _reserved3 : 3;
 	};
 	u32 _u32;
 
 	tGIF_STAT(u32 val) { _u32 = val; }
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Stat: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return pxsFmt(L"Stat: 0x%x", _u32); }
+
+	// Sets the active GIF path (path that has arbitration right over the GIFpath).
+	// The OPH flag (output path active) is updated along with APATH (set false if the
+	// APATH is IDLE, true for any other condition).
+	void SetActivePath( gif_active_path path )
+	{
+		APATH	= path;
+		OPH		= !(path == GIF_APATH_IDLE);
+	}
 };
 
 union tGIF_TAG0
@@ -166,33 +187,34 @@ union tGIF_TAG0
 	u32 _u32;
 
 	tGIF_TAG0(u32 val) { _u32 = val; }
+	inline tGIF_TAG0(const tGIF_P3TAG& val);
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Tag0: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return wxsFormat(L"Tag0: 0x%x", _u32); }
 };
 
 union tGIF_TAG1
 {
 	struct
 	{
-		u32 TAG : 14;
-		u32 PRE : 1;
-		u32 PRIM : 11;
-		u32 FLG : 2;
-		u32 NREG : 4;
+		u32 TAG		: 14;
+		u32 PRE		: 1;
+		u32 PRIM	: 11;
+		u32 FLG		: 2;
+		u32 NREG	: 4;
 	};
 	u32 _u32;
 
 	tGIF_TAG1(u32 val) { _u32 = val; }
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"Tag1: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return wxsFormat(L"Tag1: 0x%x", _u32); }
 };
 
 union tGIF_CNT
@@ -200,21 +222,21 @@ union tGIF_CNT
 	struct
 	{
 		u32 LOOPCNT : 15;
-		u32 reserved1 : 1;
+		u32 _reserved1 : 1;
 		u32 REGCNT : 4;
 		u32 VUADDR : 2;
-		u32 reserved2 : 10;
+		u32 _reserved2 : 10;
 
 	};
 	u32 _u32;
 
 	tGIF_CNT(u32 val) { _u32 = val; }
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"CNT: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return wxsFormat(L"CNT: 0x%x", _u32); }
 };
 
 union tGIF_P3CNT
@@ -222,14 +244,14 @@ union tGIF_P3CNT
 	struct
 	{
 		u32 P3CNT : 15;
-		u32 reserved1 : 17;
+		u32 _reserved1 : 17;
 	};
 	u32 _u32;
 
 	tGIF_P3CNT(u32 val) { _u32 = val; }
 
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"P3CNT: 0x%x", _u32); }
+	void reset()				{ _u32 = 0; }
+	wxString desc() const		{ return wxsFormat(L"P3CNT: 0x%x", _u32); }
 };
 
 union tGIF_P3TAG
@@ -238,59 +260,78 @@ union tGIF_P3TAG
 	{
 		u32 LOOPCNT : 15;
 		u32 EOP : 1;
-		u32 reserved1 : 16;
+		u32 _reserved1 : 16;
 	};
 	u32 _u32;
 
 	tGIF_P3TAG(u32 val) { _u32 = val; }
+	inline tGIF_P3TAG(const tGIF_TAG0& src);
 
-	bool test(u32 flags) { return !!(_u32 & flags); }
-	void set_flags(u32 flags) { _u32 |= flags; }
-	void clear_flags(u32 flags) { _u32 &= ~flags; }
-	void reset() { _u32 = 0; }
-	wxString desc() { return wxsFormat(L"P3Tag: 0x%x", _u32); }
+	bool test(u32 flags) const		{ return !!(_u32 & flags); }
+	void set_flags(u32 flags)		{ _u32 |= flags; }
+	void clear_flags(u32 flags)		{ _u32 &= ~flags; }
+	void reset()					{ _u32 = 0; }
+	wxString desc() const			{ return wxsFormat(L"P3Tag: 0x%x", _u32); }
 };
 
+tGIF_TAG0::tGIF_TAG0(const tGIF_P3TAG& src) { _u32 = src._u32; }
+tGIF_P3TAG::tGIF_P3TAG(const tGIF_TAG0& src) { _u32 = src._u32; }
+
+// --------------------------------------------------------------------------------------
+//  GIFregisters
+// --------------------------------------------------------------------------------------
 struct GIFregisters
 {
 	tGIF_CTRL 	ctrl;
-	u32 padding[3];
+	u32 _padding[3];
 	tGIF_MODE 	mode;
-	u32 padding1[3];
+	u32 _padding1[3];
 	tGIF_STAT	stat;
-	u32 padding2[7];
+	u32 _padding2[7];
 
 	tGIF_TAG0	tag0;
-	u32 padding3[3];
+	u32 _padding3[3];
 	tGIF_TAG1	tag1;
-	u32 padding4[3];
+	u32 _padding4[3];
 	u32			tag2;
-	u32 padding5[3];
+	u32 _padding5[3];
 	u32			tag3;
-	u32 padding6[3];
+	u32 _padding6[3];
 
 	tGIF_CNT	cnt;
-	u32 padding7[3];
+	u32 _padding7[3];
 	tGIF_P3CNT	p3cnt;
-	u32 padding8[3];
+	u32 _padding8[3];
 	tGIF_P3TAG	p3tag;
-	u32 padding9[3];
+	u32 _padding9[3];
+
+	// Sets the active GIF path (path that has arbitration right over the GIFpath).
+	// The OPH flag (output path active) is updated along with APATH (set false if the
+	// APATH is IDLE, true for any other condition).
+	void SetActivePath( gif_active_path path )
+	{
+		stat.SetActivePath(path);
+	}
+	
+	bool HasPendingPaths() const
+	{
+		// gifRegs.stat.P1Q || gifRegs.stat.P2Q || gifRegs.stat.P3Q || gifRegs.stat.IP3
+		
+		return (stat._u32 & (0x7<<5)) != 0;		// Translation: Bits 5-8!
+	}
 };
 
 static GIFregisters& gifRegs = (GIFregisters&)eeHw[0x3000];
 
-extern tGSTransferStatus GSTransferStatus;
+enum GIF_PathQueueResult
+{
+	GIFpath_Acquired,
+	GIFpath_Queued,
+	GIFpath_Busy,
+};
 
-extern void gsInterrupt();
-extern int _GIFchain();
-extern void GIFdma();
-extern void dmaGIF();
-extern void mfifoGIFtransfer(int qwc);
-extern void gifMFIFOInterrupt();
+extern bool GIF_InterruptPath3( gif_active_path apath );
+extern GIF_PathQueueResult GIF_QueuePath1();
+extern GIF_PathQueueResult GIF_QueuePath2();
+extern GIF_PathQueueResult GIF_QueuePath3();
 
-//Just some temporary bits to store Path1 transfers if another is in progress.
-extern void gsPath1Interrupt();
-extern __aligned16 u8 Path1Buffer[0x1000000];
-extern u32 Path1WritePos;
-extern u32 Path1ReadPos;
-#endif

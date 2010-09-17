@@ -1979,48 +1979,9 @@ void __fastcall VU1XGKICK_MTGSTransfer(u32 *pMem, u32 addr)
 	addr &= 0x3fff;
 	u8* data  = VU1.Mem + (addr);
 	u32 diff  = 0x400 - (addr / 16);
-	u32 size;
-	u8* pDest;
 
-	if(gifRegs.stat.APATH <= GIF_APATH1 || (gifRegs.stat.APATH == GIF_APATH3 && gifRegs.stat.IP3 == true) && SIGNAL_IMR_Pending == false)
-	{
-		if(Path1WritePos != 0)	
-		{
-			//Flush any pending transfers so things dont go up in the wrong order
-			while(gifRegs.stat.P1Q == true) gsPath1Interrupt();
-		}
-		GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
-		size = GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);
-		GetMTGS().SendDataPacket();
-
-		if(GSTransferStatus.PTH1 == STOPPED_MODE )
-		{
-			gifRegs.stat.OPH = false;
-			gifRegs.stat.APATH = GIF_APATH_IDLE;
-		}
-	}
-	else
-	{
-		//DevCon.Warning("GIF APATH busy %x Holding for later  W %x, R %x", gifRegs.stat.APATH, Path1WritePos, Path1ReadPos);
-		size = GIFPath_ParseTagQuick(GIF_PATH_1, data, diff);
-		pDest = &Path1Buffer[Path1WritePos*16];
-
-		Path1WritePos += size;
-
-		pxAssumeMsg((Path1WritePos+size < sizeof(Path1Buffer)), "XGKick Buffer Overflow detected on Path1Buffer!");
-
-		if (size > diff) {
-			//DevCon.Status("XGkick Wrap!");
-			memcpy_qwc(pDest, VU1.Mem + addr, diff);
-			memcpy_qwc(pDest+(diff*16), VU1.Mem, size-diff);
-		}
-		else {
-			memcpy_qwc(pDest, VU1.Mem + addr, size);
-		}
-		//if(!gifRegs.stat.P1Q) CPU_INT(28, 128);
-		gifRegs.stat.P1Q = true;
-	}
-
-
+	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, 0x400);
+	g_gifpath.CopyTag((u128*)data, diff, 0x400);
+	GetMTGS().SendDataPacket();
 }
 //------------------------------------------------------------------

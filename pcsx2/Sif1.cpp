@@ -71,7 +71,7 @@ static __fi bool WriteFifoToIOP()
 	sif1.fifo.read((u32*)iopPhysMem(hw_dma(10).madr), readSize);
 	psxCpu->Clear(hw_dma(10).madr, readSize);
 	hw_dma(10).madr += readSize << 2;
-	sif1.iop.cycles += readSize >> 2;		// fixme: should be >> 4
+	sif1.iop.cycles += readSize >> 2;
 	sif1.iop.counter -= readSize;
 
 	return true;
@@ -213,6 +213,7 @@ static __fi void HandleEETransfer()
 	if (dmacRegs.ctrl.STD == STD_SIF1)
 	{
 		DevCon.Warning("SIF1 stall control"); // STD == fromSIF1
+		pxAssertMsg(false, "SIF1 stall control");
 	}
 
 	/*if (sif1dma.qwc == 0)
@@ -321,7 +322,7 @@ __fi void  sif1Interrupt()
 
 __fi void  EEsif1Interrupt()
 {
-	hwDmacIrq(DMAC_SIF1);
+	//hwDmacIrq(DMAC_SIF1);
 	sif1dma.chcr.STR = false;
 }
 

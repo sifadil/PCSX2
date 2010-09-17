@@ -15,6 +15,31 @@
 
 #pragma once
 
+// Strict DMA emulation actually requires the DMAC event be run on every other CPU
+// cycle, and thus will only be available with interpreters.
+static const bool UseStrictDmaTiming = false;
+
+// when enabled, the DMAC bursts through all active and pending DMA transfers that it can
+// in each IRQ call.  Ie, it continues to process and update DMA transfers and chains until
+// a stall condition or interrupt request forces the DMAC to stop execution; or until all
+// DMAs are completed.  This hack also disables all memory speed emulation (delaying DMA
+// copies in order to emulate real hardware latencies).
+static const bool UseDmaBurstHack = true;
+
+// MFIFO hack, when enabled, bypasses the PS2's MFIFO system.  Instead of copying data into
+// a FIFO and then right back out again, the DMAC will connect the Source and Drain DMAs
+// directly. For example, a typical Spr->MFIFO->VIF1 procedure can be done by providing
+// the SPR memory directly to VIF1.
+//
+// DevNote: GIF supports Drain Stall checking against STADR when doing REFS tag transfers.
+// This should still work reliably even with the hack enabled, because the only sane way
+// to use REFS is to reference memory outside the MFIFO work area (otherwise you'd deadlock).
+//
+// [TODO] : When this hack is enabled, hardware register accesses to active MFIFO channel
+// madr/tadr should be monitored and generate warnings or assertions, *or* they should
+// produce "simulated" results that reflect 
+static const bool UseMFIFOHack = true;
+
 // Useful enums for some of the fields.
 enum pce_values
 {
@@ -27,15 +52,16 @@ enum pce_values
 
 enum tag_id
 {
-	TAG_CNTS = 0,
+	TAG_CNTS = 0,	// (Destination Chanin only, SIF0 and fromSPR only)
 	TAG_REFE = 0, 	// Transfer Packet According to ADDR field, clear STR, and end
 	TAG_CNT, 		// Transfer QWC following the tag.
 	TAG_NEXT,		// Transfer QWC following tag. TADR = ADDR
-	TAG_REF,			// Transfer QWC from ADDR field
+	TAG_REF,		// Transfer QWC from ADDR field
 	TAG_REFS,		// Transfer QWC from ADDR field (Stall Control)
 	TAG_CALL,		// Transfer QWC following the tag, save succeeding tag
-	TAG_RET,			// Transfer QWC following the tag, load next tag
-	TAG_END			// Transfer QWC following the tag
+	TAG_RET,		// Transfer QWC following the tag, load next tag
+	TAG_END,		// Transfer QWC following the tag
+	tag_id_count
 };
 
 enum mfd_type
@@ -46,6 +72,8 @@ enum mfd_type
 	MFD_GIF
 };
 
+// Stall control source channel selector. (Peripheral->Memory)
+// Note that stall control between SIF0 and SIF1 is not allowed.
 enum sts_type
 {
 	NO_STS = 0,
@@ -54,6 +82,8 @@ enum sts_type
 	STS_fromIPU
 };
 
+// Stall control drain channel selector. (Memory->Peripheral)
+// Note that stall control between SIF0 and SIF1 is not allowed.
 enum std_type
 {
 	NO_STD = 0,
@@ -70,14 +100,13 @@ enum LogicalTransferMode
 	UNDEFINED_MODE
 };
 
-//
-// --- DMA ---
-//
-
+// --------------------------------------------------------------------------------------
+//  tDMA_TAG
+// --------------------------------------------------------------------------------------
 // Doing double duty as both the top 32 bits *and* the lower 32 bits of a chain tag.
 // Theoretically should probably both be in a u64 together, but with the way the
 // code is layed out, this is easier for the moment.
-
+//
 union tDMA_TAG {
 	struct {
 		u32 QWC : 16;
@@ -99,33 +128,49 @@ union tDMA_TAG {
 	{
 		switch(ID)
 		{
-			case TAG_REFE: return wxsFormat(L"REFE %08X", _u32); break;
-			case TAG_CNT: return L"CNT"; break;
-			case TAG_NEXT: return wxsFormat(L"NEXT %08X", _u32); break;
-			case TAG_REF: return wxsFormat(L"REF %08X", _u32); break;
-			case TAG_REFS: return wxsFormat(L"REFS %08X", _u32); break;
-			case TAG_CALL: return L"CALL"; break;
-			case TAG_RET: return L"RET"; break;
-			case TAG_END: return L"END"; break;
+			case TAG_REFE:	return wxsFormat(L"REFE 0x%08X", _u32); break;
+			case TAG_CNT:	return L"CNT"; break;
+			case TAG_NEXT:	return wxsFormat(L"NEXT 0x%08X", _u32); break;
+			case TAG_REF:	return wxsFormat(L"REF  0x%08X", _u32); break;
+			case TAG_REFS:	return wxsFormat(L"REFS 0x%08X", _u32); break;
+			case TAG_CALL:	return L"CALL"; break;
+			case TAG_RET:	return L"RET"; break;
+			case TAG_END:	return L"END"; break;
 			default: return L"????"; break;
 		}
 	}
 	void reset() { _u32 = 0; }
-};
-#define DMA_TAG(value) ((tDMA_TAG)(value))
 
+};
+
+// --------------------------------------------------------------------------------------
+//  tDMA_CHCR
+// --------------------------------------------------------------------------------------
 union tDMA_CHCR {
 	struct {
-		u32 DIR : 1;        // Direction: 0 - to memory, 1 - from memory. VIF1 & SIF2 only.
-		u32 _reserved1 : 1;
-		u32 MOD : 2;		// Logical transfer mode. Normal, Chain, or Interleave (see LogicalTransferMode enum)
-		u32 ASP : 2;        // ASP1 & ASP2; Address stack pointer. 0, 1, or 2 addresses.
-		u32 TTE : 1;        // Tag Transfer Enable. 0 - Disable / 1 - Enable.
-		u32 TIE : 1;        // Tag Interrupt Enable. 0 - Disable / 1 - Enable.
-		u32 STR : 1;        // Start. 0 while stopping DMA, 1 while it's running.
-		u32 _reserved2 : 7;
-		u32 TAG : 16;		// Maintains upper 16 bits of the most recently read DMAtag.
+		u16 DIR : 1;        // Direction: 0 - to memory (source), 1 - from memory (drain).  Valid for VIF1 & SIF2 only.
+		u16 _reserved1 : 1;
+		u16 MOD : 2;		// Logical transfer mode. Normal, Chain, or Interleave (see LogicalTransferMode enum)
+		u16 ASP : 2;        // ASP1 & ASP2; Address stack pointer. 0, 1, or 2 addresses.
+		u16 TTE : 1;        // Tag Transfer Enable. 0 - Disable / 1 - Enable.
+		u16 TIE : 1;        // Tag Interrupt Enable. 0 - Disable / 1 - Enable.
+		u16 STR : 1;        // Start. 0 while stopping DMA, 1 while it's running.
+		u16 _reserved2 : 7;
+
+		union
+		{
+			struct
+			{
+				u16 _reserved  : 10;
+				u16 PCE		: 2;	// Priority Control Enable
+				u16 ID		: 3;	// Tag ID (see enum tag_id)
+				u16 IRQ		: 1;	// Interrupt Request (when enabled, fire interrupt when transfer finished)
+			} TAG; 		// Maintains upper 16 bits of the most recently read DMAtag.
+			
+			u16 tag16;
+		};
 	};
+
 	u32 _u32;
 
 	tDMA_CHCR( u32 val) { _u32 = val; }
@@ -138,10 +183,16 @@ union tDMA_CHCR {
 	u16 upper() const { return (_u32 >> 16); }
 	u16 lower() const { return (u16)_u32; }
 	wxString desc() const { return wxsFormat(L"Chcr: 0x%x", _u32); }
-	tDMA_TAG tag() { return (tDMA_TAG)_u32; }
+	
+	const char* ModeToUTF8() const
+	{
+		static const char* const modestr[] = {
+			"Normal", "Chain", "Interleave", "Undefined"
+		};
+		
+		return modestr[MOD];
+	}
 };
-
-#define CHCR(value) ((tDMA_CHCR)(value))
 
 union tDMA_SADR {
 	struct {
@@ -166,44 +217,12 @@ union tDMA_QWC {
 
 	tDMA_QWC(u32 val) { _u32 = val; }
 
+	bool operator==( const tDMA_QWC& right ) const	{ return _u32 == right._u32; }
+	bool operator!=( const tDMA_QWC& right ) const	{ return _u32 != right._u32; }
+
 	void reset() { _u32 = 0; }
 	wxString desc() const { return wxsFormat(L"QWC: 0x%04x", QWC); }
 	tDMA_TAG tag() const { return (tDMA_TAG)_u32; }
-};
-
-struct DMACh {
-	tDMA_CHCR chcr;
-	u32 _null0[3];
-	u32 madr;
-	u32 _null1[3];
-	u16 qwc; u16 pad;
-	u32 _null2[3];
-	u32 tadr;
-	u32 _null3[3];
-	u32 asr0;
-	u32 _null4[3];
-	u32 asr1;
-	u32 _null5[11];
-	u32 sadr;
-
-	void chcrTransfer(tDMA_TAG* ptag)
-	{
-	    chcr.TAG = ptag[0].upper();
-	}
-
-	void qwcTransfer(tDMA_TAG* ptag)
-	{
-	    qwc = ptag[0].QWC;
-	}
-
-	bool transfer(const char *s, tDMA_TAG* ptag);
-	void unsafeTransfer(tDMA_TAG* ptag);
-	tDMA_TAG *getAddr(u32 addr, u32 num, bool write);
-	tDMA_TAG *DMAtransfer(u32 addr, u32 num);
-	tDMA_TAG dma_tag();
-
-	wxString cmq_to_str() const;
-	wxString cmqt_to_str() const;
 };
 
 enum INTCIrqs
@@ -250,31 +269,6 @@ enum DMAInter
 	SPR1intr = 0x02000200,
 	SISintr  = 0x20002000,
 	MEISintr = 0x40004000
-};
-
-union tDMAC_QUEUE
-{
-	struct
-	{
-	    u16 VIF0 : 1;
-	    u16 VIF1 : 1;
-	    u16 GIF  : 1;
-	    u16 IPU0 : 1;
-	    u16 IPU1 : 1;
-	    u16 SIF0 : 1;
-	    u16 SIF1 : 1;
-	    u16 SIF2 : 1;
-	    u16 SPR0 : 1;
-        u16 SPR1 : 1;
-	    u16 SIS  : 1;
-	    u16 MEIS : 1;
-	    u16 BEIS : 1;
-	};
-	u16 _u16;
-
-	tDMAC_QUEUE(u16 val) { _u16 = val; }
-	void reset() { _u16 = 0; }
-	bool empty() const { return (_u16 == 0); }
 };
 
 static __fi const wxChar* ChcrName(u32 addr)
@@ -329,6 +323,7 @@ union tDMAC_CTRL {
 		u32 _reserved1 : 21;
 	};
 	u32 _u32;
+	u16 _u16[2];
 
 	tDMAC_CTRL(u32 val) { _u32 = val; }
 
@@ -341,16 +336,38 @@ union tDMAC_CTRL {
 
 union tDMAC_STAT {
 	struct {
-		u32 CIS : 10;
-		u32 _reserved1 : 3;
-		u32 SIS : 1;
-		u32 MEIS : 1;
-		u32 BEIS : 1;
-		u32 CIM : 10;
-		u32 _reserved2 : 3;
-		u32 SIM : 1;
-		u32 MEIM : 1;
-		u32 _reserved3 : 1;
+		// Channel Interrupt Status.  One bit corresponding to each DMA channel.  Set to 1 when
+		// transfer via the channel completes.  Cleared to zero when written a 1.
+		u32 CIS			: 10;
+		u32 _reserved1	: 3;
+		
+		// Stall Condition Interrupt Status, set to 1 when the channel specified by the ctrl.STD
+		// (stall control drain) stalls against STADR.
+		u32 SIS			: 1;
+		
+		// MFIFO Empty Interrupt Status, set to 1 when the MFIFO drains and the source channel
+		// has no more data to feed it.
+		u32 MEIS		: 1;
+		
+		// Bus Error Interrupt Status, 
+		u32 BEIS		: 1;
+		
+		// Channel Interrupt Mask.  One bit corresponding to each DMA channel.
+		// These bits should never be modified by the emulator directly (PS2 apps manage them).
+		// 1 to enable the interrupt, 0 to disable it.
+		u32 CIM			: 10;
+		u32 _reserved2	: 3;
+		
+		// Stall Control Interrupt Mask.  This bit should never be modified by the emu directly.
+		// 1 enables Stall control interrupts; 0 disables them.
+		u32 SIM			: 1;
+
+		// MFIFO Interrupt Mask.  This bit should never be modified by the emu directly.
+		// 1 enables MFIFO interrupts; 0 disables them.
+		u32 MEIM		: 1;
+		
+		// This would be the BUSERR mask, except there isn't one -- BUSERR is unmaskable.
+		u32 _reserved3	: 1;
 	};
 	u32 _u32;
 	u16 _u16[2];
@@ -450,6 +467,9 @@ union tDMAC_ADDR
 	tDMAC_ADDR() {}
 	tDMAC_ADDR(u32 val) { _u32 = val; }
 
+	bool operator==( const tDMAC_ADDR& right ) const	{ return _u32 == right._u32; }
+	bool operator!=( const tDMAC_ADDR& right ) const	{ return _u32 != right._u32; }
+
 	void clear() { _u32 = 0; }
 
 	void AssignADDR(uint addr)
@@ -463,7 +483,7 @@ union tDMAC_ADDR
 		ADDR += incval;
 		if (SPR) ADDR &= (Ps2MemSize::Scratch-1);
 	}
-
+	
 	wxString ToString(bool sprIsValid=true) const
 	{
 		return pxsFmt((sprIsValid && SPR) ? L"0x%04X(SPR)" : L"0x%08X", ADDR);
@@ -473,25 +493,6 @@ union tDMAC_ADDR
 	{
 		return FastFormatAscii().Write((sprIsValid && SPR) ? "0x%04X(SPR)" : "0x%08X", ADDR).c_str();
 	}
-};
-
-struct DMACregisters
-{
-	tDMAC_CTRL	ctrl;
-	u32 _padding[3];
-	tDMAC_STAT	stat;
-	u32 _padding1[3];
-	tDMAC_PCR	pcr;
-	u32 _padding2[3];
-
-	tDMAC_SQWC	sqwc;
-	u32 _padding3[3];
-	tDMAC_RBSR	rbsr;
-	u32 _padding4[3];
-	tDMAC_RBOR	rbor;
-	u32 _padding5[3];
-	tDMAC_ADDR	stadr;
-	u32 _padding6[3];
 };
 
 // Currently guesswork.
@@ -535,28 +536,5 @@ struct INTCregisters
 	u32 _padding2[3];
 };
 
-#define intcRegs ((INTCregisters*)(eeHw+0xF000))
-
-static DMACregisters& dmacRegs	= (DMACregisters&)eeHw[0xE000];
-
-// Various useful locations
-static DMACh& vif0ch	= (DMACh&)eeHw[0x8000];
-static DMACh& vif1ch	= (DMACh&)eeHw[0x9000];
-static DMACh& gifch		= (DMACh&)eeHw[0xA000];
-static DMACh& spr0ch	= (DMACh&)eeHw[0xD000];
-static DMACh& spr1ch	= (DMACh&)eeHw[0xD400];
-
-extern void throwBusError(const char *s);
-extern void setDmacStat(u32 num);
-extern tDMA_TAG *SPRdmaGetAddr(u32 addr, bool write);
-extern tDMA_TAG *dmaGetAddr(u32 addr, bool write);
-
 extern void hwIntcIrq(int n);
-extern void hwDmacIrq(int n);
 
-extern bool hwMFIFOWrite(u32 addr, const u128* data, uint size_qwc);
-extern bool hwDmacSrcChainWithStack(DMACh& dma, int id);
-extern bool hwDmacSrcChain(DMACh& dma, int id);
-
-template< uint page > u32 dmacRead32( u32 mem );
-template< uint page > extern bool dmacWrite32( u32 mem, mem32_t& value );

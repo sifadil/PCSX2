@@ -15,8 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "Vif.h"
-#include "Vif_Dma.h"
+#include "Vif_Unpack.h"
 
 enum UnpackOffset {
 	OFFSET_X = 0,
@@ -25,22 +24,21 @@ enum UnpackOffset {
 	OFFSET_W = 3
 };
 
-static __fi u32 setVifRow(vifStruct& vif, u32 reg, u32 data) {
-	vif.MaskRow._u32[reg] = data;
+static __fi u32 setVifRow(VifProcessingUnit& vpu, u32 reg, u32 data) {
+	vpu.MaskRow._u32[reg] = data;
 	return data;
 }
 
-// cycle derives from vif.cl
 // mode derives from vifRegs.mode
 template< uint idx, uint mode, bool doMask >
-static __ri void writeXYZW(u32 offnum, u32 &dest, u32 data) {
+static __fi void writeXYZW(u32 offnum, u32 &dest, u32 data, bool isV4_5 = false) {
 	int n = 0;
 
-	vifStruct& vif = GetVifX;
-
+	VifProcessingUnit& vpu = vifProc[idx];
+	
 	if (doMask) {
-		const VIFregisters& regs = vifXRegs;
-		switch (vif.cl) {
+		const VIFregisters& regs = GetVifXregs;
+		switch (vpu.cl) {
 			case 0:  n = (regs.mask >> (offnum * 2)) & 0x3;		break;
 			case 1:  n = (regs.mask >> ( 8 + (offnum * 2))) & 0x3;	break;
 			case 2:  n = (regs.mask >> (16 + (offnum * 2))) & 0x3;	break;
@@ -57,13 +55,13 @@ static __ri void writeXYZW(u32 offnum, u32 &dest, u32 data) {
 	switch (n) {
 		case 0:
 			switch (mode) {
-				case 1:  dest = data + vif.MaskRow._u32[offnum]; break;
-				case 2:  dest = setVifRow(vif, offnum, vif.MaskRow._u32[offnum] + data); break;
+				case 1:  dest = data + vpu.MaskRow._u32[offnum]; break;
+				case 2:  dest = setVifRow(vpu, offnum, vpu.MaskRow._u32[offnum] + data); break;
 				default: dest = data; break;
 			}
 			break;
-		case 1: dest = vif.MaskRow._u32[offnum]; break;
-		case 2: dest = vif.MaskCol._u32[min(vif.cl,3)]; break;
+		case 1: dest = vpu.MaskRow._u32[offnum]; break;
+		case 2: dest = vpu.MaskCol._u32[vpu.cl]; break;
 		case 3: break;
 	}
 }
@@ -84,7 +82,7 @@ static void __fastcall UNPACK_S(u32* dest, const T* src)
 // The PS2 console actually writes v1v0v1v0 for all V2 unpacks -- the second v1v0 pair
 // being officially "indeterminate" but some games very much depend on it.
 template < uint idx, uint mode, bool doMask, class T >
-static void __fastcall UNPACK_V2(u32* dest, const T* src)
+static void __fastcall UNPACK_V2(u32 *dest, const T* src)
 {
 	writeXYZW<tParam>(OFFSET_X, *(dest+0), *(src+0));
 	writeXYZW<tParam>(OFFSET_Y, *(dest+1), *(src+1));
@@ -96,7 +94,7 @@ static void __fastcall UNPACK_V2(u32* dest, const T* src)
 // during V3 unpacking end up being overwritten by the next unpack.  This is confirmed real
 // hardware behavior that games such as Ape Escape 3 depend on.
 template < uint idx, uint mode, bool doMask, class T >
-static void __fastcall UNPACK_V4(u32* dest, const T* src)
+static void __fastcall UNPACK_V4(u32 *dest, const T* src)
 {
 	writeXYZW<tParam>(OFFSET_X, *(dest+0), *(src+0));
 	writeXYZW<tParam>(OFFSET_Y, *(dest+1), *(src+1));
@@ -106,14 +104,14 @@ static void __fastcall UNPACK_V4(u32* dest, const T* src)
 
 // V4_5 unpacks do not support the MODE register, and act as mode==0 always.
 template< uint idx, bool doMask >
-static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
+static void __fastcall UNPACK_V4_5(u32* dest, const u32* src)
 {
 	u32 data = *src;
 
-	writeXYZW<idx,0,doMask>(OFFSET_X, *(dest+0),	((data & 0x001f) << 3));
-	writeXYZW<idx,0,doMask>(OFFSET_Y, *(dest+1),	((data & 0x03e0) >> 2));
-	writeXYZW<idx,0,doMask>(OFFSET_Z, *(dest+2),	((data & 0x7c00) >> 7));
-	writeXYZW<idx,0,doMask>(OFFSET_W, *(dest+3),	((data & 0x8000) >> 8));
+	writeXYZW<idx,0,doMask>(OFFSET_X, *(dest+0),	((data & 0x001f) << 3), true);
+	writeXYZW<idx,0,doMask>(OFFSET_Y, *(dest+1),	((data & 0x03e0) >> 2), true);
+	writeXYZW<idx,0,doMask>(OFFSET_Z, *(dest+2),	((data & 0x7c00) >> 7), true);
+	writeXYZW<idx,0,doMask>(OFFSET_W, *(dest+3),	((data & 0x8000) >> 8), true);
 }
 
 // =====================================================================================================
@@ -148,17 +146,17 @@ static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
 	UnpackFuncSet( V2, idx, mode, s, 0 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, s, 0 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, s, 0 ), UnpackV4_5set(idx, 0), \
- \
+	\
 	UnpackFuncSet( S,  idx, mode, s, 1 ), NULL,  \
 	UnpackFuncSet( V2, idx, mode, s, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, s, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, s, 1 ), UnpackV4_5set(idx, 1), \
- \
+	\
 	UnpackFuncSet( S,  idx, mode, u, 0 ), NULL,  \
 	UnpackFuncSet( V2, idx, mode, u, 0 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 0 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 0 ), UnpackV4_5set(idx, 0), \
- \
+	\
 	UnpackFuncSet( S,  idx, mode, u, 1 ), NULL,  \
 	UnpackFuncSet( V2, idx, mode, u, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 1 ), NULL,  \
@@ -178,58 +176,3 @@ __aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][3][4 * 4 * 2 * 2] =
 		{ UnpackModeSet(1,2) }
 	}
 };
-
-//----------------------------------------------------------------------------
-// Unpack Setup Code
-//----------------------------------------------------------------------------
-
-_vifT void vifUnpackSetup(const u32 *data) {
-
-	vifStruct& vifX = GetVifX;
-
-	if ((vifXRegs.cycle.wl == 0) && (vifXRegs.cycle.wl < vifXRegs.cycle.cl)) {
-        Console.WriteLn("Vif%d CL %d, WL %d", idx, vifXRegs.cycle.cl, vifXRegs.cycle.wl);
-		vifX.cmd = 0;
-        return; // Skipping write and 0 write-cycles, so do nothing!
-	}
-
-	
-	//if (!idx) vif0FLUSH(); // Only VU0?
-
-	vifX.usn   = (vifXRegs.code >> 14) & 0x01;
-	int vifNum = (vifXRegs.code >> 16) & 0xff;
-
-	if (vifNum == 0) vifNum = 256;
-	vifXRegs.num =  vifNum;
-
-	// Traditional-style way of calculating the gsize, based on VN/VL parameters.
-	// Useful when VN/VL are known template params, but currently they are not so we use
-	// the LUT instead (for now).
-	//uint vl = vifX.cmd & 0x03;
-	//uint vn = (vifX.cmd >> 2) & 0x3;
-	//uint gsize = ((32 >> vl) * (vn+1)) / 8;
-
-	const u8& gsize = nVifT[vifX.cmd & 0x0f];
-
-	if (vifXRegs.cycle.wl <= vifXRegs.cycle.cl) {
-		vifX.tag.size = ((vifNum * gsize) + 3) / 4;
-	}
-	else {
-		int n = vifXRegs.cycle.cl * (vifNum / vifXRegs.cycle.wl) +
-		        _limit(vifNum % vifXRegs.cycle.wl, vifXRegs.cycle.cl);
-
-		vifX.tag.size = ((n * gsize) + 3) >> 2;
-	}
-
-	u32 addr = vifXRegs.code;
-	if (idx && ((addr>>15)&1)) addr += vif1Regs.tops;
-	vifX.tag.addr = (addr<<4) & (idx ? 0x3ff0 : 0xff0);
-
-	VIF_LOG("Unpack VIF%x, QWC %x tagsize %x", idx, vifNum, vif0.tag.size);
-
-	vifX.cl			 = 0;
-	vifX.tag.cmd	 = vifX.cmd;
-}
-
-template void vifUnpackSetup<0>(const u32 *data);
-template void vifUnpackSetup<1>(const u32 *data);

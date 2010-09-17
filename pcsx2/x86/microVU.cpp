@@ -123,6 +123,8 @@ void microVU::reset() {
 	x86SetPtr(dispCache);
 	mVUdispatcherA(this);
 	mVUdispatcherB(this);
+	mVUdispatcherC(this);
+	mVUdispatcherD(this);
 	mVUemitSearch();
 
 	// Clear All Program Data
@@ -394,4 +396,11 @@ void recMicroVU0::Clear(u32 addr, u32 size) {
 void recMicroVU1::Clear(u32 addr, u32 size) {
 	pxAssert(mvu1_allocated); // please allocate me first! :|
 	mVUclear(&microVU1, addr, size);
+}
+
+void recMicroVU1::ResumeXGkick() {
+	pxAssert(mvu1_allocated); // please allocate me first! :|
+
+	if(!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return;
+	((mVUrecCallXG)microVU1.startFunctXG)();
 }

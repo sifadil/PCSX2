@@ -61,6 +61,7 @@ template<uint page> extern void __fastcall hwWrite32 (u32 mem, mem32_t value);
 template<uint page> extern void __fastcall hwWrite64 (u32 mem, const mem64_t* srcval);
 template<uint page> extern void __fastcall hwWrite128(u32 mem, const mem128_t* srcval);
 
+
 // --------------------------------------------------------------------------------------
 //  Hardware FIFOs (128 bit access only!)
 // --------------------------------------------------------------------------------------

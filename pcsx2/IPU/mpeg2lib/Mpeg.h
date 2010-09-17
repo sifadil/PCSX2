@@ -248,8 +248,8 @@ extern s32 SBITS(uint bits);
 extern void mpeg2_idct_copy(s16 * block, u8* dest, int stride);
 extern void mpeg2_idct_add(int last, s16 * block, s16* dest, int stride);
 
-#define IDEC	0
-#define BDEC	1
+static const uint IDEC	= 0;
+static const uint BDEC	= 1;
 
 extern bool mpeg2sliceIDEC();
 extern bool mpeg2_slice();

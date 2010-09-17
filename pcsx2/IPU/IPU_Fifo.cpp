@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "IPU.h"
-#include "IPU/IPUdma.h"
 #include "mpeg2lib/Mpeg.h"
+
 
 __aligned16 IPU_Fifo ipu_fifo;
 
@@ -85,16 +85,13 @@ int IPU_Fifo_Input::write(u32* pMem, int size)
 int IPU_Fifo_Input::read(void *value)
 {
 	// wait until enough data to ensure proper streaming.
-	if (g_BP.IFC < 3)
+	if (g_BP.IFC < 1)
 	{
 		// IPU FIFO is empty and DMA is waiting so lets tell the DMA we are ready to put data in the FIFO
-		if(cpuRegs.eCycle[4] == 0x9999)
-		{
-			CPU_INT( DMAC_TO_IPU, 32 );
-		}
+		//if(cpuRegs.eCycle[4] == 0x9999)
+		//	IPU1dma();
 
 		if (g_BP.IFC == 0) return 0;
-		pxAssert(g_BP.IFC > 0);
 	}
 
 	CopyQWC(value, &data[readpos]);
@@ -110,9 +107,9 @@ int IPU_Fifo_Output::write(const u32 *value, uint size)
 
 	uint origsize = size;
 	do {
-		IPU0dma();
+		//IPU0dma();
 	
-		uint transsize = min(size, 8 - (uint)ipuRegs.ctrl.OFC);
+		uint transsize = min(size, 8 - ipuRegs.ctrl.OFC);
 		if(!transsize) break;
 
 		ipuRegs.ctrl.OFC = transsize;
@@ -131,7 +128,7 @@ int IPU_Fifo_Output::write(const u32 *value, uint size)
 #if 0
 	if (ipuRegs.ctrl.OFC >= 8) IPU0dma();
 
-	uint transsize = min(size, 8 - (uint)ipuRegs.ctrl.OFC);
+	uint transsize = min(size, 8 - ipuRegs.ctrl.OFC);
 	uint firsttrans = transsize;
 
 	while (transsize > 0)

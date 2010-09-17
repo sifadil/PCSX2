@@ -3019,6 +3019,8 @@ void VuBaseBlock::Recompile()
 	// compute branches, jumps, eop
 	if (type & BLOCKTYPE_HASEOP)
 	{
+		VIFregisters& vifRegs = VU->GetVifRegs();
+
 		// end
 		_freeXMMregs();
 		_freeX86regs();

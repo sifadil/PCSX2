@@ -1089,58 +1089,23 @@ mVUop(mVU_XITOP) {
 // XGkick
 //------------------------------------------------------------------
 
-extern void gsPath1Interrupt();
-extern bool SIGNAL_IMR_Pending;
-
 void __fastcall mVU_XGKICK_(u32 addr) {
 	addr &= 0x3ff;
 	u8* data  = vuRegs[1].Mem + (addr*16);
 	u32 diff  = 0x400 - addr;
-	u32 size;
 	
-	if(gifRegs.stat.APATH <= GIF_APATH1 || (gifRegs.stat.APATH == GIF_APATH3 && gifRegs.stat.IP3 == true) && SIGNAL_IMR_Pending == false)
-	{
-		if(Path1WritePos != 0)	
-		{
-			//Flush any pending transfers so things dont go up in the wrong order
-			while(gifRegs.stat.P1Q == true) gsPath1Interrupt();
-		}
-		GetMTGS().PrepDataPacket(GIF_PATH_1, 0x400);
-		size = GIFPath_CopyTag(GIF_PATH_1, (u128*)data, diff);
-		GetMTGS().SendDataPacket();
-
-		if(GSTransferStatus.PTH1 == STOPPED_MODE)
-		{
-			gifRegs.stat.OPH = false;
-			gifRegs.stat.APATH = GIF_APATH_IDLE;
-		}
-	}
-	else
-	{
-		//DevCon.Warning("GIF APATH busy %x Holding for later  W %x, R %x", gifRegs.stat.APATH, Path1WritePos, Path1ReadPos);
-		size = GIFPath_ParseTagQuick(GIF_PATH_1, data, diff);
-		u8* pDest = &Path1Buffer[Path1WritePos*16];
-
-		Path1WritePos += size;
-
-		pxAssumeMsg((Path1WritePos < sizeof(Path1Buffer)), "XGKick Buffer Overflow detected on Path1Buffer!");
-		//DevCon.Warning("Storing size %x PATH 1", size);
-
-		if (size > diff) {
-			//DevCon.Status("XGkick Wrap!");
-			memcpy_qwc(pDest, vuRegs[1].Mem + (addr*16), diff);
-			memcpy_qwc(pDest+(diff*16), vuRegs[1].Mem, size-diff);
-		}
-		else {
-			memcpy_qwc(pDest, vuRegs[1].Mem + (addr*16), size);
-		}
-		//if(!gifRegs.stat.P1Q) CPU_INT(28, 128);
-		gifRegs.stat.P1Q = true;
-	}
+	GetMTGS().PrepDataPacket(GS_RINGTYPE_PATH, 0x400);
+	g_gifpath.CopyTag((u128*)data, diff, 0x400);
+	GetMTGS().SendDataPacket();
 }
 
 static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
 	mVUbackupRegs(mVU);
+#if 0 // XGkick Break - ToDo: Change "SomeGifPathValue" to w/e needs to be tested
+	xTEST (ptr32[&SomeGifPathValue], 1); // If '1', breaks execution
+	xMOV  (ptr32[&mVU->resumePtrXG], (uptr)xGetPtr() + 10 + 6);
+	xJcc32(Jcc_NotZero, (uptr)mVU->exitFunctXG - ((uptr)xGetPtr()+6));
+#endif
 	if (memVI)	xMOV(gprT2, ptr32[&mVU->VIxgkick]);
 	else		mVUallocVIa(mVU, gprT2, _Is_);
 	xCALL(mVU_XGKICK_);

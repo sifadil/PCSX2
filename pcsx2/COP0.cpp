@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
+#include "ps2/NewDmac.h"
 
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = { 0, 0 };
@@ -429,6 +430,7 @@ void MTC0()
 }
 
 int CPCOND0() {
+	using namespace EE_DMAC;
 	return ((dmacRegs.stat.CIS | ~dmacRegs.pcr.CPC) == 0x3ff);
 }
 

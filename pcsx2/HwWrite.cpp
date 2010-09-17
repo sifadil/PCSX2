@@ -13,13 +13,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Hardware.h"
 
+#include "ps2/NewDmac.h"
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
+
+
 
 using namespace R5900;
 
@@ -347,18 +349,13 @@ void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 
 		case 0x07:
 			if (mem & 0x10)
-			{
 				WriteFIFO_IPUin(srcval);
-			}
-			else
-			{
+			//else
 				// [Ps2Confirm] Most likely writes to IPUout will be silently discarded.  A test
 				// to confirm such would be easy -- just dump some data to FIFO_IPUout and see
 				// if the program causes BUSERR or something on the PS2.
 
 				//WriteFIFO_IPUout(srcval);
-			}
-				
 		return;
 	}
 
