@@ -35,7 +35,7 @@ However Status update on following distribution are welcome : Debian / Fedora / 
     The best way to install the 32bits is to create a 32 bits chroot. Each distributions have a specific way.
       * Use Google ;)
       * Some link that could help
-          # Ubuntu : http://ubuntuforums.org/showthread.php?t=24575
+          # Ubuntu : https://help.ubuntu.com/community/DebootstrapChroot & https://help.ubuntu.com/community/32bit_and_64bit#How
           # TODO complete Others distribution : Debian / Fedora / Gentoo / Mandriva / Opensuse / Slackware
 
 
