@@ -37,7 +37,6 @@ Note: This is still a rough draft, and subject to change.
    * g++-4.3, g++-4.3-multilib
    * cmake
  # 32 bits libraries on x86
-   * liba52-0.7.4-dev
    * libasound2-dev
    * libbz2-dev
    * libgl1-mesa-dev
@@ -51,7 +50,6 @@ Note: This is still a rough draft, and subject to change.
    * libwxbase2.8-dev
    * libwxgtk2.8-dev
    * libx11-dev
-   * libxxf86vm-dev
    * nvidia-cg-toolkit
    * portaudio19-dev
    * zlib1g-dev
