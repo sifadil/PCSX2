@@ -7,10 +7,14 @@ Please add things to this list as you see fit; either personal goals or public s
 
 Note that the Issues system can also be used a todo item tracker, which might be desirable for tasks that would benefit from public discussions, a series of patches or other (small!) attachments, etc.
 
-
 ==R5900 Recompiler==
 
 Rewrite block manager again for more reliable page clears.  Index blocks by pages covered. For simplicity block structures should stay at their original addresses.  Still need to lookup blocks by address of any R5900 (or R3000, block manager is shared) instruction for vtlb rewriting.  Lookup by x86 instruction address at block level is desirable for profiling but has no other use.
+
+==R5900 Root Counters / Timers==
+
+As found out by some test.elf earlier, PCSX2 seems to have some issues with (gated at least) timers.
+Some more testing should be done, as planned in the IRC channel once.
 
 ===Optimizations===
 
