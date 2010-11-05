@@ -16,6 +16,12 @@ Rewrite block manager again for more reliable page clears.  Index blocks by page
 As found out by some test.elf earlier, PCSX2 seems to have some issues with (gated at least) timers.
 Some more testing should be done, as planned in the IRC channel once.
 
+==R5900 Exception Handling==
+
+The current EE exception handling is too basic to support many of the homebrews that rely on hooking registers and similar.
+Finding out which exceptions are used and implementing them would allow for better in-depth analyzing of games (through homebrew debuggers).
+It'd also make HDLoader and similar CDVD emulators work.
+
 ===Optimizations===
 
 Replace midblock constant flushes with a recompile-time write of all constants to a
