@@ -1,0 +1,26 @@
+#summary Threading In-Depth
+#labels 
+
+For definitions of Mutex, Semaphore, and Atomic Operations, please use google or see our ThreadingBasics section.  This section will cover advanced threading concepts that are important for allowing a program like PCSX2 to be able to operate smoothly -- responsive to the user and relatively deadlock-free.  If you plan to be doing programming work on PCSX2 user interfaces or virtual machine management, then this section will be an important read.
+
+
+= Avoiding Unresponsiveness and Deadlock =
+
+In order to make an application as robust against deadlock as possible, it should adhere to the following basic rules:
+
+1. There must be at least one thread in the application that does not depend on any other thread.  This is typically called the Main or UI thread.  (dependency is defined below)
+
+2. Communication between the Main/UI thread and other worker threads should be conducted through a _proxy thread_ that simply queues messages from the main threads, and re-dispatches messages to workers.
+
+== Thread Dependency Defined ==
+
+Thread 'A' is said to be _dependent_ on thread 'B' if it has any shared mutex or semaphore with thread 'B'.  If thread 'B' locks a multi-threaded resource (mutex or semaphore) indefinitely, and Thread 'A' attempts to acquire the same resource, Thread A will also stall.  If thread 'B' thread deadlocks while it has acquired a mutex or sempahore, thread 'A' will also deadlock when it tries to acquire the resource.
+
+This is why a Main/UI thread must be as free as possible of mutexes and semaphores.  If it stalls on a mutex that is acquired by another thread that is busy or deadlocked, the main thread will stall or deadlock itself.
+
+== Proxy Queue Threads ==
+
+Having our main thread completely avoid the use of mutexes and semaphores, however, is an unrealistic impossibility.  There would be no way for it to communicate with other threads without them.  So how do we make the main/ui thread not be dependent on our stall-prone virtual machine threads?  By using a _proxy queue thread_ to break the dependency chain!
+
+A proxy queue thread works as a safety valve because the task it performs is simple enough that we can guarantee it will not deadlock (or at least, if a deadlock does occur its because of some fairly critical system failure).  It only locks shared resources -- a message queue list -- for extremely short periods of time, and only to add and remove messages.  When the proxy thread  forwards messages to the virtual machine, the two threads share a common resource (the virtual machine's message queue); which means that if the VM thread is deadlocked, the proxy thread may deadlock as well.  But the proxy thread's own message queue, which it shares with the Main/UI thread, will be unlocked.  Thusly, the Main thread does not risk deadlock.
+

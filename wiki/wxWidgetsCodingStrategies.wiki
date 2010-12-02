@@ -17,22 +17,60 @@ This means that you should, whenever possible, use the following classes instead
 
 === There are some exceptions to this last rule: ===
 
- * We use our own internal Thread class instead of `wxThread`, mostly due to the w32pthreads library being much more robust and efficient than wx's cross-platform threading. (some `wxThread` static functions still are of use, however, such as `wxThread::IsMain()`).
+ * We use our own internal `pxThread` class instead of `wxThread`, mostly due to the w32pthreads library being much more robust and efficient than wx's cross-platform threading. (some `wxThread` static functions are still are of use, however, such as `wxThread::IsMain()`).
 
- * Console logging and devel/debug messages do not need to be translated, and do not need to use `wxString` to maintain proper cross-platform unicode support.  All logging functions can use either plain `ASCII-Z (char*)` string and functions or `wxString`; depending on whichever is more convenient at the time.
+ * wxWidgets logging facilities are poorly designed and not at all suited to PCSX2 needs.  We have our own `Console` and `SourceLog` systems instead.  `Console` uses the `IConsoleWriter` interface internally and supports both Unicode and console output redirection.  `SourceLog` is intended for high volume logging (trace logs of PS2 execution) and is optimized to write untranslated ASCII text to logfile.
+
+ * Console logging and devel/debug messages do not need to be translated, and do not need to use `wxString` to maintain proper cross-platform unicode support.  All console logging functions can use either plain `ASCII-Z (char*)` string and functions or `wxChar*`; depending on whichever is more convenient at the time.
+
+ * Trace logging is meant to be used for ASCII/UTF8 text only, and has no support for `wxChar`or `wxString.`  This is done largly for performance reasons.
 
  * Forego the use of `_T()` or `wxT()`, in favor of the now-standard `L''` for denoting unicode strings. wx2.8 stores all strings in wchar_t format internally on all supported platforms, so `L""` is sufficient for full cross platform support.  In the event we upgrade to wx3.0 this won't be a 'perfectly' optimal scenario in Unix builds, since wx3.0 on Linux will store strings in UTF8 format internally anyway (but provides automatic conversions, so it will still compile and run without error).  The overhead is in non-critical scenarios where I'm willing to sacrifice some cpu load in favor of cleaner code.
 (any others...?)
 
+== Utilizing GUI Components  ==
+
+PCSX2 opts for the "hand-made" approach to dialog box design, rather than using form designers and resource files.  This reduces the number of external library and application dependencies needed to build or contribute to PCSX2, and is often an ideal approach to GUI design via sizers and spacers (which is the preferred layout system in wxwidgets).  Make sure to always create a new dialog/UI as one or more *Panels*, rather than adding controls directly to a Dialog window.  Panels are much more flexable devices and they allow us the option of adding dockable panel features to PCSX2's UI at a later date.  Panels also make re-arranging the window contents of the current static GUI a lot easier (if necessary).
+
+PCSX2 also has several home-brew helper classes and functions, which are typically prefixed with `px`.  These are usually designed to accomodate for shortcomings in wxWidgets API, such as providing properly word-wrapped tooltips and/or static text (wxWidgets has a general lack of built-in word wrapping ability).  In particular, be sure to use these replacements for common wxWidgets classes:
+
+wxAppWithHelpers
+wxDialogWithHelpers
+wxPanelWithHelpers
+pxCheckBox
+pxRadioPanel
+pxStaticText
+
+... If using native wxWidgets controls with tooltips, use `pxSetToolTip` instead of the control's built in `SetToolTip.`  This ensures proper tooltip length on win32 platforms.  Custom px-based controls override the SetToolTip internally to do word wrapping as needed, so you can use their built-in `SetToolTip` methods.
+
+== wxPanelWithHelpers ==
+
+The primary purpose of wxPanelWithHelpers is to compensate for wxWidgets inability to resize panels and dialogs with static text word wrapping in mind. (**see below for details on why) So instead we specify the ideal or maximum width of the dialog to wxPanelWithHelpers, and then use our own `pxStaticText` widget to add wrappable text to the panel, which will be wrapped to fit to the ideal width of the panel.  Child panels of the wxPanelWithHelpers automatically inherit the maximum width from that panel, and automatically guesstimate their own width based on typical borders offrames and static group boxes.
+
+This system is _not_ perfect, as there is quite a bit of rough guesstimation involved.  But typically it is sufficient enough, and it also ensures that text will always be readable, even if the user's desktop has a non-standard DPI setting.
+
+** The wxWidgets sizers system does not fully support the concept of controls having an arbitrary width with a fixed height.  A wrappable textbox, which is usually configured to stretch to fit width, needs to be able to change its minimum height setting based upon the "final" width setting its given, and have the sizers recalculate the dialog layout based on that new height.
+
+TODO: In the future it might work best to have the ideal/maximum width be a function of the user's dialog font size, to allow for the dialog to expand to accomodte the real-estire of larger fonts.
+
+
 == Maintain 'Emulation Core' and 'User Interface' Separation ==
 
-As of the writing of this doc, this topic is still a work-in-progress on the wx branch, but it's something I'm hoping we can trend toward instead of trend away from.  The idea is that in an ideal code configuration, the PCSX2 core libraries can be used from 3rd party user interfaces.  This is not mean to be a plugin-scope separation!  What that means is there there's no need for a plugin standard interface that's built to be version compatible, or that includes plugin-style enumerations or complicated and ugly DLL export mnemonics.  It's meant as a static linking scenario only.  If a DLL interface is provided in the future, it will be done using a separate project that provides a DLL interface layer to the static PCSX2 core static library.  That is, the goal here is not to complicate code, but rather to simplify it and reduce inter-dependent clutter that can wreak havoc on thread safety and also makes future improvements and upgrades more difficult.
+As of the writing of this doc, this topic is still a work-in-progress on the wx branch, meaning that there are still a few spots in the Emulation Core code that make direct references to the gui.  These spots willhopefully get resolved in the near future.
 
-Currently however there is no distinct separation between the emulation core and wx-based GUI, since there are still several intertwined dependencies that still need to be dealt with in a nice manner.  There are some items in the wxgui branch geared with core/ui separation in mind, however, and these you'll want to be aware of:
+The principle ideal here is to allow the PCSX2 core libraries (the virtual machine) to be used from 3rd party user interfaces.  By that I _do not_ mean abstracting the entire core to use a plugin API.  The abstraction is meant to be from the standpoint of static linking only, without any complicated DLL mnemonics.  If a DLL interface is provided in the future, it will be done using a separate project that provides a DLL interface layer to the static PCSX2 core static library.  That is, the goal here is not to complicate code, but rather to simplify it and reduce inter-dependent clutter that can wreak havoc on thread safety and also makes future improvements and upgrades more difficult.
 
-The emulator core and GUI are now threaded, which means the GUI cannot simply change the emulator's settings whenever it feels like it.  This will result in nasty bugs caused by obscure threading race conditions.  To solve this, Core and UI settings have been separated into two structures, `Pcsx2Config` (for core emu options), and `AppConfig` (wx-UI options).  `AppConfig` contains its own copy of `Pcsx2Config` since, as a UI, it needs to maintain both its own options and the options it uses to invoke emulation.  The emu core uses its own local copy of settings, however.  The core's internal settings copy is called `EmuConfig`, (defined as `extern Pcsx2Config EmuConfig`), and should never be read or written to by UI code directly.
+Currently however there is no distinct separation between the emulation core and the wx-based GUI, since there are still several intertwined dependencies that still need to be dealt with in a nice manner.
+
+== Core/VM and UI Threading ==
+
+The emulator core and UI are now running on independent threads, which means the UI cannot safely change the emulator's settings whenever it feels like it.  This will result in nasty bugs caused by obscure threading race conditions.  To solve this, most Core and UI settings have been separated into two structures, `Pcsx2Config` (for core emu options), and `AppConfig` (wx-UI options).  `AppConfig` contains its own copy of `Pcsx2Config` since, as a UI, it needs to maintain both its own options and the options it uses to invoke emulation.  The wxUI's instance of AppConfig is called `g_Conf`.  The emu core uses its own local copy of settings, called `EmuConfig`, (defined as `extern const Pcsx2Config EmuConfig`).
+
+There are several other guidelines you need to be aware of before attempting to modify PCSX2 settings.  Please read [Passing Settings between UI and Core Threads] for more details on how to use the two-conf system.
 
 == Be Careful when Sending Events to Other Windows ==
+
+_[TODO] : obsolete.  Replace with a link to documented use of th new pxEvent system._
 
 There are several ways to send events between windows in wxWidgets, and only one of them is typically the _correct_ way:
 

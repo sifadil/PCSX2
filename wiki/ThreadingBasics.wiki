@@ -1,0 +1,52 @@
+#summary Thread Safety and Parallel Programming on the x86
+#labels 
+
+In this page are a handful of tips and guidelines for programming with threads.  The PCSX2 team provides and updates this resource in large part because there is *a lot* of mis-information out there when it comes to parallel programming.
+
+= InterlockExchange / AtomicExchange =
+
+The primary tool of PCSX2 threading is the `AtomicExchange` method and it's many cousins (see `Utilities/Threading.h` for all of them).  These functions are a friendly C++ layer for underlying `_InterlockedExchange` intrinsics.  Some folks prefer the term Interlocked, but we use Atomic because it's shorter, and begins with 'A' like the A-Team, which is cool.
+
+In non-debug builds all varieties of Atomic methods translate into one to three inline'd Lock-prefixed instructions.  Lock-prefixing is quite efficient on modern CPUs, so there is little concern over using interlocking liberally (better safe than sorry); though they should still only be used as needed in performance-critical code.  This guide will help you know exactly when thy are, in fact, needed.
+
+== Atomic Operation Criteria ==
+
+Definition: An atomic operation is one which executes completely, and will not yield a 'partial' result even if a concurrent operation on the same memory address is being performed in parallel.  In other words, atomic operations are thread-safe. :)
+
+On x86 architectures we have some pretty strong garuantees about atomic operations, which works in our favor for writing simple threading code.  Namely any *aligned* 32 or 64 bit read is *atomic*, meaning that you will never get a partial result, even if another thread is writing to the same value in memory at the exact same time.  Since all 32 and 64 bit vars are properly aligned by default, atomic operation is assured.  (only exception would be contents of a `__packed` struct).
+
+*Writes* are not atomic, and simutaneous writes to the same memory address will result in partial memory write-backs and corrupted results.  When you have a situation where multiple threads can modify the same memory, the memory _must_ be modified using an Atomic operation.  Threads reading the memory can still use standard reading mnemonics.
+
+Translation: If only one thread modifies a variable, no atomic operations are needed.  Any number of other threads can safely read that value simutaneously.  If more than one thread modifies a variable, all threads must use atomic operations when modifying it!
+
+= Mutex and Semaphore =
+
+These are the two most basic tools of the multi-threaded programmer.  Understaing their basic functionality and common uses will be important to many programming tasks in PCSX2.
+
+A semaphore is a simple multithreaded event counter of sorts.  Threads can _post_ events to a semaphore, and they can _wait_ for events.  Posting an event increments the semaphore's internal counter.  Waiting for an event decrements the counter if >= 1, or sleeps the thread if the counter is 0.
+
+A mutex is an exclusionary lock around a section of code.  When a mutex is _acquired_ (locked) by one thread, no other thread will be able to acquire that mutex.  Other threads trying to acquire the mutex will either block (wait) until the mutex is released, or do other things and try to acquire it again later.  Internally a mutex is typically implemented using a pair of atomic exchanges and a semaphore (used if an acquiring thread blocks).
+
+Typically, almost any needed form of thread synchronization can be performed by using a combination of these two tools.  Because they are simple, fast, and very cross-platform reliable, PCSX2 uses them almost exclusively.
+
+In PCSX2, it is usually best to use the `ScopedLock` class instead of acquiring and releasing mutexes directly.  This is because PCSX2 uses C++ exceptions just about everywhere, and using a `ScopedLock` ensures that the mutex will be released if an excepion occurs.  Otherwise, a mutex could be left dangling, and some form of deadlock would eventually occur.
+
+=== Don't Use Timed Mutexes or Semaphores! ===
+
+Generally speaking, using timeout parameters on mutexes and semaphores is a bad idea.  Some people try to use timed mutexes in order to help avoid deadlock scenarios -- this is _not_ recommended.  The better alternative is to use [ThreadingAdvanced Proxy Queue Threads], which allow two complex threads to communicate with eath other safely via a third thread that acts as a proxy.
+
+Note that PCSX2 itself does use timed mutexes and semaphores on the Main/UI thread.  This feature is indended as a last resort for when bad multithreaded coding practices have resulted in long delays or deadlocks, and should not be relied upon.  I may remove them in the future, or replace them with concrete assertion failures.
+
+
+= Aggressive vs. Passive Threading =
+
+*Aggressive threading* uses spins (tight loops) to monitor changes made by other threads.
+
+*Passive threading* uses mutexes and semaphores (aka wait objects or signals) to sleep until other threads have made their changes.
+
+Aggressive threading is simple and generally quite popular until fairly recently.  Unfortunately, Intel and AMD CPUs are now designed in such a way that they operate much more efficiently with _passive_ threading.  Passive threading reduces CPU context switches and heat generation, and allows for better thread scheduling by the Operating System.  Furthermore, aggressive threading has to be tailored specifically to the number of CPU cores available on the host system, while passive threading typically plays nicely on a varity of CPU configurations.  Aggressive threading models designed for 4 core CPUs will run exceptionally poorly on 2-core CPUs, for example. 
+
+Aggressive threading typically consumes 90-100% of all system resources -- starving out any and all other system processes.  In modern computing this is unacceptable.  Windows Vista and Windows 7, for example, run multiple kernel-level sub-schedulers for threadpools and window display/Aero. Furthermore, they automatically use threading to improve the responsiveness of the user interface, and performance of other kernel, audio, and Window/GPU activity.  Aggressive spins in apps like PCSX2 would starve these out and result in a general loss of GUI performance and responsiveness.
+
+Thus, PCSX2 is coded exclusively using _passive_ threading techniques.  Any code submissions that use spin waits will need to be re-coded using proper thread signaling.
+

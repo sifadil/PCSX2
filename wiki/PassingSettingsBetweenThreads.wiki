@@ -1,0 +1,22 @@
+#summary Passing Settings between the User Interface and Virtual Machine
+
+In PCSX2, the User Interface and the Virtual Machine both incorporate multithreaded design.  Because of this, the UI and VM threads cannot modify each others' data and configurations directly, unless they first assure that the other thread is in a completely suspended state.
+
+
+== Modifying Configuration Settings via Suspension ==
+
+The safest and easiest way to modify the virtual machine's settings is by completely suspending it.  When suspended, the VM thread will not be accessing any variables, and thus anything within its domain can be read and modified freely.
+
+Note that the Main/UI thread is forbidden from being suspended -- such a case results in the entire program becoming unresponsive -- and so there is no mechanism provided within PCSX2 for suspending the main thread.  If the VM thread needs to communicate data back to the Main/UI thread, it must do so using cross-threadd messages.
+
+== Modifying Configuration Settings Directly ==
+
+`EmuConfig` is the VM's internal copy of emulation settings.  It is defined _const_ for a reason, as it should typically not be written to directly by either UI or VM threads, unless the VM thread is _known_ to be in a suspended state.  But there is some good news!  Some members of `EmuConfig` are safe to be modified on-the-fly, thanks to the [ThreadingBasics Atomic Operations Criteria] enforced by x86 CPUs.  As a general rule of thumb, any value that is a complete 8, 16, or 32 bit type can be written to by the UI thread at any time safely.  If you are still in doubt, modifiable sections of the `EmuConfig` structure have been given explicit accessors that return non-const references to those sections.
+
+_[todo : list modifiable structures here]_
+
+== Modifying Configuration Settings from the Virtual Machine ==
+
+This is a _NO-NO!_  The VM threads should *not* modify the contents of `EmuConfig`, this too is not recommended since the UI thread will be unaware of the changes and won't save them.  Furthermore, the UI thread expects to be able to modify atomic members of the struct without locks (noted above), and if the VM thread is also modifying them, a race condition will occur.
+
+In order to have settings changes _saved_ you _must_ modify the contents of the `g_Conf` structure, and modification of that should _only_ be done from the context of the UI thread.  If the VM thread wants to make permanent modifications to the user's configuration (and there's not a lot of good reason for that), then it should be done using message postings.
