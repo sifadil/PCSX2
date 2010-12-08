@@ -49,13 +49,11 @@ Canonical codes for recognized languages are listed below.  When creating a new 
 || Burmese                        || my ||
 || Cambodian                      || km ||
 || Catalan                        || ca_ES ||
-|| Chinese                        || zh_TW ||
 || Chinese (Simplified)           || zh_CN ||
 || Chinese (Traditional)          || zh_TW ||
 || Chinese (Hongkong)             || zh_HK ||
 || Chinese (Macau)                || zh_MO ||
 || Chinese (Singapore)            || zh_SG ||
-|| Chinese (Taiwan)               || zh_TW ||
 || Corsican                       || co ||
 || Croatian                       || hr_HR ||
 || Czech                          || cs_CZ ||
@@ -65,7 +63,6 @@ Canonical codes for recognized languages are listed below.  When creating a new 
 
 == E thru G ==
 
-|| English                        || en_GB ||
 || English (U.K.)                 || en_GB ||
 || English (U.S.)                 || en_US ||
 || English (Australia)            || en_AU ||
@@ -180,7 +177,6 @@ Canonical codes for recognized languages are listed below.  When creating a new 
 || Sangho                         || sg ||
 || Sanskrit                       || sa ||
 || Scots Gaelic                   || gd ||
-|| Serbian                        || sr_RS ||
 || Serbian (Cyrillic)             || sr_RS ||
 || Serbian (Latin)                || sr_RS@latin ||
 || Serbo-Croatian                 || sh ||
@@ -193,7 +189,6 @@ Canonical codes for recognized languages are listed below.  When creating a new 
 || Slovak                         || sk_SK ||
 || Slovenian                      || sl_SI ||
 || Somali                         || so ||
-|| Spanish                        || es_ES ||
 || Spanish (Argentina)            || es_AR ||
 || Spanish (Bolivia)              || es_BO ||
 || Spanish (Chile)                || es_CL ||
