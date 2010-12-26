@@ -1,5 +1,7 @@
 #summary Using Poedit: Step-by-Step
 
+_This wiki page is a work-in-progress.  Information presented here may be partial or incomplete._
+
 When working with PCSX2 translations, _Poedit_ is not only recommended, but is nearly a necessity.  You will need to reference the PCSX2 source code frequently if you want to make accurate translations, and _Poedit_ is the only PO editor I could find that has such a feature built-in (and actually works as expected).
 
 **Important!!**  Make sure that you check out the right version/revision of PCSX2 that corresponds to the PO file you've downloaded.
@@ -8,7 +10,7 @@ When working with PCSX2 translations, _Poedit_ is not only recommended, but is n
 
 http://www.poedit.net/download.php
 
-==Step 2: Download the latest POT file provided by us.==
+==Step 2: Download the latest POT files provided by us.==
 
 The latest stable release POT file pack can be found here: https://code.google.com/p/pcsx2/downloads/list
 
@@ -40,6 +42,7 @@ Make sure that the filename matches the original filename in the archive (see ab
 
 Poedit will have saved a MO file in your PCSX2 Langs folder in Step 4, and if the MO file is in the right place and has the right filename, PCSX2 will automatically detect it and offer your language as an option.  Run PCSX2 and change the current language to the one you've just created.  You may have to restart PCSX2 for the new changes to take effect in all areas of the program.
 
-
 ==Submitting Your Translated Work==
+
+_ .. TODO .._
 

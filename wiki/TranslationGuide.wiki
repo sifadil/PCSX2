@@ -53,6 +53,7 @@ To assist translators, PCSX2 text messages have been split into a handful of dif
  * `pcsx2_main` - menu items, buttons, and most labels.  High priority; most or all of this file should be translated for a translation to be considered useful.
  * `pcsx2_iconized` - iconized notices, popups, and errors.  Most of these are also very high priority; and most or all of this file should be translated for a translation to be considered useful.
  * `pcsx2_tertiary` - Context tips, wizards, and other non-critical user interface elements.  All of these strings are also in iconized form.
+ * `pcsx2_devel` - Strings used _only_ by devel and debug builds of PCSX2.  These mostly consist of loggig and menu options available only in development builds (and excluded from release builds for performance reasons), and tooltips associated with them.  Translating these items is purely optional -- most people will never know or care about them.
 
 Only the main PO is required for PCSX2 to detect and use a language.  Iconized and tertiary POs are optional.  For strings in the iconized and tertiary POTs, you will have to reference the source code to obtain the original English text.  It is highly recommended that you use Poedit, since it has a very nice code reference feature built-in.  All strings in pcsx2_main.pot are standard gettext strings, and can be translated easily using any regular text editor.
 
