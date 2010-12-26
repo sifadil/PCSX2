@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.7\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-02 03:03-0500\n"
-"PO-Revision-Date: 2010-12-02 03:03-0500\n"
+"Report-Msgid-Bugs-To: http://code.google.com/p/pcsx2/\n"
+"POT-Creation-Date: 2010-12-26 10:02-0500\n"
+"PO-Revision-Date: 2010-12-26 10:02-0500\n"
 "Last-Translator: Jake Stine <jake.stine@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -35,19 +35,19 @@ msgstr ""
 msgid "!Notice:Startup:NoSSE2"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:267
+#: pcsx2/gui/AppInit.cpp:290
 msgid "!Notice:RecompilerInit:Header"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:321
+#: pcsx2/gui/AppInit.cpp:344
 msgid "!Notice:RecompilerInit:Footer"
 msgstr ""
 
-#: pcsx2/gui/AppMain.cpp:475
+#: pcsx2/gui/AppMain.cpp:483
 msgid "!Notice:BiosDumpRequired"
 msgstr ""
 
-#: pcsx2/gui/AppMain.cpp:559
+#: pcsx2/gui/AppMain.cpp:567
 msgid "!Notice Error:Thread Deadlock Actions"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "!Notice:ConfirmSysReset"
 msgstr ""
 
-#: pcsx2/gui/MainMenuClicks.cpp:107
+#: pcsx2/gui/MainMenuClicks.cpp:112
 msgid "!Notice:DeleteSettings"
 msgstr ""
 
@@ -135,7 +135,7 @@ msgstr ""
 msgid "!Notice:PluginSelector:ConfirmShutdown"
 msgstr ""
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:456
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:458
 msgid "!Notice:PluginSelector:ApplyFailed"
 msgstr ""
 
