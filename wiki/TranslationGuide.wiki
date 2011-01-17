@@ -42,7 +42,7 @@ The latest stable release POT file pack can be found here: https://code.google.c
 
 _(look for the one labeled `PCSX2_POT` with some extra version information)_
 
-You may also download the POT files individually from our SVN server at [https://pcsx2.googlecode.com/svn/i18n/].  POT files for specific releases as well as POT files for the latest trunk revisions are maintained here.  Note that working from the trunk POTs is _not_ recommended, except in cases where it has been quite a while since the latest stable or beta releases, or when major additions have been introduced to the user interface.
+You may also download the POT files individually from our SVN server.  POT files are housed in the `/locales/templates/` folder.  The latest templates for the active trunk/devel branch of PCSX2 can be found here: [https://pcsx2.googlecode.com/svn/trunk/locales/templates/].  Note that working from the trunk POTs is _not_ recommended, except in cases where it has been quite a while since the latest stable or beta releases, or when the PCSX2 developers have entered Release Candidiate stages for an upcoming stable release.  In most other cases you will want to check out a stable release branch instead, and use the templates from that.
 
 As of the last update to this wiki, the latest POT file pack is a a release candidiate translation POT for an eventual 0.9.8 release.  Some texts may be added or modified prior to 0.9.8 being released, however such changes should be minimal.
 
@@ -64,4 +64,6 @@ Future versions of PCSX2 may divide the POT files differently.
 
 You may submit new translations, or updates to existing translations, as _issue reports_.  When filing an issue for a translation update, post either the actual PO file archive you have created, or a patchfile that can be applied against the current svn copy of the translation.  Please search for an issue corresponding to your language before creating a new issue, and post contributions to the existing issue if possible.
 
-For those of you who are familiar and comfortable with Subversion (SVN): The PCSX2 Team hosts all available translations from our googlecode repository.  Available translations and their submission history can be viewed online at [https://pcsx2.googlecode.com/svn/i18n/].  Translations are branched according to the releases of PCSX2 that they conform to.  You can also use an Svn tool such as [http://www.tortoisesvn.net/ TortoiseSvn] to perform more detailed commit history analysis.
+For those of you who are familiar and comfortable with Subversion (SVN): The PCSX2 Team hosts all available translations from our googlecode repository.  Available translations and their submission history can be viewed online at [https://pcsx2.googlecode.com/svn/trunk/locales/].  You can also use an Svn tool such as [http://www.tortoisesvn.net/ TortoiseSvn] to perform more detailed commit history analysis.
+
+Translations are branched according to the releases of PCSX2 that they conform to.  
