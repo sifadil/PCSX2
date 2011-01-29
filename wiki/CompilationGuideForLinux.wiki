@@ -45,7 +45,7 @@ Note: This is still a rough draft, and subject to change.
    * libgtk2.0-dev
    * libjpeg-dev
    * libsdl1.2-dev
-   * libsoundtouch1-dev
+   * libsoundtouch0-dev (experimental) or libsoundtouch1-dev (legacy)
    * libsparsehash-dev
    * libwxbase2.8-dev
    * libwxgtk2.8-dev
@@ -54,9 +54,11 @@ Note: This is still a rough draft, and subject to change.
    * portaudio19-dev
    * zlib1g-dev
  # 32 bits libraries on x86_64 (*NOT SUPPORTED & IMCOMPLETE*)
-   * ia32-libs
+   * ia32-libs-dev
    * ia32-libs-gtk
    * lib32asound2-dev
+   * lib32bz2-dev
+   * lib32soundtouch0-dev
    * lib32z1-dev
 
 === Using cmake ===
@@ -77,6 +79,8 @@ Note: This is still a rough draft, and subject to change.
      * Tune C flags                   : -DUSER_CMAKE_C_FLAGS:STRING="cflags"
      * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS:STRING="cxxflags"
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
+     * Install localization file into /usr/share/locale/ (useful for packaging) : -DL10N_PORTABLE=TRUE
+     * Use GLSL (experimental) for shading instead of nvidia cg : -DGLSL_API=TRUE
 
  ==== Running Cmake to generate the makefile: ====
   * It is advised to use a build method that place build files outside the PCSX2 sources dirs, as it makes it easier to delete all cmake stuff:
@@ -203,7 +207,8 @@ For the purpose of the example, I use the version r3210 but it can be replaced w
 
 = Install pcsx2 with ubuntu ppa =
 === Note ===
-    Pcsx2 provides some ubuntu package through ppa. It is still experimental and it is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time.
+    Pcsx2 provides some ubuntu package through ppa. It is still experimental and it is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]
+
 
 === OS supported ===
     * 32 bits ubuntu 10.04
