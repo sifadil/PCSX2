@@ -11,7 +11,8 @@ Ia32libs is missing several 32bits libraries (at least in debian/ubuntu), and th
   # [CompilationGuideForLinux#Introduction  Introduction]
   # [CompilationGuideForLinux#Using_cmake  Cmake]
   # [CompilationGuideForLinux#Package_build_system  Create debian/ubuntu package]
-  # [CompilationGuideForLinux#Install_pcsx2_with_ubuntu_ppa  Install by ubuntu ppa]
+  # [CompilationGuideForLinux#Install_pcsx2_with_ubuntu_ppa  Install with Ubuntu ppa]
+  # [CompilationGuideForLinux# Install_pcsx2_with_archlinux_aur Install with Archlinux AUR]
 
 If you want download and build older 0.9.6 editions of PCSX2, see the [LegacyAutomakeGuide  Guide for Building 0.9.6 (r1762 and prior) via Automake].
   
@@ -61,6 +62,42 @@ Note: This is still a rough draft, and subject to change.
    * lib32soundtouch0-dev
    * lib32z1-dev
 
+=== Archlinux build dependencies for future version 0.9.7 ===
+Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported].
+So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised!
+
+ # build system
+   * gcc, gcc-multilib
+   * cmake
+ # 32 bits libraries on x86
+   * alsa-lib
+   * bzip2
+   * glew
+   * wxgtk
+   * libjpeg
+   * portaudio
+   * sdl
+   * google-sparsehash
+   * nvidia-cg-toolkit
+ # 32 bits libraries on x86_64
+{{{
+# update /etc/pacman.conf
+[Multilib]
+Include = /etc/pacman.d/mirrorlist
+# Refresh package
+pacman -Sy
+}}}
+   * lib32-alsa-lib
+   * lib32-bzip2 
+   * lib32-libjpeg 
+   * lib32-glew 
+   * lib32-nvidia-cg-toolkit
+   * lib32-portaudio
+   * lib32-sdl
+   * lib32-wxgtk
+   * Activate multilib /etc/pacman.conf
+
+
 === Using cmake ===
 
  ==== Build parameters that can be used: ====
@@ -81,6 +118,7 @@ Note: This is still a rough draft, and subject to change.
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
      * Install localization file into /usr/share/locale/ (useful for packaging) : -DL10N_PORTABLE=TRUE
      * Use GLSL (experimental) for shading instead of nvidia cg : -DGLSL_API=TRUE
+     * To ease PCSX2 packaging : -DPACKAGE_MODE=TRUE
 
  ==== Running Cmake to generate the makefile: ====
   * It is advised to use a build method that place build files outside the PCSX2 sources dirs, as it makes it easier to delete all cmake stuff:
@@ -207,7 +245,7 @@ For the purpose of the example, I use the version r3210 but it can be replaced w
 
 = Install pcsx2 with ubuntu ppa =
 === Note ===
-    Pcsx2 provides some ubuntu package through ppa. It is still experimental and it is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]
+    Pcsx2 provides some ubuntu package through ppa. It is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]
 
 
 === OS supported ===
@@ -226,3 +264,18 @@ For the purpose of the example, I use the version r3210 but it can be replaced w
     * Debug package
       * pcsx2-unstable-dbg
       * pcsx2-plugins-unstable-dbg
+    * Translation file
+      * pcsx2-l10n-unstable
+
+----
+
+= Install pcsx2 with archlinux aur =
+=== Note ===
+  On behalf of PCSX2 dev team, Josephg provides some AUR package based on recent svn snapshot. The way to go to easily install PCSX2 on Archlinux. [http://aur.archlinux.org/packages.php?ID=21899 Package details]
+
+=== OS supported ===
+   * 32 bits Archlinux
+   * 64 bits Archlinux
+ 
+=== Install the package on your system ===
+   * pcsx2-svn
