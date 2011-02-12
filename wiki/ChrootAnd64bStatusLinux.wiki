@@ -63,6 +63,15 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
             * libglew
             * libwxbase2.8 and libwxgtk2.8
             * nvidia-cg-toolkit
+       # Archlinux
+          Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported]. So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised! Hopefully all 32 bits package can be found.
+{{{
+# update /etc/pacman.conf
+[Multilib]
+Include = /etc/pacman.d/mirrorlist
+# Refresh package
+pacman -Sy
+}}}
        # Fedora: Status unknown
             * search for packages ending with ".i686"
        # Opensuse: Status unknown
