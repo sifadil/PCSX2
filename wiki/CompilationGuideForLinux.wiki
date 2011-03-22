@@ -14,6 +14,7 @@ Ia32libs is missing several 32bits libraries (at least in debian/ubuntu), and th
   # [CompilationGuideForLinux#Install_pcsx2_with_ubuntu_ppa  Install with Ubuntu ppa]
   # [CompilationGuideForLinux# Install_pcsx2_with_archlinux_aur Install with Archlinux AUR]
 
+
 If you want download and build older 0.9.6 editions of PCSX2, see the [LegacyAutomakeGuide  Guide for Building 0.9.6 (r1762 and prior) via Automake].
   
 ----
@@ -97,6 +98,24 @@ pacman -Sy
    * lib32-wxgtk
    * Activate multilib /etc/pacman.conf
 
+=== Fedora build dependencies ===
+  You need to enable both rpm fusion repositories.
+
+  # Package list (probably imcomplete)
+    * cmake
+    * freetype-devel
+    * zlib-devel
+    * gtk2-devel
+    * alsa-lib-devel
+    * bzip2-devel
+    * libjpeg-turbo`*`
+    * wxGTK-devel
+    * Cg
+    * libCg
+    * portaudio
+    * portaudio-devel
+    * sparsehash-devel
+    * SDL-devel
 
 === Using cmake ===
 
@@ -134,6 +153,9 @@ pacman -Sy
   * just pcsx2        : make pcsx2
   * just spu2x plugins: make spu2x
   * just a plugin     : make "plugin name"
+
+ ==== Install the translation: ====
+  * make install
 
 
 === Reporting Cmake bugs ===
