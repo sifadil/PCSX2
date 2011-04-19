@@ -35,6 +35,14 @@ Message icons use a somewhat standard naming convention which will help you deci
   * *Tooltip* - These are tips that appear over toolbar buttons.  Since button images are rarely fully self-explanatory these types of messages should be translated, so they have a high translation priority.  (typically most or all such tooltips won't be iconized anyway, but I'm leaving the door open in case some would be better suited as such).
   * *ContextTip* - This is a popup box that gives additional extra information or details about various options on dialog boxes.  Because these are usually supplementary to the dialog box option name and top-level description, translating them is not really necessary for someone to use the program.  Translation priority is low.
 
+==Compile/Generate pot/po/mo file on linux==
+  A script (generate_pot.sh) is provided to generates all files on linux. The script does the 3 following steps:
+  * xgettext -> parse all source files then build the several pot files.
+  * msgmerge -> sync already translated po files with the previous pot generated. It would drop old string, add new ones and fuzzy string which was updated.
+  * msgfmt -> compile the po files into mo files then install the results into bin/Langs directory.
+
+ To update/upload a new translation, it is as easy as copy the new po into the locales directory, call the script, commit the result.
+
 --------
 =Downloading and Using POT files=
 
@@ -63,6 +71,8 @@ Future versions of PCSX2 may divide the POT files differently.
 =Submitting your contribution=
 
 You may submit new translations, or updates to existing translations, as _issue reports_.  When filing an issue for a translation update, post either the actual PO file archive you have created, or a patchfile that can be applied against the current svn copy of the translation.  Please search for an issue corresponding to your language before creating a new issue, and post contributions to the existing issue if possible.
+
+You can submit translation for 0.9.8 interfaces in the PCSX2 forums. (translation guide forum).
 
 For those of you who are familiar and comfortable with Subversion (SVN): The PCSX2 Team hosts all available translations from our googlecode repository.  Available translations and their submission history can be viewed online at [https://pcsx2.googlecode.com/svn/trunk/locales/].  You can also use an Svn tool such as [http://www.tortoisesvn.net/ TortoiseSvn] to perform more detailed commit history analysis.
 
