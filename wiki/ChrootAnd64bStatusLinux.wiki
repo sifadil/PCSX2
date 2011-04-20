@@ -1,4 +1,4 @@
-#summary pcsx2 status on 64 bit linux
+ #summary pcsx2 status on 64 bit linux
 
 More and more linux users have 64 bit distributions. The purpose of this wiki page is to explain the current situation and possible solutions.
 
@@ -55,15 +55,18 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
           # You need to overwrite the libGL.so.`*` libraries provided by mesa with the 32bits version in fglrx.
           # You must add the 32bits fglrx_dri.so
 
-= IA32 libs =
-    Some distributions give you the ability to install lots of 32 bit libraries in a big package. Note: it is still necessary to install the 64 bit development packages, and they may not have some of the required libraries:
-       # Debian / Ubuntu: (missing multiple libraries that we use)
+= IA32 libs / Multi-arch =
+    Some distributions give you the ability to install 32 bit libraries in an amd64 architecture. Note: it is still necessary to install the 64 bit development packages, and some distributions miss some of the required libraries:
+       # Debian / Ubuntu:
+          # ia32-libs-dev and ia32-libs-gtk. Unfortunately it misses multiple libraries. These packages will disappear in favor of real multi-arch. Here the missing 32 bits libraries. *At your own risk* you can try to install them manually.
             * libportaudio
-            * libsoundtouch
             * libglew
             * libwxbase2.8 and libwxgtk2.8
             * nvidia-cg-toolkit
-       # Archlinux
+          # Future: multi-arch which allow to install any architecture library in any architecture system (ease also cross-compilation).
+             * Ubuntu: expected in 11.10 and later.
+             * Debian: expected in Wheezy and later.
+       # Archlinux. Status, seem working for some users.
           Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported]. So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised! Hopefully all 32 bits package can be found.
 {{{
 # update /etc/pacman.conf
@@ -72,14 +75,11 @@ Include = /etc/pacman.d/mirrorlist
 # Refresh package
 pacman -Sy
 }}}
-       # Fedora: Status unknown
+       # Fedora: Status, seem working for some users.
             * search for packages ending with ".i686"
+{{{           
+yum install cmake bzip2-devel.i686 glew-devel.i686 mesa-libGL-devel.i686 mesa-libGLU-devel.i686 mesa-libGLw-devel.i686 mesa-libOSMesa-devel.i686 alsa-lib-devel.i686 Cg.i686 libXxf86vm-devel.i686 xorg-x11-proto-devel libX11-devel.i686 xorg-x11-xtrans-devel libCg.i686 SDL-devel.i686 sparsehash-devel freetype-devel.i686 gtk2-devel.i686 zlib-devel.i686 libjpeg-devel libjpeg libjpeg-static wxGTK-devel.i686 libCg.i686 portaudio.i686 portaudio-devel.i686
+}}}
        # Opensuse: Status unknown
             * search for packages ending with "-32bit"
        # TODO complete other distributions : Gentoo / Mandriva / Slackware
-      
-= Multi arch support =
-    There is a project on Debian / Ubuntu to allow the installation of versions of packages for multiple architectures at the same time. It would allow easy cross-compilation.
-
-      * Debian / Ubuntu: not yet implemented. It will probably take at least a year :(
-      * *TODO* Complete other distributions : Fedora / Gentoo / ArchLinux / Mandriva / OpensUse / Slackware
