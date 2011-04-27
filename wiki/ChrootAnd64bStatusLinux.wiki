@@ -43,7 +43,9 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
     The least problematic way to install pcsx2 on a 64 bit system is to create a 32 bits chroot. Each distribution has a specific way, largely because what you really are doing is installing a small install of that distribution in a folder.
       * For now, this section is mainly stubbed out. Usually googling "32 bit chroot" with the name of your distribution will get you decent results.
       * A few links that could help:
-          # Ubuntu : https://help.ubuntu.com/community/DebootstrapChroot & https://help.ubuntu.com/community/32bit_and_64bit#How
+          # Ubuntu:
+              # chroot -> https://help.ubuntu.com/community/DebootstrapChroot 
+              # chroot + PCSX2 -> http://ubuntuforums.org/showthread.php?t=1712017
           # *TODO*: add other distributions : Debian / Fedora / Gentoo / Archlinux / Mandriva / Opensuse / Slackware
 
 
