@@ -1,4 +1,4 @@
- #summary pcsx2 status on 64 bit linux
+#summary pcsx2 status on 64 bit linux
 
 More and more linux users have 64 bit distributions. The purpose of this wiki page is to explain the current situation and possible solutions.
 
