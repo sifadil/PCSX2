@@ -46,25 +46,20 @@ This is the current state of the reference implementation I used in an Impulse R
 // Input filter (unconfirmed)
 // Writes the data to the input queues for the echos below
 {
-    var INPUT_SAMPLE_L = Input.Left * Revb.IN_COEF_L; // 16
+    var INPUT_SAMPLE_L = Input.Left * Revb.IN_COEF_L;
     var INPUT_SAMPLE_R = Input.Right * Revb.IN_COEF_R;
 
-    //var IIR_INPUT_A0 = (Buffer[Revb.IIR_SRC_A0] - INPUT_SAMPLE_L) * Revb.IIR_COEF + INPUT_SAMPLE_L; // 16*16 + 32 = 32
-    //var IIR_INPUT_A1 = (Buffer[Revb.IIR_SRC_A1] - INPUT_SAMPLE_R) * Revb.IIR_COEF + INPUT_SAMPLE_R;
-    //var IIR_INPUT_B0 = (Buffer[Revb.IIR_SRC_B0] - INPUT_SAMPLE_L) * Revb.IIR_COEF + INPUT_SAMPLE_L;
-    //var IIR_INPUT_B1 = (Buffer[Revb.IIR_SRC_B1] - INPUT_SAMPLE_R) * Revb.IIR_COEF + INPUT_SAMPLE_R;
-
-    var IIR_INPUT_A0 = Buffer[Revb.IIR_SRC_A0] * Revb.IIR_COEF + INPUT_SAMPLE_L; // 16*16 + 32 = 32
+    var IIR_INPUT_A0 = Buffer[Revb.IIR_SRC_A0] * Revb.IIR_COEF + INPUT_SAMPLE_L;
     var IIR_INPUT_A1 = Buffer[Revb.IIR_SRC_A1] * Revb.IIR_COEF + INPUT_SAMPLE_R;
     var IIR_INPUT_B0 = Buffer[Revb.IIR_SRC_B0] * Revb.IIR_COEF + INPUT_SAMPLE_L;
     var IIR_INPUT_B1 = Buffer[Revb.IIR_SRC_B1] * Revb.IIR_COEF + INPUT_SAMPLE_R;
 
-    var IIR_DA0 = Buffer[Revb.IIR_DEST_A0]; // 16
+    var IIR_DA0 = Buffer[Revb.IIR_DEST_A0];
     var IIR_DA1 = Buffer[Revb.IIR_DEST_A1];
     var IIR_DB0 = Buffer[Revb.IIR_DEST_B0];
     var IIR_DB1 = Buffer[Revb.IIR_DEST_B1];
 
-    Buffer[Revb.IIR_DEST_A0 + one] = clamp_mix( IIR_DA0 + ((((IIR_INPUT_A0 >> 16) - IIR_DA0) * Revb.IIR_ALPHA) >> 16) ); // 16
+    Buffer[Revb.IIR_DEST_A0 + one] = clamp_mix( IIR_DA0 + ((((IIR_INPUT_A0 >> 16) - IIR_DA0) * Revb.IIR_ALPHA) >> 16) );
     Buffer[Revb.IIR_DEST_A1 + one] = clamp_mix( IIR_DA1 + ((((IIR_INPUT_A1 >> 16) - IIR_DA1) * Revb.IIR_ALPHA) >> 16) );
     Buffer[Revb.IIR_DEST_B0 + one] = clamp_mix( IIR_DB0 + ((((IIR_INPUT_B0 >> 16) - IIR_DB0) * Revb.IIR_ALPHA) >> 16) );
     Buffer[Revb.IIR_DEST_B1 + one] = clamp_mix( IIR_DB1 + ((((IIR_INPUT_B1 >> 16) - IIR_DB1) * Revb.IIR_ALPHA) >> 16) );
@@ -75,23 +70,15 @@ int ACC1 = 0;
 
 // Classic Schroeder Reverberator:
 {
-    {
-        // 4 Comb filters
-        ACC0 += Buffer[Revb.ACC_SRC_A0] * Revb.ACC_COEF_A;
-        ACC1 += Buffer[Revb.ACC_SRC_A1] * Revb.ACC_COEF_A;
-    }
-    {
-        ACC0 += Buffer[Revb.ACC_SRC_B0] * Revb.ACC_COEF_B;
-        ACC1 += Buffer[Revb.ACC_SRC_B1] * Revb.ACC_COEF_B;
-    }
-    {
-        ACC0 += Buffer[Revb.ACC_SRC_C0] * Revb.ACC_COEF_C;
-        ACC1 += Buffer[Revb.ACC_SRC_C1] * Revb.ACC_COEF_C;
-    }
-    {
-        ACC0 += Buffer[Revb.ACC_SRC_D0] * Revb.ACC_COEF_D;
-        ACC1 += Buffer[Revb.ACC_SRC_D1] * Revb.ACC_COEF_D;
-    }
+    // 4 Comb filters
+    ACC0 += Buffer[Revb.ACC_SRC_A0] * Revb.ACC_COEF_A;
+    ACC1 += Buffer[Revb.ACC_SRC_A1] * Revb.ACC_COEF_A;
+    ACC0 += Buffer[Revb.ACC_SRC_B0] * Revb.ACC_COEF_B;
+    ACC1 += Buffer[Revb.ACC_SRC_B1] * Revb.ACC_COEF_B;
+    ACC0 += Buffer[Revb.ACC_SRC_C0] * Revb.ACC_COEF_C;
+    ACC1 += Buffer[Revb.ACC_SRC_C1] * Revb.ACC_COEF_C;
+    ACC0 += Buffer[Revb.ACC_SRC_D0] * Revb.ACC_COEF_D;
+    ACC1 += Buffer[Revb.ACC_SRC_D1] * Revb.ACC_COEF_D;
 
     // First All-pass filter:
     {
