@@ -1,0 +1,137 @@
+#summary SPU2 Reverb Engine Documentation.
+#labels Phase-Implementation,Featured
+
+= Introduction =
+
+I will try to explain here what I know of the SPU2's Reverb, which is practically identical to the one in the PS1.
+
+All my knowledge comes mostly form the great (but not quite accurate) document by Neill Corlett, and some pages I found online about reverberation and impulse responses.
+
+= The Reverb Engine =
+
+The basis of the reverb engine is a standard Schroeder Reverberator.
+
+This reverberator is formed by four parallel Comb filters, taking data form four sample queues which are fed from the input.
+
+These filters are the source of the main echos, the first reflections of the sound waves coming from the walls of the virtual room.
+
+The mixed output from the four Comb filters passes through a pair of All-pass filters, which contain a sample queue each, and they feed themselves the data, causing a controlled feedback loop which multiplies the density of the echos, but reduces them in volume over time.
+
+= The SPU2 Reverb Engine =
+
+Instead of having a series of separate queues, the SPU2 has a single rotating buffer and uses offsets to split this buffer into the queues it will require. The different blocks of the reverb engine will write to different locations of the buffer, which will advance on each processing cycle, and then data will be read from locations some samples away.
+
+While the data is eventually overwritten by other queues, it does not matter because the readers have already used the data while it was available.
+
+
+The reverb engine takes the data from the input lines (stereo), passes it through a configurable IIR filter, and puts it in the input queue. 
+
+At the same time, the four comb filters take data from different points of the input queue, which is shared for all of them.
+
+The All-pass filters have their own queue each, and seem to match the standard design.
+
+= Pseudo-C Implementation =
+
+In the following code, Buffer[] represents the rotating buffer, which will be used using something similar to
+
+{{{
+Buffer[x] === Spu2_Memory[ EffectsBufferBase + (EffectsBufferPosition + offset) % EffectsBufferSize ]
+}}}
+
+The Revb structure contains all the (wrong) register names currently used. If this implementation turns out to work correctly, I will change the names of those registers so they represent their actual usage.
+
+This is the current state of the reference implementation I used in an Impulse Response Analyzer I wrote:
+{{{
+
+// Input filter (unconfirmed)
+// Writes the data to the input queues for the echos below
+{
+    var INPUT_SAMPLE_L = Input.Left * Revb.IN_COEF_L; // 16
+    var INPUT_SAMPLE_R = Input.Right * Revb.IN_COEF_R;
+
+    //var IIR_INPUT_A0 = (Buffer[Revb.IIR_SRC_A0] - INPUT_SAMPLE_L) * Revb.IIR_COEF + INPUT_SAMPLE_L; // 16*16 + 32 = 32
+    //var IIR_INPUT_A1 = (Buffer[Revb.IIR_SRC_A1] - INPUT_SAMPLE_R) * Revb.IIR_COEF + INPUT_SAMPLE_R;
+    //var IIR_INPUT_B0 = (Buffer[Revb.IIR_SRC_B0] - INPUT_SAMPLE_L) * Revb.IIR_COEF + INPUT_SAMPLE_L;
+    //var IIR_INPUT_B1 = (Buffer[Revb.IIR_SRC_B1] - INPUT_SAMPLE_R) * Revb.IIR_COEF + INPUT_SAMPLE_R;
+
+    var IIR_INPUT_A0 = Buffer[Revb.IIR_SRC_A0] * Revb.IIR_COEF + INPUT_SAMPLE_L; // 16*16 + 32 = 32
+    var IIR_INPUT_A1 = Buffer[Revb.IIR_SRC_A1] * Revb.IIR_COEF + INPUT_SAMPLE_R;
+    var IIR_INPUT_B0 = Buffer[Revb.IIR_SRC_B0] * Revb.IIR_COEF + INPUT_SAMPLE_L;
+    var IIR_INPUT_B1 = Buffer[Revb.IIR_SRC_B1] * Revb.IIR_COEF + INPUT_SAMPLE_R;
+
+    var IIR_DA0 = Buffer[Revb.IIR_DEST_A0]; // 16
+    var IIR_DA1 = Buffer[Revb.IIR_DEST_A1];
+    var IIR_DB0 = Buffer[Revb.IIR_DEST_B0];
+    var IIR_DB1 = Buffer[Revb.IIR_DEST_B1];
+
+    Buffer[Revb.IIR_DEST_A0 + one] = clamp_mix( IIR_DA0 + ((((IIR_INPUT_A0 >> 16) - IIR_DA0) * Revb.IIR_ALPHA) >> 16) ); // 16
+    Buffer[Revb.IIR_DEST_A1 + one] = clamp_mix( IIR_DA1 + ((((IIR_INPUT_A1 >> 16) - IIR_DA1) * Revb.IIR_ALPHA) >> 16) );
+    Buffer[Revb.IIR_DEST_B0 + one] = clamp_mix( IIR_DB0 + ((((IIR_INPUT_B0 >> 16) - IIR_DB0) * Revb.IIR_ALPHA) >> 16) );
+    Buffer[Revb.IIR_DEST_B1 + one] = clamp_mix( IIR_DB1 + ((((IIR_INPUT_B1 >> 16) - IIR_DB1) * Revb.IIR_ALPHA) >> 16) );
+}
+
+int ACC0 = 0;
+int ACC1 = 0;
+
+// Classic Schroeder Reverberator:
+{
+    {
+        // 4 Comb filters
+        ACC0 += Buffer[Revb.ACC_SRC_A0] * Revb.ACC_COEF_A;
+        ACC1 += Buffer[Revb.ACC_SRC_A1] * Revb.ACC_COEF_A;
+    }
+    {
+        ACC0 += Buffer[Revb.ACC_SRC_B0] * Revb.ACC_COEF_B;
+        ACC1 += Buffer[Revb.ACC_SRC_B1] * Revb.ACC_COEF_B;
+    }
+    {
+        ACC0 += Buffer[Revb.ACC_SRC_C0] * Revb.ACC_COEF_C;
+        ACC1 += Buffer[Revb.ACC_SRC_C1] * Revb.ACC_COEF_C;
+    }
+    {
+        ACC0 += Buffer[Revb.ACC_SRC_D0] * Revb.ACC_COEF_D;
+        ACC1 += Buffer[Revb.ACC_SRC_D1] * Revb.ACC_COEF_D;
+    }
+
+    // First All-pass filter:
+    {
+        // Take delayed input
+        var FB_A0 = Buffer[Revb.MIX_DEST_A0 - Revb.FB_SRC_A]; // 16
+        var FB_A1 = Buffer[Revb.MIX_DEST_A1 - Revb.FB_SRC_A];
+
+        // Apply gain and add to input
+        var MIX_A0 = (ACC0 + FB_A0 * Revb.FB_ALPHA) >> 16; // 32 + 16*16 = 32
+        var MIX_A1 = (ACC1 + FB_A1 * Revb.FB_ALPHA) >> 16;
+                                        
+        // Write to queue
+        Buffer[Revb.MIX_DEST_A0] = clamp_mix(MIX_A0);
+        Buffer[Revb.MIX_DEST_A1] = clamp_mix(MIX_A1);
+
+        // Apply second gain and add
+        ACC0 = (FB_A0 << 16) - MIX_A0 * Revb.FB_ALPHA;
+        ACC1 = (FB_A1 << 16) - MIX_A1 * Revb.FB_ALPHA;
+    }
+
+    // Second All-pass filter:
+    {
+        // Take delayed input
+        var FB_B0 = Buffer[Revb.MIX_DEST_B0 - Revb.FB_SRC_B]; // 16
+        var FB_B1 = Buffer[Revb.MIX_DEST_B1 - Revb.FB_SRC_B];
+
+        // Apply gain and add to input
+        var MIX_B0 = (ACC0 + FB_B0 * Revb.FB_X) >> 16; // 32 + 16*16 = 32
+        var MIX_B1 = (ACC1 + FB_B1 * Revb.FB_X) >> 16;
+                                        
+        // Write to queue
+        Buffer[Revb.MIX_DEST_B0] = clamp_mix(MIX_B0);
+        Buffer[Revb.MIX_DEST_B1] = clamp_mix(MIX_B1);
+
+        // Apply second gain and add
+        ACC0 = (FB_B0 << 16) - MIX_B0 * Revb.FB_X;
+        ACC1 = (FB_B1 << 16) - MIX_B1 * Revb.FB_X;
+    }
+
+}
+
+return new StereoOut32( ACC0 >> 16, ACC1 >> 16);
+}}}
