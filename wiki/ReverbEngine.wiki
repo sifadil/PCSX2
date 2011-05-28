@@ -43,7 +43,7 @@ The Revb structure contains all the (wrong) register names currently used. If th
 This is the current state of the reference implementation I used in an Impulse Response Analyzer I wrote:
 {{{
 
-// Input filter (unconfirmed)
+// Input filter
 // Writes the data to the input queues for the echos below
 {
     var INPUT_SAMPLE_L = Input.Left * Revb.IN_COEF_L;
@@ -83,11 +83,11 @@ int ACC1 = 0;
     // First All-pass filter:
     {
         // Take delayed input
-        var FB_A0 = Buffer[Revb.MIX_DEST_A0 - Revb.FB_SRC_A]; // 16
+        var FB_A0 = Buffer[Revb.MIX_DEST_A0 - Revb.FB_SRC_A];
         var FB_A1 = Buffer[Revb.MIX_DEST_A1 - Revb.FB_SRC_A];
 
         // Apply gain and add to input
-        var MIX_A0 = (ACC0 + FB_A0 * Revb.FB_ALPHA) >> 16; // 32 + 16*16 = 32
+        var MIX_A0 = (ACC0 + FB_A0 * Revb.FB_ALPHA) >> 16;
         var MIX_A1 = (ACC1 + FB_A1 * Revb.FB_ALPHA) >> 16;
                                         
         // Write to queue
@@ -95,18 +95,18 @@ int ACC1 = 0;
         Buffer[Revb.MIX_DEST_A1] = clamp_mix(MIX_A1);
 
         // Apply second gain and add
-        ACC0 = (FB_A0 << 16) - MIX_A0 * Revb.FB_ALPHA;
-        ACC1 = (FB_A1 << 16) - MIX_A1 * Revb.FB_ALPHA;
+        ACC0 += (FB_A0 << 16) - MIX_A0 * Revb.FB_ALPHA;
+        ACC1 += (FB_A1 << 16) - MIX_A1 * Revb.FB_ALPHA;
     }
 
     // Second All-pass filter:
     {
         // Take delayed input
-        var FB_B0 = Buffer[Revb.MIX_DEST_B0 - Revb.FB_SRC_B]; // 16
+        var FB_B0 = Buffer[Revb.MIX_DEST_B0 - Revb.FB_SRC_B];
         var FB_B1 = Buffer[Revb.MIX_DEST_B1 - Revb.FB_SRC_B];
 
         // Apply gain and add to input
-        var MIX_B0 = (ACC0 + FB_B0 * Revb.FB_X) >> 16; // 32 + 16*16 = 32
+        var MIX_B0 = (ACC0 + FB_B0 * Revb.FB_X) >> 16;
         var MIX_B1 = (ACC1 + FB_B1 * Revb.FB_X) >> 16;
                                         
         // Write to queue
@@ -114,8 +114,8 @@ int ACC1 = 0;
         Buffer[Revb.MIX_DEST_B1] = clamp_mix(MIX_B1);
 
         // Apply second gain and add
-        ACC0 = (FB_B0 << 16) - MIX_B0 * Revb.FB_X;
-        ACC1 = (FB_B1 << 16) - MIX_B1 * Revb.FB_X;
+        ACC0 += (FB_B0 << 16) - MIX_B0 * Revb.FB_X;
+        ACC1 += (FB_B1 << 16) - MIX_B1 * Revb.FB_X;
     }
 
 }
