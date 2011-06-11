@@ -60,3 +60,11 @@ The memory card library (and presumably the matching module, though this isn't c
 ===Prereq: Memorycard Plugin System===
 
 Trunk currently has a hacked up implementation of a pluggable (dynamic) memorycard interface.  Completing this interface allows for the implementation of various storage formats and user interfaces for memorycard management.  The interface is based on the new PS2E.v2 API, and would need the addition of mcman hooks in order to implement high level host filesystem use.
+
+=Investigation=
+
+==SPU2==
+
+===SPU2 register reads===
+
+Discover how registers which are normally only written to behave on read.  (These are used though it's not known that this will impact compatibility.  For example, key on is read by the bios because of some code which was probably written without taking into account the volatile storage specifier on hardware register declarations.)
