@@ -16,13 +16,13 @@ The latest stable release POT file pack can be found here: https://code.google.c
 
 _(look for the one labeled `PCSX2_POT` with some extra version information)_
 
-You may also download the POT files individually from our SVN server.  POT files are housed in the `/locales/templates/` folder.  The latest templates for the active trunk/devel branch of PCSX2 can be found here: [https://pcsx2.googlecode.com/svn/trunk/locales/templates/].  Note that working from the trunk POTs is _not_ recommended, except in cases where it has been quite a while since the latest stable or beta releases, or when the PCSX2 developers have entered Release Candidiate stages for an upcoming stable release.  In most other cases you will want to check out a stable release branch instead, and use the templates from that.
+You may also download the POT files individually from our SVN server.  POT files are housed in the `/locales/templates/` folder.  The latest templates for the active trunk/devel branch of PCSX2 can be found here: [https://pcsx2.googlecode.com/svn/trunk/locales/templates/].  Note that working from the trunk POTs is _not_ recommended, except in cases where it has been quite a while since the latest stable or beta releases, or when the PCSX2 developers have entered Release Candidate stages for an upcoming stable release.  In most other cases you will want to check out a stable release branch instead, and use the templates from that.
 
-As of the last update to this wiki, the latest POT file pack is a a release candidiate translation POT for an eventual 0.9.8 release.  Some texts may be added or modified prior to 0.9.8 being released, however such changes should be minimal.
+As of the last update to this wiki, the latest POT file pack is the 0.9.8 release translation POT.
 
 ==Step 3: Check out PCSX2 sources==
 
-_Make sure to check out the exact revision indicated by the POT archive!_  This is important since the source code associations listed in the POT file may not match newer revisions of PCSX2, making it difficult to resolve iconized identifiers.  The PCSX2 revision can be gleened from the comment section at the top of the POT files included in the archive.
+_Make sure to check out the exact revision indicated by the POT archive!_  This is important since the source code associations listed in the POT file may not match newer revisions of PCSX2, making it difficult to resolve iconized identifiers.  The PCSX2 revision can be gleaned from the comment section at the top of the POT files included in the archive.
 
 Note that Poedit does have the ability to update the translation table to match a newer revision of PCSX2.  As a translator, you are welcome to update the translation table and get a head start on translating for an upcoming version of PCSX2.  However, translations for public/stable releases of PCSX2 should be based on the POT files provided by the PCSX2 Team.
 
@@ -44,5 +44,11 @@ Poedit will have saved a MO file in your PCSX2 Langs folder in Step 4, and if th
 
 ==Submitting Your Translated Work==
 
-_ .. TODO .._
+Before starting a translation, please apply for it in this thread (if there has been no other applicant before you):
+http://forums.pcsx2.net/Thread-Program-and-Guide-translation-applications
 
+When you're done, you will be given the rights to post in the specific forum for the language you translated into in our board. There you can attach either the actual PO file archive you have created, or a patchfile that can be applied against the current svn copy of the translation. 
+
+For those of you who are familiar and comfortable with Subversion (SVN): The PCSX2 Team hosts all available translations from our googlecode repository.  Available translations and their submission history can be viewed online at [https://pcsx2.googlecode.com/svn/trunk/locales/].  You can also use an Svn tool such as [http://www.tortoisesvn.net/ TortoiseSvn] to perform more detailed commit history analysis.
+
+Translations are branched according to the releases of PCSX2 that they conform to.
