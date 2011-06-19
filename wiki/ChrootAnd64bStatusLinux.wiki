@@ -46,7 +46,9 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
           # Ubuntu:
               # chroot -> https://help.ubuntu.com/community/DebootstrapChroot 
               # chroot + PCSX2 -> http://ubuntuforums.org/showthread.php?t=1712017
-          # *TODO*: add other distributions : Debian / Fedora / Gentoo / Archlinux / Mandriva / Opensuse / Slackware
+          # Gentoo:
+              # chroot + PCSX2 -> http://www.tatsh.net/2011-06-18/how-build-pcsx2-64-bit-gentoo-linux
+          # *TODO*: add other distributions : Archlinux / Mandriva / Opensuse / Slackware
 
 
     === Proprietary Driver ===
@@ -84,4 +86,4 @@ yum install cmake bzip2.i686 bzip2-devel.i686 glew.i686 glew-devel.i686 mesa-lib
 }}}
        # Opensuse: Status unknown
             * search for packages ending with "-32bit"
-       # TODO complete other distributions : Gentoo / Mandriva / Slackware
+       # TODO complete other distributions : Mandriva(still exists ?) / Gentoo / Slackware
