@@ -32,7 +32,7 @@ Note: This is still a rough draft, and subject to change.
 
 ==*Warning: this build system is experimental.  The following information is only a draft.*==
 
-=== Debian build dependencies for future version 0.9.7 ===
+=== Debian build dependencies for future version 0.9.9 ===
 
  # build system
    * gcc-4.3, gcc-4.3-multilib
@@ -55,13 +55,6 @@ Note: This is still a rough draft, and subject to change.
    * nvidia-cg-toolkit
    * portaudio19-dev
    * zlib1g-dev
- # 32 bits libraries on x86_64 (*NOT SUPPORTED & IMCOMPLETE*)
-   * ia32-libs-dev
-   * ia32-libs-gtk
-   * lib32asound2-dev
-   * lib32bz2-dev
-   * lib32soundtouch0-dev
-   * lib32z1-dev
 
 === Archlinux build dependencies for future version 0.9.7 ===
 Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported].
@@ -120,6 +113,7 @@ pacman -Sy
 === Using cmake ===
 
  ==== Build parameters that can be used: ====
+
   * Basic parameters:
      * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
         # Release: Best in speed, but provides little or no debug/crash info.
@@ -128,6 +122,7 @@ pacman -Sy
      * Enable/disable the stipping   : -DCMAKE_BUILD_STRIP=TRUE|FALSE
         # TRUE: Remove debugging information.
         # FALSE: Keep symbols. Better for debug. (recommended since it should not have any impact on speed)
+
   * Expert parameters (not supported, the best is to use the default options):
      * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
      * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
@@ -135,27 +130,30 @@ pacman -Sy
      * Tune C flags                   : -DUSER_CMAKE_C_FLAGS:STRING="cflags"
      * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS:STRING="cxxflags"
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
-     * Install localization file into /usr/share/locale/ (useful for packaging) : -DL10N_PORTABLE=TRUE
      * Use GLSL (experimental) for shading instead of nvidia cg : -DGLSL_API=TRUE
-     * To ease PCSX2 packaging : -DPACKAGE_MODE=TRUE
+
+ * Expert options for package creation
+     * Enable package mode : -DPACKAGE_MODE=TRUE
+     * Plugin install path in package mode: -DPLUGIN_DIR="/usr/lib/pcsx2"
+     * GameDB install path in package mode: -DGAMEINDEX_DIR="/var/games/pcsx2"
 
  ==== Running Cmake to generate the makefile: ====
   * It is advised to use a build method that place build files outside the PCSX2 sources dirs, as it makes it easier to delete all cmake stuff:
-    * mkdir my_build
-    * cd my_build
+    * mkdir my_build_dir
+    * cd my_build_dir
     * cmake ../CMakeLists.txt "User Options see above"
   * The 'pollute my source' method is:
     * cmake CMakeLists.txt "User Options see above"
   * *WARNING* In both cases you must call the CMakeLists.txt in the top directory.
 
- ==== Using the makefile to compile: ====
-  * everything        : make
-  * just pcsx2        : make pcsx2
-  * just spu2x plugins: make spu2x
-  * just a plugin     : make "plugin name"
-
- ==== Install the translation: ====
+ ==== Do the compilation: ====
+  * make
+ 
+ ==== Install files: ====
   * make install
+
+ === Clean temporary files ===
+  * rm -fr my_build_dir
 
 
 === Reporting Cmake bugs ===
@@ -201,13 +199,12 @@ All distributions and configurations were not tested. In case you encounter a cm
 -- Found Threads: TRUE
 -- Found wxWidgets: TRUE
 -- Found ZLIB: /usr/lib/libz.so
--- Found A52: /usr/lib/liba52.so
 -- Found Cg: /usr/lib/libCg.so;/usr/lib/libCgGL.so
 -- Found PortAudio: /usr/lib/libportaudio.so
 -- Found SoundTouch: /usr/lib/libSoundTouch.so
 -- Configuring done
 -- Generating done
--- Build files have been written to: /mnt/playstation/emulateur/package/pcsx2.snapshot-3201
+-- Build files have been written to: /mnt/playstation/emulateur/package/pcsx2.snapshot-4810
 
 }}}
 
@@ -217,7 +214,7 @@ All distributions and configurations were not tested. In case you encounter a cm
 === Build a debian/ubuntu package ===
 * NOT SUPPORTED * : Building a package is difficult. For non-expert users, I advise you to compile PCSX2 with [CompilationGuideForLinux#Using_cmake cmake].
 
-For the purpose of the example, I use the version r3210 but it can be replaced with any later version. However in this situation some debian patches can be broken.
+For the purpose of the example, I use the version r4810 but it can be replaced with any later version. However in this situation some debian patches can be broken.
  
  ==== Install some additional package ====
      * dpkg-dev
@@ -228,17 +225,16 @@ For the purpose of the example, I use the version r3210 but it can be replaced w
  ==== Get a source tarball ====
   First you need to create a tarball for the source package. A script is provided to do the job.
    # `svn export http://pcsx2.googlecode.com/svn/trunk/debian_unofficial/create_pcsx2_tarball_from_svn_repository.sh`
-   # `./create_pcsx2_tarball_from_svn_repository.sh 3210`
-   # Check that you have a pcsx2.snapshot_3210.orig.tar.gz tarball.
+   # `./create_pcsx2_tarball_from_svn_repository.sh -r 4810`
+   # Check that you have a pcsx2.snapshot_4810.orig.tar.gz tarball.
      
  ==== Update debian information ====
    Next step, add debian datas.
-     # `tar -xzf pcsx2.snapshot_3210.orig.tar.gz`
-     # `cd pcsx2.snapshot-3210`
+     # `tar -xzf pcsx2.snapshot_4810.orig.tar.gz`
+     # `cd pcsx2.snapshot-4810`
      # `cp -r debian_unofficial debian`
-     # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 3210 for debian unstable : "pcsx2.snapshot *(3210-1)* *unstable*; urgency=low"
+     # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 4810 for debian unstable : "pcsx2.snapshot *(4810-1)* *unstable*; urgency=low"
    Apply the debian patches and correct them if needed
-     # If you have the fglrx (ati/amd) drivers installed, you must use a special rule file to build the binary package: `cp debian/rules_fglrx debian/rules`
      # Check environment variable : QUILT_PATCHES=debian/patches
      # `while quilt push ; do quilt refresh ; done`
    In case of failure
@@ -281,7 +277,6 @@ For the purpose of the example, I use the version r3210 but it can be replaced w
 === Install the package on your system ===
     * Main package
       * pcsx2-unstable
-      * pcsx2-data-unstable
       * pcsx2-plugins-unstable
     * Debug package
       * pcsx2-unstable-dbg
