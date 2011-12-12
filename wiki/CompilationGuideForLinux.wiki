@@ -30,24 +30,22 @@ Note: This is still a rough draft, and subject to change.
 
 = Cmake build system =
 
-==*Warning: this build system is experimental.  The following information is only a draft.*==
-
 === Debian build dependencies for future version 0.9.9 ===
 
  # build system
-   * gcc-4.3, gcc-4.3-multilib
-   * g++-4.3, g++-4.3-multilib
+   * gcc-4.5, gcc-4.5-multilib
+   * g++-4.5, g++-4.5-multilib
    * cmake
  # 32 bits libraries on x86
    * libasound2-dev
    * libbz2-dev
    * libgl1-mesa-dev
-   * libglew1.5-dev
+   * libglew1.6-dev
    * libglu1-mesa-dev
    * libgtk2.0-dev
    * libjpeg-dev
    * libsdl1.2-dev
-   * libsoundtouch0-dev (experimental) or libsoundtouch1-dev (legacy)
+   * libsoundtouch0-dev
    * libsparsehash-dev
    * libwxbase2.8-dev
    * libwxgtk2.8-dev
@@ -56,7 +54,7 @@ Note: This is still a rough draft, and subject to change.
    * portaudio19-dev
    * zlib1g-dev
 
-=== Archlinux build dependencies for future version 0.9.7 ===
+=== Archlinux build dependencies for future version 0.9.9 ===
 Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported].
 So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised!
 
@@ -131,6 +129,8 @@ pacman -Sy
      * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS:STRING="cxxflags"
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
      * Use GLSL (experimental) for shading instead of nvidia cg : -DGLSL_API=TRUE
+     * update po (translation file)   : -DCMAKE_BUILD_PO=TRUE
+     * Follow XDG standard            : -DXDG_STD=TRUE
 
  * Expert options for package creation
      * Enable package mode : -DPACKAGE_MODE=TRUE
@@ -214,8 +214,8 @@ All distributions and configurations were not tested. In case you encounter a cm
 === Build a debian/ubuntu package ===
 * NOT SUPPORTED * : Building a package is difficult. For non-expert users, I advise you to compile PCSX2 with [CompilationGuideForLinux#Using_cmake cmake].
 
-For the purpose of the example, I use the version r4810 but it can be replaced with any later version. However in this situation some debian patches can be broken.
- 
+For the purpose of the example, I use the version r4810. It is advice to use the latest version.
+
  ==== Install some additional package ====
      * dpkg-dev
      * quilt
@@ -234,18 +234,6 @@ For the purpose of the example, I use the version r4810 but it can be replaced w
      # `cd pcsx2.snapshot-4810`
      # `cp -r debian_unofficial debian`
      # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 4810 for debian unstable : "pcsx2.snapshot *(4810-1)* *unstable*; urgency=low"
-   Apply the debian patches and correct them if needed
-     # Check environment variable : QUILT_PATCHES=debian/patches
-     # `while quilt push ; do quilt refresh ; done`
-   In case of failure
-     * Solution 1: easiest way
-        # Remove the patch in the debian/patches/series
-        # Go back to previous step 2. To apply others patches
-     * Solution 2: fix the patch.
-        # quilt push -f (Look at the .rej file)
-        # Fix the code (before do a quilt add <file changed>
-        # quilt refresh (update the patch)
-        # Go back to previous step 2. To apply others patches
 
  ==== Build the package ====
    Everythings is clean, we can build the package without sign-it (-us -uc).
@@ -263,12 +251,14 @@ For the purpose of the example, I use the version r4810 but it can be replaced w
 
 = Install pcsx2 with ubuntu ppa =
 === Note ===
-    Pcsx2 provides some ubuntu package through ppa. It is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]
+    Pcsx2 provides some ubuntu package through ppa. It is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]. 
+
+    With the new multiarch capability, you can install a 32bits ppa into a 64bits Ubuntu. Warning you need at least ubuntu 12.04 (precise).
 
 
 === OS supported ===
-    * 32 bits ubuntu 10.04
-    * 32 bits ubuntu 10.10
+    * 32 bits ubuntu 11.04 (natty)
+    * 32 bits ubuntu 11.10 (oneiric)
 
 === Add pcsx2 ppa on your system ===
     * open a terminal
