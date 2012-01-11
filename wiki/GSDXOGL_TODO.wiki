@@ -1,0 +1,33 @@
+== TODO ==
+ # subroutine instead of define macro to compile shader.
+  * only opengl 4
+  * faster/slower ?
+  * be easier to extend if blend/depth is merge in the fragment shader
+  * subroutine limitation number to explore ?
+ # Inherit multiple GSwnd (OGL_LNX/OGL_MS/DX/SDL)
+ # Import index management from trunk
+  * warning, there is some fog change too inside shader
+  * glDrawElementsBaseVertex
+ # Investigate SW shader capability (OGL4 only)
+  * depth
+     * pure 32 bits. 
+     * Integer interpolation ???
+     * speed ???
+  * Manage blend from the fragment shader (OGL4)
+    * test perf. Maybe mix ROP/shader
+  * more GS part ???
+ # wireframe drawing for debug? could be nice!
+  * http://cgg-journal.com/2008-2/06/index.html
+ # context attachment on the EE thread.
+ # control opengl dump from gsdx.ini
+
+== Known Issue == 
+ # Half screen issue on native resolution. Nvidia bug???
+
+== drivers issue == 
+ === AMD ===
+ # can't unattach shader. => Workaround, use a dummy geometry shader.
+ # dual blending. For the moment, can be disabled at compilation time. Seem to be good on nvidia side.
+ # crash... Would need a bigger .gs that trigger the  crash.
+ === NVIDIA ===
+ # fail to create an opengl 4.2 context.
