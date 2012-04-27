@@ -37,7 +37,7 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
 
 
 = Chroot environment =
-    The recommended way.
+    The recommended way except on Ubuntu/Debian. Chroot was superseeded by "multiarch".
 
     === Standard library ===
     The least problematic way to install pcsx2 on a 64 bit system is to create a 32 bits chroot. Each distribution has a specific way, largely because what you really are doing is installing a small install of that distribution in a folder.
@@ -62,13 +62,9 @@ Would it be faster still to code everything in assembly? Well, maybe. But there 
 = IA32 libs / Multi-arch =
     Some distributions give you the ability to install 32 bit libraries in an amd64 architecture. Note: it is still necessary to install the 64 bit development packages, and some distributions miss some of the required libraries:
        # Debian / Ubuntu:
-          # ia32-libs-dev and ia32-libs-gtk. Unfortunately it misses multiple libraries. These packages will disappear in favor of real multi-arch. Here the missing 32 bits libraries. *At your own risk* you can try to install them manually (*EXPERT ONLY*).
-            * libportaudio
-            * libglew
-            * libwxbase2.8 and libwxgtk2.8
-            * nvidia-cg-toolkit
-          # Future: multi-arch which allow to install any architecture library in any architecture system (ease also cross-compilation).
-             * Ubuntu: expected in 11.10 and later.
+          # ia32-libs-dev and ia32-libs-gtk. *DEPRECATED*, don't use them      
+          # multi-arch which allow to install any architecture library in any architecture system (ease also cross-compilation). You need to add :i386 suffix when you install a package. For example `apt-get install pcsx2:i386`
+             * Ubuntu: Upgrade to 12.04.
              * Debian: expected in Wheezy and later.
        # Archlinux. Status, seem working for some users.
           Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported]. So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised! Hopefully all 32 bits package can be found.
