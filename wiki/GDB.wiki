@@ -1,0 +1,51 @@
+#summary Basic GDB command/tips for PCSX2
+
+= General GDB command =
+
+== thread == 
+ PCSX2 contains multi threads. Each thread can be run in parallel.
+  * Get thread info: `info threads`
+  * Select a thread: `thread <ID>`
+  * apply a command to a specific thread: `thread apply <ID> <GDB_COMMAND>`
+  * apply a command to all thread: `thread apply all <GDB_COMMAND>`
+
+== Stack/Frame ==
+  A standard human can understand a limited code size at once. So generally the code is split-ed in small unit (AKA functions). Functions call others functions which call others and so for. The full stack of called function give you an overview of what is going on your program
+  * print the stack: `backtrace`
+  * print local variable inside the stack: `backtrace full`
+  * limit the trace to the Nth lastest: `backtrace <N>`
+  * go to a specific stack: `frame <STACK_ID>`
+  * go up 1 frame: `up`
+  * go down 1 frame: `down`
+
+== Step by step execution ==
+  * execute 1 instruction :`step`
+  * execute 1 C line of instruction, functions are a 1 line instruction:`next`
+  * Same for ASM: `nexti` and `stepi`
+  * continue execution: `continue`
+  * Add breakpoint to stop program:
+      * `break <file>:<line>`
+      * `break <function>`
+      * add a condition: `break <file>:<line> if <ARG> == 0`
+
+== Print variable/memory/register ==
+   * basic var: `print <var>`
+   * pointer var: `print <*var>`
+   * print memory: `x <Oxlocation>`
+   * print register: `print $<register_name>`
+
+== SIGSEGV/Segmentation fault ==
+ A program have a limited range of memory that it can access. When you try to read/write outside, the kernel generate an error named segmentation fault. It is a critical error and generally it just crash. It is a bit difficult on PCSX2 because recompiler use this mechanism for optimization. So segmentation fault inside recompiler are normal and expected.
+
+  * You can control signal behavior with the `handle` command for example.
+  * don't stop on SIGSEGV: `handle SIGSEGV nostop`
+
+== GDB basic gui ==
+   You can attach gdb to any process of your system. It will stop the process and show the current execution.
+   * hint: to get the pcsx2 process id: `ps aux |grep pcsx2`
+   * attach the process: `attach <Process_ID>`
+
+   GDB contains several views. You can see code source, ASM or register.
+    * source code: `ctrl x ctrl A`
+    * 2 panels: `ctrl x ctrl 1`
+    * 3 panels: `ctrl x ctrl 2`
