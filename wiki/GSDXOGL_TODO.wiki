@@ -1,13 +1,12 @@
-== TODO ==
+#summary opengl TODO for zzogl&gsdx plugins
+
+== TODO GSdx ==
  # subroutine instead of define macro to compile shader.
   * only opengl 4
   * faster/slower ?
   * be easier to extend if blend/depth is merge in the fragment shader
   * subroutine limitation number to explore ?
  # Inherit multiple GSwnd (OGL_LNX/OGL_MS/DX/SDL)
- # Import index management from trunk
-  * warning, there is some fog change too inside shader
-  * glDrawElementsBaseVertex
  # Investigate SW shader capability (OGL4 only)
   * depth
      * pure 32 bits. 
@@ -18,16 +17,44 @@
   * more GS part ???
  # wireframe drawing for debug? could be nice!
   * http://cgg-journal.com/2008-2/06/index.html
- # context attachment on the EE thread.
- # control opengl dump from gsdx.ini
 
-== Known Issue == 
+== Known Issue GSdx == 
  # Half screen issue on native resolution. Nvidia bug???
 
 == drivers issue == 
  === AMD ===
- # can't unattach shader. => Workaround, use a dummy geometry shader.
- # dual blending. For the moment, can be disabled at compilation time. Seem to be good on nvidia side.
+ # can't unattach shader. => Fix in 12.4 drivers
+ # dual blending. They failed to get the index from GLSL => workaround set the index manually between compilation and link. Would need a bug report.
  # crash... Would need a bigger .gs that trigger the  crash.
  === NVIDIA ===
  # fail to create an opengl 4.2 context.
+
+ == ZZOGL ==
+# replace ext extension with ARB extension
+# use samplers object
+# avoid useless change state
+    * uniform per shader. And upload only when they change
+    * reduce enable/disable if possible
+    * only attach texture once to the unit
+# avoid useless shader multiplication change
+    * maybe one VS (PS2) could be enough
+    * context stuff
+    * use sampler object
+    * subroutine (but ogl4 only)
+       * 2 to select main function
+       * 3 to replace TEST_AEM,REGION_REPEAT, EXACT_COLOR
+       * 2 to replace write_depth function.
+# there is a way to draw a quad without sending data. Could be useful or not to reduce state change
+# a streaming vbo
+# an element vbo
+# a limited number of vao. Ideally 2, 1 for quad and 1 for the streaming vbo.
+# renderbuffer can use directly texture nowadays.
+# texture rect? Why they are used? The only advantage is to use direct (integer) texel access with filtering
+    * texture 2d support non power of 2 size
+    * Note: you can access directly a texel without filtering. Could be or not useful.
+# Modern opengl can use 32bits depth + 8bits stencil packed. Instead of 24+8
+# remove workaround/code for opengl2.1 only card
+# Z coordinate used some hack to transfer to shader. It is possible to actually to send integer directly
+# move CPU costly shader transformation to shader directly
+# use geometry shader to emulate the flat shading (color, and parameter of quad). Or we can change interface to flat and select the provoking vertex (first or last). Could be faster or not ?
+# clean shader output. Sometimes 2 but host is only 1. Or maybe it keep the state. Not clean really.
