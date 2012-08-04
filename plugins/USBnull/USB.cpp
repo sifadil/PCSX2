@@ -16,9 +16,7 @@
 #include <stdlib.h>
 #include <string>
 using namespace std;
-#ifdef _MSC_VER
-#	include "svnrev.h"
-#endif
+
 #include "USB.h"
 string s_strIniPath="inis";
 string s_strLogPath="logs";
@@ -27,7 +25,7 @@ const unsigned char version  = PS2E_USB_VERSION;
 const unsigned char revision = 0;
 const unsigned char build    = 7;    // increase that with each version
 
-static char libraryName[256];
+static char *libraryName     = "USBnull Driver";
 
 USBcallback USBirq;
 Config conf;
@@ -59,12 +57,7 @@ EXPORT_C_(u32) PS2EgetLibType()
 
 EXPORT_C_(char*) PS2EgetLibName()
 {
-#ifdef _MSC_VER
-	sprintf_s( libraryName, "USBnull Driver r%d%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
-#else
-	return "USBnull Driver";
-#endif
+	return libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)

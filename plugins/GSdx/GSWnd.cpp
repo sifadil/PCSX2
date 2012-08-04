@@ -284,7 +284,6 @@ bool GSWnd::CreateContext(int major, int minor)
 void GSWnd::AttachContext()
 {
 	if (!IsContextAttached()) {
-		fprintf(stderr, "Attach the context\n");
 		glXMakeCurrent(m_XDisplay, m_Xwindow, m_context);
 		m_ctx_attached = true;
 	}
@@ -293,7 +292,6 @@ void GSWnd::AttachContext()
 void GSWnd::DetachContext()
 {
 	if (IsContextAttached()) {
-		fprintf(stderr, "Detach the context\n");
 		glXMakeCurrent(m_XDisplay, None, NULL);
 		m_ctx_attached = false;
 	}

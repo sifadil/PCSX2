@@ -30,7 +30,6 @@ class GSRendererDX : public GSRendererHW
 	bool m_fba;
 
 	bool UserHacks_AlphaHack;
-	bool UserHacks_AlphaStencil;
 
 protected:
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);

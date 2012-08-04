@@ -82,7 +82,7 @@ public:
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0xff;}
+		operator uint32() {return key & 0x3f;}
 
 		VSSelector() : key(0) {}
 	};
@@ -175,13 +175,12 @@ public:
 				uint32 colclip:2;
 				uint32 date:2;
 				uint32 spritehack:1;
-				uint32 point_sampler:1;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0xfffffff;}
+		operator uint32() {return key & 0x3ffffff;}
 
 		PSSelector() : key(0) {}
 	};
@@ -215,13 +214,12 @@ public:
 				uint32 zwe:1;
 				uint32 date:1;
 				uint32 fba:1;
-				uint32 alpha_stencil:1;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3f;}
+		operator uint32() {return key & 0x1f;}
 
 		OMDepthStencilSelector() : key(0) {}
 	};

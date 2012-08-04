@@ -173,7 +173,11 @@ void GSRendererHW::Draw()
 {
 	if(m_dev->IsLost()) return;
 
+	#ifndef DISABLE_CRC_HACKS
+	
 	if(GSRenderer::IsBadFrame(m_skip, m_userhacks_skipdraw)) return;
+
+	#endif
 
 	GSDrawingEnvironment& env = m_env;
 	GSDrawingContext* context = m_context;
@@ -202,6 +206,8 @@ void GSRendererHW::Draw()
 
 	if(PRIM->TME)
 	{
+		m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+
 		GSVector4i r;
 
 		GetTextureMinMax(r, context->TEX0, context->CLAMP, m_vt.IsLinear());
