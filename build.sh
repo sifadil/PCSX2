@@ -1,76 +1,29 @@
 #!/bin/sh
 
-# PCSX2 - PS2 Emulator for PCs
-# Copyright (C) 2002-2011  PCSX2 Dev Team
-#
-# PCSX2 is free software: you can redistribute it and/or modify it under the terms
-# of the GNU Lesser General Public License as published by the Free Software Found-
-# ation, either version 3 of the License, or (at your option) any later version.
-#
-# PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-# PURPOSE.  See the GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along with PCSX2.
-# If not, see <http://www.gnu.org/licenses/>.
+# Usage: sh build.sh [option]
+# option can be all (rebuilds everything), clean, or nothing (incremental build)
+# Modify the individual build.sh for specific program options like debug symbols
+export PCSX2OPTIONS="--enable-devbuild --enable-sse2 --prefix `pwd`"
+export PCSX2PLUGINS="`pwd`/bin/plugins"
+curdir=`pwd`
 
-flags=""
-clean_build=false
+cd ${curdir}/plugins
+sh build.sh $@
 
-for f in $*
-do
-	case $f in
-		--sdl13)
-			flags="$flags -DFORCE_INTERNAL_SDL=TRUE"
-            echo "Warning SDL is not supported anymore"
-			;;
-		--dev|--devel)
-			flags="$flags -DCMAKE_BUILD_TYPE=Devel"
-			;;
-		--debug)
-			flags="$flags -DCMAKE_BUILD_TYPE=Debug"
-			;;
-		--release)
-			flags="$flags -DCMAKE_BUILD_TYPE=Release"
-			;;
-        --glsl)
-			flags="$flags -DGLSL_API=TRUE"
-            ;;
-		--clean)
-			clean_build=true
-			;;
-		*)
-			# unknown option
-			echo "Valid options are:"
-			echo "--dev / --devel - Build PCSX2 as a Development build."
-			echo "--debug         - Build PCSX2 as a Debug build."
-			echo "--release       - Build PCSX2 as a Release build."
-			echo "--clean         - Do a clean build."
-            echo "--glsl          - Replace CG backend of ZZogl by GLSL"
-			echo "--sdl13         - Use the internal copy of SDL (add sdl backend to gsdx)."
-			exit 1;;
-  	esac
-done
-
-rm install_log.txt
-
-if [ "$flags" != "" ]; then
-	echo "Building pcsx2 with $flags"
-	echo "Building pcsx2 with $flags" > install_log.txt
+if [ $? -ne 0 ]
+then
+echo Error with building plugins
+exit 1
 fi
 
-if [ ! -d "build" ]; then
-    mkdir build
-fi
-cd build
+cd ${curdir}/pcsx2
+#mkdir debugdev
+#cd debugdev
+#sh ../build.sh $@
+sh build.sh $@
 
-cmake $flags .. 2>&1 | tee -a ../install_log.txt 
-if [ "$clean_build" = true ]; then
-	echo "Doing a clean build."
-	make clean 2>&1 | tee -a ../install_log.txt 
+if [ $? -ne 0 ]
+then
+echo Error with building pcsx2
+exit 1
 fi
-CORE=`grep -w -c processor /proc/cpuinfo`
-make -j $CORE 2>&1 | tee -a ../install_log.txt 
-make install 2>&1 | tee -a ../install_log.txt 
-
-cd ..
