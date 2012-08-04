@@ -120,7 +120,6 @@ GSState::GSState()
 	s_saven = theApp.GetConfig("saven", 0);
 
 	userHacks_AggressiveCRC = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AggressiveCRC", 0) : 0;
-	userHacks_DisableCrcHacks = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig( "UserHacks_DisableCrcHacks", 0 ) : 0;
 }
 
 GSState::~GSState()
@@ -2229,7 +2228,7 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(userHacks_DisableCrcHacks ? 0 : crc);
+	m_game = CRC::Lookup(crc);
 }
 
 //
@@ -2669,7 +2668,6 @@ void GSState::GetAlphaMinMax()
 			a.w = max(env.TEXA.TA0, env.TEXA.TA1);
 			break;
 		case 3:
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
 			m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
 			break;
 		default:
@@ -3128,7 +3126,7 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 		}
 		else if( g_aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //重影
 		}
 	}
 	else
@@ -3282,7 +3280,7 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME && fi.FBP ==0x03100 && (fi.TBP0==0x2a00 ||fi.TBP0==0x3480) && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //重影
 		}
 	}
 
@@ -3449,11 +3447,11 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			{
 					skip = 1; // wall of fog
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
+			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100 //消水下黑線跟光源
 			{
 				skip = 1; // global haze/halo
 			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80 
+			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P下2e80 
 			{
 				skip = 1; // water effect and water vertical lines
 			}
@@ -3569,15 +3567,15 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x01500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00e00 && fi.TPSM == PSM_PSMZ16)
 		{
-			skip = 6;
+			skip = 6; //左上方缺塊
 		}	
 		else if(fi.TPSM == PSM_PSMCT24 && fi.TME ==0x0001 && fi.TBP0==fi.FBP)
 		{
-			skip = 1;
+			skip = 1; // 模糊
 		}
 		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //白霧
 		}
 	}
 	else
@@ -3641,11 +3639,11 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
         {
-			skip = 1;
+			skip = 1; // CMV的豎紋
         }
 		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
-			skip = 1000;
+			skip = 1000; //
 		}
 	}
 	else
@@ -3673,11 +3671,11 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // 模糊
 		}
 		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //霧
 		}
 		else if(fi.TME)
 		{
@@ -3735,11 +3733,12 @@ bool GSC_CaptainTsubasa(const GSFrameInfo& fi, int& skip)
 
 bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
+// 高分辨率下重影
 	if(skip == 0)
 	{
 		if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
 		{
-			skip = 1;
+			skip = 1; // 重影
 		}
 	}
 
@@ -3801,7 +3800,7 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMCT16S && fi.TBP0 == 0x3200)
 		{
-			skip = 1;
+			skip = 1; //陰影
 		}
 	}
 	return true;
@@ -3813,7 +3812,7 @@ bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
 		{
-			skip = 3;
+			skip = 3; //去黑霧
 		}
 	}
 	return true;
@@ -3910,19 +3909,19 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.FBP && fi.TPSM == PSM_PSMT8H && ( fi.FBMSK ==0x00FFFFFF))
 		{
-			skip =1;
+			skip =1; //霧
 		}
 		else if(fi.TME ==0x0001 && (fi.TBP0==0x1300 || fi.TBP0==0x0f00) && fi.FBMSK>=0xFFFFFF)
 		{
-			skip = 1;
+			skip = 1; //樹林霧和水紋
 		}		
 		else if(fi.TME && (fi.FBP >=0x0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
 		{
-			skip = 1;
+			skip = 1; //速度
 		}
 		else if(fi.TME && (fi.TBP0==0x0700) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
-			skip = 1;
+			skip = 1; //模糊
 		} 
 	}
 	
@@ -4234,11 +4233,11 @@ bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2b60 ||fi.TBP0 == 0x2b80 || fi.TBP0 == 0x2E60 ||fi.TBP0 ==0x3020 ||fi.TBP0 == 0x3200 || fi.TBP0 == 0x3320))
 		{
-			skip = 1;
+			skip = 1; //花屏
 		}
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2fa0 && (fi.TBP0==0x2bc0 ) && fi.FBMSK ==0)  
 		{
-			skip = 2;
+			skip = 2; // 花屏
 		}
 		
 		
@@ -4253,15 +4252,15 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2B60 /*|| fi.TBP0 == 0x2EFF || fi.TBP0 ==0x2F00 || fi.TBP0 == 0x3020*/ || fi.TBP0 >= 0x2C01 && fi.TBP0!=0x3029 && fi.TBP0!=0x302d))
 		{
-			skip = 1;
+			skip = 1; //花屏
 		}
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2c00 && (fi.TBP0 ==0x0ee0) && fi.FBMSK ==0)  
 		{
-			skip = 2;
+			skip = 2; // 水下黑屏
 		}
 		/*else if(fi.TPSM == PSM_PSMCT16 && (fi.TPSM | fi.FBP)>=0x0 && (fi.TBP0 >=0x0) && fi.FBMSK ==0)  
 		{
-			skip = 600;
+			skip = 600; // 加速
 		}*/
 	}
 
@@ -4476,15 +4475,15 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
 		{
-			skip = 1;
+			skip = 1; //左上方缺塊2a00
 		}	
 		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
 		{
-			skip = 1;
+			skip = 1; //重影
 		}	
 		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 1;
+			skip = 1; //中毒圖層錯位
 		}
 	}
 		
@@ -4514,7 +4513,7 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && (fi.FBP ==0x0700 || fi.FBP==0) && fi.TBP0==0x0e00 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //殺陣黑屏
 		}
 		if(fi.TME)
 		{
@@ -4624,7 +4623,7 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 			}
 			else if(fi.TME  && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
 			{
-				skip = 2;
+				skip = 2; // 霧
  			}
 			else if((fi.FBP | fi.TBP0)&& fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
 			{
@@ -4671,24 +4670,24 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 		
 		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 0;
+			skip = 0; //水波紋 沒必要了?
 		}		
 		else if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01000) // || fi.FBP == 0x00000
 		{
-			skip = 28; //28 30 56 64 
+			skip = 28; // 重影28 30 56 64 
 		}
 		else if(fi.FBP && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFFFFFF)
 		{
-			skip = 0; //24 33 40 9
+			skip = 0; //24 33 40 92白霧 沒必要了?
 		}
 		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFF000000)
 		{
-			skip = 1;
+			skip = 1; //撿東西時的白霧
 		}
 		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
 			skip = 1;
-		}
+		} //消除泛光過度 水紋等光影
 		
 	}
 	
@@ -4701,19 +4700,19 @@ bool GSC_XE3(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xEFFFFFFF)
 		{
-			skip = 73;
+			skip = 73; //動畫
 		}
 		else if(fi.TME && fi.FBP ==0x03800 && fi.TBP0 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //重影
 		}
 		/*else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && fi.FBP == 0x03800)
 		{
-			skip = 1 ;
+			skip = 1 ; // 光源
 		}*/
 		/*else if(fi.TME ==0  && (fi.FBP ==0 ) && fi.FPSM == PSM_PSMCT32 && ( fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && (fi.FBMSK == 0x00FFFFFF || fi.FBMSK == 0xFF000000))
 		{
-			skip = 1;
+			skip = 1; //去黑暗
 		}*/
 		else
 		{
@@ -4751,15 +4750,15 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME==0 && fi.FBP != fi.TBP0 && fi.TBP0 && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 3;
+			skip = 3; //去黑暗
 		}
 		else if(fi.TME==0 && fi.FBP == fi.TBP0 && (fi.TBP0 ==0x1200 ||fi.TBP0 ==0x1180 ||fi.TBP0 ==0) && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 3;
+			skip = 3; //去黑暗
 		}	
 		else if(fi.TME && (fi.FBP ==0 || fi.FBP ==0x1180) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 ==0x3F3F && fi.TPSM == PSM_PSMT8)
 		{
-			skip = 1;
+			skip = 1; //機甲泛光
 		}
 	}
 
@@ -4773,7 +4772,7 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
 			skip = 1;
-		}
+		} //消除模糊
 	}
 
 	return true;
@@ -4802,7 +4801,7 @@ bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // 重影跟水波紋
 		}
 	}
 
@@ -4815,11 +4814,11 @@ bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //動畫
 		}
 		if(fi.TME && (fi.FBP ==0x1000) && (fi.TBP0 ==0x2e00 || fi.TBP0 ==0x3200) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1; //fi.TBP0 ==0x1f00
+			skip = 1; //影子fi.TBP0 ==0x1f00
 		}
 	}
 
@@ -4832,7 +4831,7 @@ bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0) && (fi.TBP0 ==0x2800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // 模糊
 		}
 	}
 
@@ -4845,11 +4844,11 @@ bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; //重影
 		}
 		else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && (fi.FBP ==0x3400 ||fi.FBP==0x3a00))
 		{
-			skip = 1 ;
+			skip = 1 ; //光源
 		}
 	}
 
@@ -4862,7 +4861,7 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP==0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
 		{
-			skip = 5; // blur
+			skip = 5; // blur 不損光源
 		}
 	}
 
@@ -4875,18 +4874,18 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0 ) && fi.TBP0==0x34a0 && (fi.TPSM == PSM_PSMCT32))
 		{
-			skip = 1;
+			skip = 1; //去動畫窗格
 		}
 		else if((fi.FBP ==0x3500)&& fi.TPSM == PSM_PSMT8 && fi.FBMSK == 0xFFFF00FF)
 		{
-			skip = 4;
+			skip = 4; //水下白霧
 		}
 	}
 	if(fi.TME)
 		{
 			if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
 			{
-				skip = 1;
+				skip = 1; //動畫速度
 			}
 		}
 	return true;
@@ -4898,7 +4897,7 @@ bool GSC_AlpineRacer3(const GSFrameInfo& fi, int& skip)
 	{
 		if(!fi.TME && fi.FBP == 0 && fi.TBP0>=0 && (fi.TPSM >= 0 ) && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
 		{
-			skip = 2;
+			skip = 2; //去黑暗
 		}
 	}
 
@@ -4911,7 +4910,7 @@ bool GSC_HummerBadlands(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0a00) && (fi.TBP0 ==0x03200 || fi.TBP0==0x3700) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; //影子
 		}
 	}
 
@@ -4924,7 +4923,7 @@ bool GSC_SengokuBasara(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME  && (fi.TBP0==0x1800 ) && fi.FBMSK==0xFF000000)
 		{
-			skip = 1;
+			skip = 1; //霧
 		}
 	}
 
@@ -4937,7 +4936,7 @@ bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0 || fi.FBP ==0x0e00) && (fi.TBP0 ==0x2a00 ||fi.TBP0==0x0e00 ||fi.TBP0==0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // 模糊
 		}
 	}
 	
@@ -4964,11 +4963,11 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP >= 0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
 		{
-			skip = 1; //fi.FBMSK==0
+			skip = 1; //fi.FBMSK==0造成動畫黑屏,加速戰鬥速度
 		}
 		if(fi.TME  && (fi.TBP0==0x1180 || fi.TBP0==0x1a40 || fi.TBP0==0x2300) && fi.FBMSK>=0xFF000000)
 		{
-			skip = 1;
+			skip = 1; //過場殘影
 		}
 	}
 	
@@ -5019,11 +5018,11 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 	{	
 		if(fi.TME==0 && (fi.FBP==0x1500) && (fi.TBP0==0x2c97 || fi.TBP0==0x2ace || fi.TBP0==0x03d0 || fi.TBP0==0x2448) && (fi.FBMSK == 0x0000))
 		{
-			skip = 1;
+			skip = 1; //去影子
 		}
 		if(fi.TME && (fi.FBP==0x0e00) && (fi.TBP0==0x1000) && (fi.FBMSK == 0x0000))
 		{
-			skip = 1;
+			skip = 1; //去迷霧
 		}
 	}
 	return true;
@@ -5034,7 +5033,7 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP==0x0000 && fi.TBP0==0x3980 && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.TPSM ==0  && fi.FBMSK == 0x0)
 		{
-			skip = 1;
+			skip = 1; //黑影
 		}
 	}
 	return true;

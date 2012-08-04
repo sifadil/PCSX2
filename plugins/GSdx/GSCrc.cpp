@@ -178,7 +178,6 @@ CRC::Game CRC::m_games[] =
 	{0xD6385328, GodOfWar, US, 0},
 	{0xFB0E6D72, GodOfWar, EU, 0},
 	{0xEB001875, GodOfWar, EU, 0},
-	{0xCF148C74, GodOfWar, EU, 0},
 	{0xCA052D22, GodOfWar, JP, 0},
 	{0xBFCC1795, GodOfWar, KO, 0},
 	{0x9567B7D6, GodOfWar, KO, 0},
@@ -192,7 +191,6 @@ CRC::Game CRC::m_games[] =
 	//same crc as the US version. {0x2F123FD8, GodOfWar2, RU, 0},
 	{0x2F123FD8, GodOfWar2, US, 0},
 	{0x44A8A22A, GodOfWar2, EU, 0},
-	{0x60BC362B, GodOfWar2, EU, 0},
 	{0x4340C7C6, GodOfWar2, KO, 0},
 	{0xE96E55BD, GodOfWar2, JP, 0},
 	{0xF8CD3DF6, GodOfWar2, NoRegion, 0},
@@ -547,13 +545,13 @@ CRC::Game CRC::Lookup(uint32 crc)
 		if(crcDups)
 			printf("[FIXME] GSdx: Duplicate CRC: Overall: %d\n", crcDups);
 	}
-
+#ifndef DISABLE_CRC_HACKS
 	hash_map<uint32, Game*>::iterator i = m_map.find(crc);
 
 	if(i != m_map.end())
 	{
 		return *i->second;
 	}
-
+#endif
 	return m_games[0];
 }

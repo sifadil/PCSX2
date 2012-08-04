@@ -21,15 +21,12 @@
 using namespace std;
 
 #include "FW.h"
-#ifdef _MSC_VER
-#	include "svnrev.h"
-#endif
 
 const u8 version  = PS2E_FW_VERSION;
 const u8 revision = 0;
 const u8 build    = 7;    // increase that with each version
 
-static char libraryName[256];
+static char *libraryName = "FWnull Driver";
 
 string s_strIniPath="inis";
 string s_strLogPath = "logs";
@@ -65,12 +62,7 @@ EXPORT_C_(u32) PS2EgetLibType()
 
 EXPORT_C_(char*) PS2EgetLibName()
 {
-#ifdef _MSC_VER
-	sprintf_s( libraryName, "FWnull Driver r%d%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
-#else
-	return "FWnull Driver";
-#endif
+	return libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)

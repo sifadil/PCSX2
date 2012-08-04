@@ -135,7 +135,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 
 	if(i == m_ps.end())
 	{
-		string str[16];
+		string str[15];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -152,7 +152,6 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 		str[12] = format("%d", sel.colclip);
 		str[13] = format("%d", sel.date);
 		str[14] = format("%d", sel.spritehack);
-		str[15] = format("%d", sel.point_sampler);
 
 		D3DXMACRO macro[] =
 		{
@@ -171,7 +170,6 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 			{"PS_COLCLIP", str[12].c_str()},
 			{"PS_DATE", str[13].c_str()},
 			{"PS_SPRITEHACK", str[14].c_str()},
-			{"PS_POINT_SAMPLER", str[15].c_str()},
 			{NULL, NULL},
 		};
 
@@ -238,11 +236,11 @@ void GSDevice9::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint
 		{
 			dss->StencilEnable = true;
 			dss->StencilReadMask = 1;
-			dss->StencilWriteMask = dssel.alpha_stencil ? 3 : 2;
+			dss->StencilWriteMask = 2;
 			dss->StencilFunc = dssel.date ? D3DCMP_EQUAL : D3DCMP_ALWAYS;
-			dss->StencilPassOp = dssel.alpha_stencil ? D3DSTENCILOP_ZERO : dssel.fba ? D3DSTENCILOP_REPLACE : D3DSTENCILOP_KEEP;
-			dss->StencilFailOp = dssel.fba && !dssel.alpha_stencil ? D3DSTENCILOP_ZERO : D3DSTENCILOP_KEEP;
-			dss->StencilDepthFailOp = D3DSTENCILOP_KEEP;
+			dss->StencilPassOp = dssel.fba ? D3DSTENCILOP_REPLACE : D3DSTENCILOP_KEEP;
+			dss->StencilFailOp = dssel.fba ? D3DSTENCILOP_ZERO : D3DSTENCILOP_KEEP;
+			dss->StencilDepthFailOp = dssel.fba ? D3DSTENCILOP_ZERO : D3DSTENCILOP_KEEP;
 			dss->StencilRef = 3;
 		}
 

@@ -138,11 +138,11 @@ bool GSDevice11::Create(GSWnd* wnd)
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	CompileShader(IDR_CONVERT_FX, "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	hr = CompileShader(IDR_CONVERT_FX, "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(int i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader(IDR_CONVERT_FX, format("ps_main%d", i).c_str(), NULL, &m_convert.ps[i]);
+		hr = CompileShader(IDR_CONVERT_FX, format("ps_main%d", i).c_str(), NULL, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -170,7 +170,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	for(int i = 0; i < countof(m_merge.ps); i++)
 	{
-		CompileShader(IDR_MERGE_FX, format("ps_main%d", i).c_str(), NULL, &m_merge.ps[i]);
+		hr = CompileShader(IDR_MERGE_FX, format("ps_main%d", i).c_str(), NULL, &m_merge.ps[i]);
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -198,7 +198,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	for(int i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CompileShader(IDR_INTERLACE_FX, format("ps_main%d", i).c_str(), NULL, &m_interlace.ps[i]);
+		hr = CompileShader(IDR_INTERLACE_FX, format("ps_main%d", i).c_str(), NULL, &m_interlace.ps[i]);
 	}
 
 	// Shade Boost	
@@ -229,7 +229,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_shadeboost.cb);
 
-	CompileShader(IDR_SHADEBOOST_FX, "ps_main", macro, &m_shadeboost.ps);
+	hr = CompileShader(IDR_SHADEBOOST_FX, "ps_main", macro, &m_shadeboost.ps);
 
 	// fxaa
 
@@ -241,7 +241,7 @@ bool GSDevice11::Create(GSWnd* wnd)
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_fxaa.cb);
 
-	CompileShader(IDR_FXAA_FX, "ps_main", NULL, &m_fxaa.ps);
+	hr = CompileShader(IDR_FXAA_FX, "ps_main", NULL, &m_fxaa.ps);
 
 	//
 
@@ -719,49 +719,56 @@ void GSDevice11::DoShadeBoost(GSTexture* st, GSTexture* dt)
 
 void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
 {
-	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
+	const GSVector2i& size = rt->GetSize();
 
-	BeginScene();
+	if(GSTexture* t = CreateRenderTarget(size.x, size.y, rt->IsMSAA()))
+	{
+		// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
 
-	ClearStencil(ds, 0);
+		BeginScene();
 
-	// om
+		ClearStencil(ds, 0);
 
-	OMSetDepthStencilState(m_date.dss, 1);
-	OMSetBlendState(m_date.bs, 0);
-	OMSetRenderTargets(NULL, ds);
+		// om
 
-	// ia
+		OMSetDepthStencilState(m_date.dss, 1);
+		OMSetBlendState(m_date.bs, 0);
+		OMSetRenderTargets(t, ds);
 
-	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
-	IASetInputLayout(m_convert.il);
-	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		// ia
 
-	// vs
+		IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
+		IASetInputLayout(m_convert.il);
+		IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	VSSetShader(m_convert.vs, NULL);
+		// vs
 
-	// gs
+		VSSetShader(m_convert.vs, NULL);
 
-	GSSetShader(NULL);
+		// gs
 
-	// ps
+		GSSetShader(NULL);
 
-	GSTexture* rt2 = rt->IsMSAA() ? Resolve(rt) : rt;
+		// ps
 
-	PSSetShaderResources(rt2, NULL);
-	PSSetSamplerState(m_convert.pt, NULL);
-	PSSetShader(m_convert.ps[datm ? 2 : 3], NULL);
+		GSTexture* rt2 = rt->IsMSAA() ? Resolve(rt) : rt;
 
-	//
+		PSSetShaderResources(rt2, NULL);
+		PSSetSamplerState(m_convert.pt, NULL);
+		PSSetShader(m_convert.ps[datm ? 2 : 3], NULL);
 
-	DrawPrimitive();
+		//
 
-	//
+		DrawPrimitive();
 
-	EndScene();
+		//
 
-	if(rt2 != rt) Recycle(rt2);
+		EndScene();
+
+		Recycle(t);
+
+		if(rt2 != rt) Recycle(rt2);
+	}
 }
 
 void GSDevice11::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
@@ -1103,9 +1110,6 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	ID3D11RenderTargetView* rtv = NULL;
 	ID3D11DepthStencilView* dsv = NULL;
 
-	if (!rt && !ds)
-		throw GSDXRecoverableError();
-
 	if(rt) rtv = *(GSTexture11*)rt;
 	if(ds) dsv = *(GSTexture11*)ds;
 
@@ -1117,10 +1121,9 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 	}
 
-	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
-	if(m_state.viewport != size)
+	if(m_state.viewport != rt->GetSize())
 	{
-		m_state.viewport = size;
+		m_state.viewport = rt->GetSize();
 
 		D3D11_VIEWPORT vp;
 
@@ -1128,15 +1131,15 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 		vp.TopLeftX = 0;
 		vp.TopLeftY = 0;
-		vp.Width = (float)size.x;
-		vp.Height = (float)size.y;
+		vp.Width = (float)rt->GetWidth();
+		vp.Height = (float)rt->GetHeight();
 		vp.MinDepth = 0.0f;
 		vp.MaxDepth = 1.0f;
 
 		m_ctx->RSSetViewports(1, &vp);
 	}
 
-	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
+	GSVector4i r = scissor ? *scissor : GSVector4i(rt->GetSize()).zwxy();
 
 	if(!m_state.scissor.eq(r))
 	{
@@ -1181,7 +1184,7 @@ void GSDevice11::OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11U
 	}
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
+HRESULT GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
 {
 	HRESULT hr;
 
@@ -1200,25 +1203,27 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateVertexShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, vs);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateInputLayout(layout, count, shader->GetBufferPointer(), shader->GetBufferSize(), il);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
+HRESULT GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
 {
 	HRESULT hr;
 
@@ -1237,18 +1242,20 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateGeometryShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, gs);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs, D3D11_SO_DECLARATION_ENTRY* layout, int count)
+HRESULT GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11GeometryShader** gs, D3D11_SO_DECLARATION_ENTRY* layout, int count)
 {
 	HRESULT hr;
 
@@ -1267,18 +1274,20 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateGeometryShaderWithStreamOutput((void*)shader->GetBufferPointer(), shader->GetBufferSize(), layout, count, NULL, 0, D3D11_SO_NO_RASTERIZED_STREAM, NULL, gs);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11PixelShader** ps)
+HRESULT GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11PixelShader** ps)
 {
 	HRESULT hr;
 
@@ -1297,18 +1306,20 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, ps);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 
-void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
+HRESULT GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
 {
 	HRESULT hr;
 
@@ -1327,18 +1338,20 @@ void GSDevice11::CompileShader(uint32 id, const char* entry, D3D11_SHADER_MACRO*
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, cs);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 
-void GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
+HRESULT GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
 {
 	HRESULT hr;
 
@@ -1357,14 +1370,16 @@ void GSDevice11::CompileShader(const char* fn, const char* entry, D3D11_SHADER_M
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
 
 	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(),NULL, cs);
 
 	if(FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		return hr;
 	}
+
+	return hr;
 }
 

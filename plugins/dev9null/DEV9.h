@@ -35,6 +35,7 @@ extern const unsigned char version;
 extern const unsigned char revision;
 extern const unsigned char build;
 extern const unsigned int minor;
+extern const char *libraryName;
 
 void SaveConfig();
 void LoadConfig();

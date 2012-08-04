@@ -65,7 +65,4 @@ public:
 	vector<GSSetting> m_gpu_scale;
 };
 
-struct GSDXError {};
-struct GSDXRecoverableError : GSDXError {};
-
 extern GSdxApp theApp;

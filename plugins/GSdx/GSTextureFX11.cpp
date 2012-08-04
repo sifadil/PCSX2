@@ -177,7 +177,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if(i == m_ps.end())
 	{
-		string str[17];
+		string str[16];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -195,7 +195,6 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[13] = format("%d", sel.colclip);
 		str[14] = format("%d", sel.date);
 		str[15] = format("%d", sel.spritehack);
-		str[16] = format("%d", sel.point_sampler);
 
 		D3D11_SHADER_MACRO macro[] =
 		{
@@ -215,7 +214,6 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			{"PS_COLCLIP", str[13].c_str()},
 			{"PS_DATE", str[14].c_str()},
 			{"PS_SPRITEHACK", str[15].c_str()},
-			{"PS_POINT_SAMPLER", str[16].c_str()},
 			{NULL, NULL},
 		};
 
@@ -298,11 +296,11 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 			dsd.StencilReadMask = 1;
 			dsd.StencilWriteMask = 1;
 			dsd.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-			dsd.FrontFace.StencilPassOp = dssel.alpha_stencil ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
+			dsd.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 			dsd.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 			dsd.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 			dsd.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-			dsd.BackFace.StencilPassOp = dssel.alpha_stencil ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
+			dsd.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 			dsd.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 			dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 		}

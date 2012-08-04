@@ -56,15 +56,6 @@ void GSTextureCache::RemoveAll()
 GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r)
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
-	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
-
-	GIFRegTEXA plainTEXA;
-
-	plainTEXA.AEM = 1;
-	plainTEXA.TA0 = 0;
-	plainTEXA.TA1 = 0x80;
-	m_renderer->m_mem.m_clut.Read32(TEX0, plainTEXA);
-
 	const uint32* clut = m_renderer->m_mem.m_clut;
 
 	Source* src = NULL;
@@ -76,6 +67,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		Source* s = *i;
 
 		if(((TEX0.u32[0] ^ s->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ s->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
+		{
+			continue;
+		}
+
+		if((psm.trbpp == 16 || psm.trbpp == 24) && TEX0.TCC && TEXA != s->m_TEXA)
 		{
 			continue;
 		}
@@ -136,14 +132,17 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 	}
 
-	if (src->m_palette)
+	if(psm.pal > 0)
 	{
 		int size = psm.pal * sizeof(clut[0]);
 
-		if(src->m_initpalette || !GSVector4i::update(src->m_clut, clut, size))
+		if(src->m_palette)
 		{
-			src->m_palette->Update(GSVector4i(0, 0, psm.pal, 1), src->m_clut, size);
-			src->m_initpalette = false;
+			if(src->m_initpalette || !GSVector4i::update(src->m_clut, clut, size))
+			{
+				src->m_palette->Update(GSVector4i(0, 0, psm.pal, 1), src->m_clut, size);
+				src->m_initpalette = false;
+			}
 		}
 	}
 
@@ -577,7 +576,6 @@ void GSTextureCache::IncAge()
 //Fixme: Several issues in here. Not handling depth stencil, pitch conversion doesnt work.
 GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* dst)
 {
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 	Source* src = new Source(m_renderer, TEX0, TEXA, m_temp);
 
 	int tw = 1 << TEX0.TW;
@@ -586,17 +584,33 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	bool hack = false;
 
-	if(m_spritehack && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H)) 
+	if(dst == NULL)
 	{
-		src->m_spritehack_t = true;
+		if(m_spritehack && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H)) 
+		{
+			src->m_spritehack_t = true;
+			
+			if(m_spritehack == 2 && TEX0.CPSM != PSM_PSMCT16) 
+				src->m_spritehack_t = false;		
+		}			
+		else
+			src->m_spritehack_t = false;
 		
-		if(m_spritehack == 2 && TEX0.CPSM != PSM_PSMCT16) 
-			src->m_spritehack_t = false;		
-	}			
-	else
-		src->m_spritehack_t = false;
+		if(m_paltex && GSLocalMemory::m_psm[TEX0.PSM].pal > 0)
+		{
+			src->m_fmt = FMT_8;
 
-	if (dst)
+			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+		}
+		else
+		{
+			src->m_fmt = FMT_32;
+
+			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
+		}
+	}
+	else
 	{
 		// TODO: clean up this mess
 
@@ -708,9 +722,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSVector4 sr(0, 0, w, h);
 
 		GSTexture* st = src->m_texture ? src->m_texture : dst->m_texture;
-		GSTexture *dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
-		if (psm.pal > 0)
-			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+		GSTexture* dt = m_renderer->m_dev->CreateRenderTarget(w, h, false);
 
 		if(!src->m_texture)
 		{
@@ -741,6 +753,43 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else
 			ASSERT(0);
 
+		switch(TEX0.PSM)
+		{
+		default:
+			// Note: this assertion triggers in Xenosaga2 after the first intro scenes, when
+			// gameplay first begins (in the city).
+			ASSERT(0);
+		case PSM_PSMCT32:
+			src->m_fmt = FMT_32;
+			break;
+		case PSM_PSMCT24:
+			src->m_fmt = FMT_24;
+			break;
+		case PSM_PSMCT16:
+		case PSM_PSMCT16S:
+			src->m_fmt = FMT_16;
+			break;
+		case PSM_PSMT8H:
+			src->m_fmt = FMT_8H;
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			break;
+		case PSM_PSMT8:
+			//Not sure, this wasn't handled at all.
+			//Xenosaga 2 and 3 use it, Tales of Legendia as well.
+			//It's always used for fog like effects.
+			src->m_fmt = FMT_8;
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			break;
+		case PSM_PSMT4HL:
+			src->m_fmt = FMT_4HL;
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			break;
+		case PSM_PSMT4HH:
+			src->m_fmt = FMT_4HH;
+			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			break;
+		}
+
 		if(tmp != NULL)
 		{
 			m_renderer->m_dev->Recycle(dst->m_texture);
@@ -770,16 +819,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		dst->m_texture->OffsetHack_modx = modx;
 		dst->m_texture->OffsetHack_mody = mody;
 	}
-	else
-	{
-		if (m_paltex && psm.pal > 0)
-		{
-			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
-			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
-		}
-		else
-			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
-	}
 
 	if(src->m_texture == NULL)
 	{
@@ -787,6 +826,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		delete src;
 		return NULL;
 	}
+
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
 	if(psm.pal > 0)
 	{
@@ -856,6 +897,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	: Surface(r, temp)
 	, m_palette(NULL)
 	, m_initpalette(true)
+	, m_fmt(0)
 	, m_target(false)
 	, m_complete(false)
 	, m_p2t(NULL)
@@ -973,7 +1015,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect)
 
 	if(blocks > 0)
 	{
-		m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
+		m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_fmt == FMT_32 ? 2 : 0));
 
 		Flush(m_write.count);
 	}
@@ -1014,11 +1056,6 @@ void GSTextureCache::Source::Write(const GSVector4i& r)
 
 void GSTextureCache::Source::Flush(uint32 count)
 {
-	// This function as written will not work for paletted formats copied from framebuffers
-	// because they are 8 or 4 bit formats on the GS and the GS local memory module reads
-	// these into an 8 bit format while the D3D surfaces are 32 bit.
-	// However the function is never called for these cases.  This is just for information
-	// should someone wish to use this function for these cases later.
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
 
 	int tw = 1 << m_TEX0.TW;
@@ -1034,13 +1071,7 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
-	GIFRegTEXA plainTEXA;
-
-	plainTEXA.AEM = 1;
-	plainTEXA.TA0 = 0;
-	plainTEXA.TA1 = 0x80;
-
-	if(m_palette)
+	if(m_fmt == FMT_8)
 	{
 		pitch >>= 2;
 		rtx = psm.rtxP;
@@ -1064,13 +1095,13 @@ void GSTextureCache::Source::Flush(uint32 count)
 
 			if(m_texture->Map(m, &r))
 			{
-				(mem.*rtx)(o, r, m.bits, m.pitch, plainTEXA);
+				(mem.*rtx)(o, r, m.bits, m.pitch, m_TEXA);
 
 				m_texture->Unmap();
 			}
 			else
 			{
-				(mem.*rtx)(o, r, buff, pitch, plainTEXA);
+				(mem.*rtx)(o, r, buff, pitch, m_TEXA);
 
 				m_texture->Update(r, buff, pitch);
 			}

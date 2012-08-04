@@ -521,8 +521,8 @@ REG64_(GIFReg, ALPHA)
 	uint8 _PAD2[3];
 REG_END2
 	// opaque => output will be Cs/As
-	__forceinline bool IsOpaque() const {return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80);}
-	__forceinline bool IsOpaque(int amin, int amax) const {return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80);}
+	__forceinline bool IsOpaque() const {return (A == B || C == 2 && FIX == 0) && D == 0 || (A == 0 && B == D && C == 2 && FIX == 0x80);}
+	__forceinline bool IsOpaque(int amin, int amax) const {return (A == B || amax == 0) && D == 0 || A == 0 && B == D && amin == 0x80 && amax == 0x80;}
 REG_END2
 
 REG64_(GIFReg, BITBLTBUF)
@@ -766,9 +766,9 @@ REG64_(GIFReg, TEST)
 	uint32 _PAD1:13;
 	uint32 _PAD2:32;
 REG_END2
-	__forceinline bool DoFirstPass() const {return !ATE || ATST != ATST_NEVER;} // not all pixels fail automatically
-	__forceinline bool DoSecondPass() const {return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP;} // pixels may fail, write fb/z
-	__forceinline bool NoSecondPass() const {return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP;} // pixels may fail, no output
+	__forceinline bool DoFirstPass() {return !ATE || ATST != ATST_NEVER;} // not all pixels fail automatically
+	__forceinline bool DoSecondPass() {return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP;} // pixels may fail, write fb/z
+	__forceinline bool NoSecondPass() {return ATE && ATST != ATST_ALWAYS && AFAIL == AFAIL_KEEP;} // pixels may fail, no output
 REG_END2
 
 REG64_(GIFReg, TEX0)
@@ -799,7 +799,7 @@ union
 	};
 };
 REG_END2
-	__forceinline bool IsRepeating() const
+	__forceinline bool IsRepeating() 
 	{
 		if(TBW < 2)
 		{
@@ -1150,12 +1150,12 @@ __aligned(struct, 32) GIFPath
 		}
 	}
 
-	__forceinline uint8 GetReg() const
+	__forceinline uint8 GetReg()
 	{
 		return regs.u8[reg];
 	}
 
-	__forceinline uint8 GetReg(uint32 index) const
+	__forceinline uint8 GetReg(uint32 index)
 	{
 		return regs.u8[index];
 	}

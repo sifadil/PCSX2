@@ -2,10 +2,10 @@
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
-#define FMT_PAL 4 /* flag bit */
-
-// And I say this as an ATI user.
-#define ATI_SUCKS 1
+#define FMT_8H 3
+#define FMT_4HL 4
+#define FMT_4HH 5
+#define FMT_8 6
 
 #if SHADER_MODEL >= 0x400
 
@@ -24,7 +24,7 @@
 #define PS_FST 0
 #define PS_WMS 0
 #define PS_WMT 0
-#define PS_FMT FMT_32
+#define PS_FMT FMT_8
 #define PS_AEM 0
 #define PS_TFX 0
 #define PS_TCC 1
@@ -37,7 +37,6 @@
 #define PS_COLCLIP 0
 #define PS_DATE 0
 #define PS_SPRITEHACK 0
-#define PS_POINT_SAMPLER 0
 #endif
 
 struct VS_INPUT
@@ -105,15 +104,6 @@ cbuffer cb1
 
 float4 sample_c(float2 uv)
 {
-	if (ATI_SUCKS && PS_POINT_SAMPLER)
-	{
-		// Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
-		// it looks like they add 127/128 of a texel to sampling coordinates
-		// occasionally causing point sampling to erroneously round up.
-		// I'm manually adjusting coordinates to the centre of texels here,
-		// though the centre is just paranoia, the top left corner works fine.
-		uv = (trunc(uv * WH.zw) + float2(0.5, 0.5)) / WH.zw;
-	}
 	return Texture.Sample(TextureSampler, uv);
 }
 
@@ -140,7 +130,7 @@ float4 sample_rt(float2 uv)
 #define PS_FST 0
 #define PS_WMS 0
 #define PS_WMT 0
-#define PS_FMT FMT_32
+#define PS_FMT FMT_8
 #define PS_AEM 0
 #define PS_TFX 0
 #define PS_TCC 0
@@ -369,38 +359,46 @@ float4 sample(float2 st, float q)
 	{
 		st /= q;
 	}
-
+	
 	float4 t;
-	float4x4 c;
-	float2 dd;
-
 /*	
-	if(!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 2 && PS_WMT < 2)
+	if(PS_FMT <= FMT_16 && PS_WMS < 2 && PS_WMT < 2)
 	{
-		c[0] = sample_c(st);
+		t = sample_c(st);
 	}
 */
-	if (!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
+	if(PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
 	{
-		c[0] = sample_c(clampuv(st));
+		t = sample_c(clampuv(st));
 	}
 	else
 	{
 		float4 uv;
-
+		float2 dd;
+		
 		if(PS_LTF)
 		{
 			uv = st.xyxy + HalfTexel;
-			dd = frac(uv.xy * WH.zw);
+			dd = frac(uv.xy * WH.zw); 
 		}
 		else
 		{
 			uv = st.xyxy;
 		}
-
+		
 		uv = wrapuv(uv);
 
-		if(PS_FMT & FMT_PAL)
+		float4x4 c;
+
+		if(PS_FMT == FMT_8H)
+		{
+			c = sample_4p(sample_4a(uv));
+		}
+		else if(PS_FMT == FMT_4HL || PS_FMT == FMT_4HH)
+		{
+			c = sample_4p(fmod(sample_4a(uv), 1.0f / 16));
+		}
+		else if(PS_FMT == FMT_8)
 		{
 			c = sample_4p(sample_4a(uv));
 		}
@@ -408,36 +406,34 @@ float4 sample(float2 st, float q)
 		{
 			c = sample_4c(uv);
 		}
-	}
 
-	[unroll]
-	for (uint i = 0; i < 4; i++)
+		if(PS_LTF)
+		{	
+			t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
+		}
+		else
+		{
+			t = c[0];
+		}
+	}
+	
+	if(PS_FMT == FMT_32)
 	{
-		if((PS_FMT & ~FMT_PAL) == FMT_32)
-		{
-			#if SHADER_MODEL <= 0x300
-			if(PS_RT) c[i].a *= 128.0f / 255;
-			#endif
-		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_24)
-		{
-			c[i].a = !PS_AEM || any(c[i].rgb) ? TA.x : 0;
-		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_16)
-		{
-			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any(c[i].rgb) ? TA.x : 0; 
-		}
+		#if SHADER_MODEL <= 0x300
+		if(PS_RT) t.a *= 128.0f / 255;
+		#endif
 	}
-
-	if(PS_LTF)
-	{	
-		t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
-	}
-	else
+	else if(PS_FMT == FMT_24)
 	{
-		t = c[0];
+		t.a = !PS_AEM || any(t.rgb) ? TA.x : 0;
 	}
-
+	else if(PS_FMT == FMT_16)
+	{
+		// a bit incompatible with up-scaling because the 1 bit alpha is interpolated
+	
+		t.a = t.a >= 0.5 ? TA.y : !PS_AEM || any(t.rgb) ? TA.x : 0; 
+	}
+	
 	return t;
 }
 
@@ -519,24 +515,19 @@ void atst(float4 c)
 	else if(PS_ATST == 2) // l
 	{
 		#if PS_SPRITEHACK == 0
-		clip(AREF - a - 0.5f);
+		clip(AREF - a);
 		#endif				
 	}
 	else if(PS_ATST == 3) // le
 	{
-		clip(AREF - a + 0.5f);
+		clip(AREF - a);
 	}
 	else if(PS_ATST == 4) // e
 	{
-		clip(0.5f - abs(a - AREF));
-	}
-	else if(PS_ATST == 5) // ge
+		clip(0.5f - abs(a - AREF));	}
+	else if(PS_ATST == 5 || PS_ATST == 6) // ge, g
 	{
-		clip(a - AREF + 0.5f);
-	}
-	else if(PS_ATST == 6) // g
-	{
-		clip(a - AREF - 0.5f);
+		clip(a - AREF);
 	}
 	else if(PS_ATST == 7) // ne
 	{
