@@ -1,7 +1,7 @@
 #summary A guide to compiling pcsx2 on Linux.
 
 = *only 32bits OS is supported* =
-Ia32libs is missing several 32bits libraries (at least in debian/ubuntu), and there is nothing PCSX2 can do about that. So do not expect to run PCSX2 on x64 Linux installs.  The only solution for you is to install a full 32bits chroot environment, and run PCSX2 from that.
+Recent Ubuntu/Debian support the installation of 32 bits library into your 64 bits OS (aka multi-arch). Unfortunately older version doesn't provide any reliable way to run PCSX2. In this case, the only sane solution is the installation of a 32 bits chroot environment, and run PCSX2 from that.
 
 *64 bits users* please read [ChrootAnd64bStatusLinux pcsx2 status on 64 bits.]
 
@@ -30,7 +30,7 @@ Note: This is still a rough draft, and subject to change.
 
 = Cmake build system =
 
-=== Debian build dependencies for future version 0.9.9 ===
+=== Debian build dependencies for future version 1.0 and later ===
 
  # build system
    * gcc-4.5, gcc-4.5-multilib
@@ -39,6 +39,9 @@ Note: This is still a rough draft, and subject to change.
  # 32 bits libraries on x86
    * libasound2-dev
    * libbz2-dev
+   * libcg
+   * libcggl
+   * libegl1-mesa
    * libgl1-mesa-dev
    * libglew1.6-dev
    * libglu1-mesa-dev
@@ -54,7 +57,7 @@ Note: This is still a rough draft, and subject to change.
    * portaudio19-dev
    * zlib1g-dev
 
-=== Archlinux build dependencies for future version 0.9.9 ===
+=== Archlinux build dependencies for version 1.0 and later ===
 Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported].
 So, the use of an [https://wiki.archlinux.org/index.php/AUR_Helpers AUR helper] (ex: yaourt) is highly advised!
 
@@ -109,8 +112,11 @@ pacman -Sy
     * SDL-devel
 
 === Using cmake ===
+ ==== Basic mode: straightforward compilation ====
+  * Use build.sh script
+    * You can see the option with `build.sh -help`
 
- ==== Build parameters that can be used: ====
+ ==== Expert mode: Cmake build parameters ====
 
   * Basic parameters:
      * Use Release/Devel/Debug       : -DCMAKE_BUILD_TYPE=Release|Devel|Debug
@@ -122,29 +128,25 @@ pacman -Sy
         # FALSE: Keep symbols. Better for debug. (recommended since it should not have any impact on speed)
 
   * Expert parameters (not supported, the best is to use the default options):
-     * Force all         internal lib : -DFORCE_INTERNAL_ALL=TRUE
-     * Force soundtouch  internal lib : -DFORCE_INTERNAL_SOUNDTOUCH=TRUE
-     * Force zlib        internal lib : -DFORCE_INTERNAL_ZLIB=TRUE
      * Tune C flags                   : -DUSER_CMAKE_C_FLAGS:STRING="cflags"
      * Tune C++ flags                 : -DUSER_CMAKE_CXX_FLAGS:STRING="cxxflags"
      * Tune linker flags              : -DUSER_CMAKE_LD_FLAGS:STRING="ldflags"
-     * Use GLSL (experimental) for shading instead of nvidia cg : -DGLSL_API=TRUE
+     * Use GLSL (experimental) for shading instead of nvidia cg (zzogl only) : -DGLSL_API=TRUE
+     * Use EGL (experimental) to replace GLX (zzogl only) : -DEGL_API=TRUE
      * update po (translation file)   : -DCMAKE_BUILD_PO=TRUE
      * Follow XDG standard            : -DXDG_STD=TRUE
 
  * Expert options for package creation
      * Enable package mode : -DPACKAGE_MODE=TRUE
      * Plugin install path in package mode: -DPLUGIN_DIR="/usr/lib/pcsx2"
-     * GameDB install path in package mode: -DGAMEINDEX_DIR="/var/games/pcsx2"
+     * GameDB install path in package mode: -DGAMEINDEX_DIR="/usr/share/games/pcsx2"
+     * GLSL shader install directory: -DGLSL_SHADER_DIR="/usr/share/games/pcsx2"
 
  ==== Running Cmake to generate the makefile: ====
   * It is advised to use a build method that place build files outside the PCSX2 sources dirs, as it makes it easier to delete all cmake stuff:
     * mkdir my_build_dir
     * cd my_build_dir
     * cmake ../CMakeLists.txt "User Options see above"
-  * The 'pollute my source' method is:
-    * cmake CMakeLists.txt "User Options see above"
-  * *WARNING* In both cases you must call the CMakeLists.txt in the top directory.
 
  ==== Do the compilation: ====
   * make
@@ -225,15 +227,15 @@ For the purpose of the example, I use the version r4810. It is advice to use the
  ==== Get a source tarball ====
   First you need to create a tarball for the source package. A script is provided to do the job.
    # `svn export http://pcsx2.googlecode.com/svn/trunk/debian_unofficial/create_pcsx2_tarball_from_svn_repository.sh`
-   # `./create_pcsx2_tarball_from_svn_repository.sh -r 4810`
-   # Check that you have a pcsx2.snapshot_4810.orig.tar.gz tarball.
+   # `./create_pcsx2_tarball_from_svn_repository.sh -r 5400`
+   # Check that you have a pcsx2.snapshot_5400.orig.tar.gz tarball.
      
  ==== Update debian information ====
    Next step, add debian datas.
-     # `tar -xzf pcsx2.snapshot_4810.orig.tar.gz`
-     # `cd pcsx2.snapshot-4810`
+     # `tar -xzf pcsx2.snapshot_5400.orig.tar.gz`
+     # `cd pcsx2.snapshot-5400`
      # `cp -r debian_unofficial debian`
-     # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 4810 for debian unstable : "pcsx2.snapshot *(4810-1)* *unstable*; urgency=low"
+     # Edit the file `debian/changelog` to change the origin version in the first line. You must also change the distribution codename. For example rev 5400 for debian unstable : "pcsx2.snapshot *(5400-1)* *unstable*; urgency=low"
 
  ==== Build the package ====
    Everythings is clean, we can build the package without sign-it (-us -uc).
@@ -241,8 +243,6 @@ For the purpose of the example, I use the version r4810. It is advice to use the
      # dpkg-buildpackage -rfakeroot -us -uc
   
 === Additional note for ubuntu ppa ===
-     # Use the 32 bits control file : `cp debian/control_ppa debian/control`
-     # Change the changelog to support ubuntu codename. Look at the first line of the template changelog_ubuntu_lucid
      # Build the source package
         * New version: `dpkg-buildpackage -S -sa`
         * Update revision: `dpkg-buildpackage -S -sd`
@@ -251,14 +251,14 @@ For the purpose of the example, I use the version r4810. It is advice to use the
 
 = Install pcsx2 with ubuntu ppa =
 === Note ===
-    Pcsx2 provides some ubuntu package through ppa. It is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]. 
+    Pcsx2 provides some Ubuntu's package through ppa. It is only available on *32bits* OS. Moreover package are based on recent svn snapshot that are broken from time to time. [https://launchpad.net/~gregory-hainaut/+archive/pcsx2.official.ppa Go to ppa repository]. 
 
-    With the new multiarch capability, you can install a 32bits ppa into a 64bits Ubuntu. Warning you need at least ubuntu 12.04 (precise).
+    With the new multiarch capability, you can install a 32 bits ppa into a 64bits Ubuntu. Warning you need at least ubuntu 12.04 (precise).
 
 
 === OS supported ===
-    * 32 bits ubuntu 11.04 (natty)
     * 32 bits ubuntu 11.10 (oneiric)
+    * ubuntu 12.04 (precise)
 
 === Add pcsx2 ppa on your system ===
     * open a terminal
@@ -267,12 +267,8 @@ For the purpose of the example, I use the version r4810. It is advice to use the
 === Install the package on your system ===
     * Main package
       * pcsx2-unstable
-      * pcsx2-plugins-unstable
     * Debug package
       * pcsx2-unstable-dbg
-      * pcsx2-plugins-unstable-dbg
-    * Translation file
-      * pcsx2-l10n-unstable
 
 ----
 
