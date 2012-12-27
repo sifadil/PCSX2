@@ -113,26 +113,41 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	{
 		return (tDMA_TAG*)(write ? eeMem->ZeroWrite : eeMem->ZeroRead);
 	}
-	else if ((addr >= 0x11004000) && (addr < 0x11010000))
+	else if ((addr >= 0x11000000) && (addr < 0x11010000))
 	{
-		if (THREAD_VU1) {
-			DevCon.Error("MTVU: SPRdmaGetAddr Accessing VU Memory!");
+		if (addr >= 0x11008000 && THREAD_VU1)
+		{
+			DevCon.Warning("MTVU: SPR Accessing VU1 Memory");
 			vu1Thread.WaitVU();
 		}
+		
 		//Access for VU Memory
 
 		if((addr >= 0x1100c000) && (addr < 0x11010000))
-			return (tDMA_TAG*)VU1.Mem + (addr & 0x3ff0);
+		{
+			//DevCon.Warning("VU1 Mem %x", addr);
+			return (tDMA_TAG*)(VU1.Mem + (addr & 0x3ff0));
+		}
 
+		if((addr >= 0x11004000) && (addr < 0x11008000))
+		{
+			//DevCon.Warning("VU0 Mem %x", addr);
+			return (tDMA_TAG*)(VU0.Mem + (addr & 0xff0));
+		}
+		
 		//Possibly not needed but the manual doesn't say SPR cannot access it.
+		if((addr >= 0x11000000) && (addr < 0x11004000))
+		{
+			//DevCon.Warning("VU0 Micro %x", addr);
+			return (tDMA_TAG*)(VU0.Micro + (addr & 0xff0));
+		}
+
 		if((addr >= 0x11008000) && (addr < 0x1100c000))
-			return (tDMA_TAG*)VU1.Micro + (addr & 0x3ff0);
-
-		if ((addr >= 0x11000000) && (addr < 0x11004000))
-			return (tDMA_TAG*)VU0.Micro + (addr & 0xff0);
-
-		if ((addr >= 0x11004000) && (addr < 0x11008000))
-			return (tDMA_TAG*)VU0.Mem + (addr & 0xff0);		
+		{
+			//DevCon.Warning("VU1 Micro %x", addr);
+			return (tDMA_TAG*)(VU1.Micro + (addr & 0x3ff0));
+		}
+		
 		
 		// Unreachable
 		return NULL;
