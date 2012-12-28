@@ -34,7 +34,7 @@ int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 {
 	u64 offset;
-	offset = sector * (u64)m_blocksize;
+	offset = sector * (u64)m_blocksize + m_dataoffset;
 
 	u32 bytesToRead = count * m_blocksize;
 
@@ -43,6 +43,8 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 	io_prep_pread(&iocb, m_fd, pBuffer, bytesToRead, offset);
 	io_submit(m_aio_context, 1, &iocbs);
+	
+	m_nextExpectedRead = sector + count;
 }
 
 int FlatFileReader::FinishRead(void)

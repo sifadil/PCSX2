@@ -10,10 +10,11 @@
 class AsyncFileReader
 {	
 protected:
-	AsyncFileReader(void) { m_nextExpectedRead = -1; }
+	AsyncFileReader(void) { m_nextExpectedRead = -1; m_dataoffset = 0; }
 
 	wxString m_filename;
 	
+	uint m_dataoffset;
 	uint m_blocksize;
 
 	uint m_nextExpectedRead;
@@ -33,7 +34,8 @@ public:
 
 	virtual uint GetBlockCount(void) const=0;
 	
-	virtual void SetBlockSize(uint bytes) {}	
+	virtual void SetBlockSize(uint bytes) {}
+	virtual void SetDataOffset(uint bytes) {}
 
 	uint GetReadAheadHint() const { return m_nextExpectedRead; }
 	
@@ -78,7 +80,8 @@ public:
 
 	virtual uint GetBlockCount(void) const;
 
-	void SetBlockSize(uint bytes) { m_blocksize = bytes; }
+	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
+	virtual void SetDataOffset(uint bytes) { m_dataoffset = bytes; }
 };
 
 class MultipartFileReader : public AsyncFileReader
@@ -114,7 +117,7 @@ public:
 
 	virtual uint GetBlockCount(void) const;
 	
-	void SetBlockSize(uint bytes);
+	virtual void SetBlockSize(uint bytes);
 
 	static AsyncFileReader* DetectMultipart(AsyncFileReader* reader);
 };
