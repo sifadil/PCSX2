@@ -39,6 +39,7 @@ class InputIsoFile
 	
 	 static const uint MaxReadUnit = 1;
 	 static const uint MaxReadAhead = 1;
+	 static const uint MaxReadAheadSpeculative = 1;
 
 protected:
 	 uint ReadUnit;

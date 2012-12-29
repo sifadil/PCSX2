@@ -178,16 +178,19 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	if(m_expected_sequential_remaining > 0)
 		m_expected_sequential_remaining --;
 
-	if(m_read_ahead > 0 && (m_expected_sequential_remaining > 0 || m_read_length > 1))
+	if(m_read_ahead > 0)
 	{
-		uint lsn = (m_expected_sequential_remaining > 0) ?
-				m_read_lsn + 1 :
-				m_reader->GetReadAheadHint();
-
-		if(lsn >= 0)
+		if(m_expected_sequential_remaining > 0 || (m_read_length > 1 && MaxReadAheadSpeculative > 0))
 		{
-			m_is_reading_ahead = true;
-			BeginRead2(lsn);
+			uint lsn = (m_expected_sequential_remaining > 0) ?
+					m_read_lsn + 1 :
+					m_reader->GetReadAheadHint();
+
+			if(lsn >= 0)
+			{
+				m_is_reading_ahead = true;
+				BeginRead2(lsn);
+			}
 		}
 	}
 
