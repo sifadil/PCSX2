@@ -46,8 +46,6 @@ bool postprocess_filter_dealias = false;
 int SndOutLatencyMS = 150;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 
-u32 OutputModule = 0;
-
 CONFIG_WAVEOUT Config_WaveOut;
 CONFIG_XAUDIO2 Config_XAudio2;
 
@@ -80,12 +78,6 @@ void ReadSettings()
 	else if(SndOutLatencyMS < LATENCY_MIN)
 		SndOutLatencyMS = LATENCY_MIN;
 
-	wchar_t omodid[128];
-	CfgReadStr( L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent() );
-
-	// find the driver index of this module:
-	OutputModule = FindOutputModuleById( omodid );
-
 	CfgReadStr( L"DSP PLUGIN",L"Filename",dspPlugin,255,L"");
 	dspPluginModule = CfgReadInt(L"DSP PLUGIN",L"ModuleNum",0);
 	dspPluginEnabled= CfgReadBool(L"DSP PLUGIN",L"Enabled",false);
@@ -94,8 +86,7 @@ void ReadSettings()
 	CfgReadStr( L"WAVEOUT", L"Device", Config_WaveOut.Device, L"default" );
 	Config_WaveOut.NumBuffers = CfgReadInt( L"WAVEOUT", L"Buffer_Count", 4 );
 
-	DSoundOut->ReadSettings();
-	PortaudioOut->ReadSettings();
+	SndOut->ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
@@ -104,14 +95,6 @@ void ReadSettings()
 	// -------------
 
 	Clampify( SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX );
-
-	if( mods[OutputModule] == NULL )
-	{
-		// Unsupported or legacy module.
-		fwprintf( stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", omodid );
-		fprintf( stderr, "* SPU2-X: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent() );
-		OutputModule = FindOutputModuleById( DSoundOut->GetIdent() );
-	}
 }
 
 /*****************************************************************************/
@@ -124,7 +107,6 @@ void WriteSettings()
 	CfgWriteBool(L"MIXING",L"DealiasFilter",postprocess_filter_dealias);
 	CfgWriteInt(L"MIXING",L"FinalVolume",(int)(FinalVolume * 100 + 0.5f));
 
-	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
 	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
 	CfgWriteInt(L"OUTPUT",L"SpeakerConfiguration", numSpeakers);
@@ -138,8 +120,7 @@ void WriteSettings()
 	CfgWriteInt(L"DSP PLUGIN",L"ModuleNum",dspPluginModule);
 	CfgWriteBool(L"DSP PLUGIN",L"Enabled",dspPluginEnabled);
 	
-	PortaudioOut->WriteSettings();
-	DSoundOut->WriteSettings();
+	SndOut->WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 
@@ -179,15 +160,15 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDialogMsg( hWnd, IDC_SPEAKERS, CB_SETCURSEL,numSpeakers,0 );
 
 			SendDialogMsg( hWnd, IDC_OUTPUT, CB_RESETCONTENT,0,0 );
-
+/*
 			int modidx = 0;
 			while( mods[modidx] != NULL )
 			{
 				swprintf_s( temp, 72, L"%d - %s", modidx, mods[modidx]->GetLongName() );
 				SendDialogMsg( hWnd, IDC_OUTPUT, CB_ADDSTRING,0,(LPARAM)temp );
 				++modidx;
-			}
-			SendDialogMsg( hWnd, IDC_OUTPUT, CB_SETCURSEL, OutputModule, 0 );
+			}*/
+			//SendDialogMsg( hWnd, IDC_OUTPUT, CB_SETCURSEL, OutputModule, 0 );
 
 			double minlat = (SynchMode == 0)?LATENCY_MIN_TS:LATENCY_MIN;
 			int minexp = (int)(pow( minlat+1, 1.0/3.0 ) * 128.0);
@@ -228,7 +209,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					Clampify( SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX );
 					FinalVolume = (float)(SendDialogMsg( hWnd, IDC_VOLUME_SLIDER, TBM_GETPOS, 0, 0 )) / 100;
 					Interpolation = (int)SendDialogMsg( hWnd, IDC_INTERPOLATE, CB_GETCURSEL,0,0 );
-					OutputModule = (int)SendDialogMsg( hWnd, IDC_OUTPUT, CB_GETCURSEL,0,0 );
+					//OutputModule = (int)SendDialogMsg( hWnd, IDC_OUTPUT, CB_GETCURSEL,0,0 );
 					SynchMode = (int)SendDialogMsg( hWnd, IDC_SYNCHMODE, CB_GETCURSEL,0,0 );
 					numSpeakers = (int)SendDialogMsg( hWnd, IDC_SPEAKERS, CB_GETCURSEL,0,0 );
 
@@ -243,9 +224,10 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 				case IDC_OUTCONF:
 				{
-					const int module = (int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0);
+					/*const int module = (int)SendMessage(GetDlgItem(hWnd,IDC_OUTPUT),CB_GETCURSEL,0,0);
 					if( mods[module] == NULL ) break;
-					mods[module]->Configure((uptr)hWnd);
+					mods[module]->Configure((uptr)hWnd);*/
+					SndOut->Configure((uptr)hWnd);
 				}
 				break;
 
