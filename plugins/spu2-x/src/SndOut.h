@@ -34,8 +34,6 @@ static const int SndOutVolumeShift32 = 16-SndOutVolumeShift; // shift up, not do
 // is too problematic. :)
 static const int SampleRate = 48000;
 
-extern int FindOutputModuleById( const wchar_t* omodid );
-
 struct Stereo51Out16DplII;
 struct Stereo51Out32DplII;
 
@@ -480,19 +478,7 @@ public:
 	virtual int GetEmptySampleCount() =0;
 };
 
-
-#ifdef _MSC_VER
-//internal
-extern SndOutModule* WaveOut;
-extern SndOutModule* DSoundOut;
-extern SndOutModule* XAudio2Out;
-#endif
-extern SndOutModule* PortaudioOut;
-#ifdef __LINUX__
-extern SndOutModule* AlsaOut;
-#endif
-
-extern SndOutModule* mods[];
+extern SndOutModule* SndOut;
 
 // =====================================================================================================
 

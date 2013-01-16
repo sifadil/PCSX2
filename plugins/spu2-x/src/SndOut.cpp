@@ -49,7 +49,6 @@ StereoOut32 StereoOut16::UpSample() const
 
 }
 
-
 class NullOutModule: public SndOutModule
 {
 public:
@@ -82,33 +81,6 @@ public:
 	}
 
 } NullOut;
-
-SndOutModule* mods[]=
-{
-	&NullOut,
-#ifdef _MSC_VER
-	XAudio2Out,
-	DSoundOut,
-	WaveOut,
-#endif
-	PortaudioOut,
-#ifdef __LINUX__
-	AlsaOut,
-#endif
-	NULL		// signals the end of our list
-};
-
-int FindOutputModuleById( const wchar_t* omodid )
-{
-	int modcnt = 0;
-	while( mods[modcnt] != NULL )
-	{
-		if( wcscmp( mods[modcnt]->GetIdent(), omodid ) == 0 )
-			break;
-		++modcnt;
-	}
-	return modcnt;
-}
 
 StereoOut32 *SndBuffer::m_buffer;
 s32 SndBuffer::m_size;
@@ -169,8 +141,8 @@ void SndBuffer::_InitFail()
 {
 	// If a failure occurs, just initialize the NoSound driver.  This'll allow
 	// the game to emulate properly (hopefully), albeit without sound.
-	OutputModule = FindOutputModuleById( NullOut.GetIdent() );
-	mods[OutputModule]->Init();
+	//OutputModule = NullOut;
+	SndOut->Init();
 }
 
 int SndBuffer::_GetApproximateDataInBuffer()
@@ -361,7 +333,7 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 
 void SndBuffer::Init()
 {
-	if( mods[OutputModule] == NULL )
+	if( SndOut == NULL )
 	{
 		_InitFail();
 		return;
@@ -403,12 +375,12 @@ void SndBuffer::Init()
 	soundtouchInit();		// initializes the timestretching
 
 	// initialize module
-	if( mods[OutputModule]->Init() == -1 ) _InitFail();
+	if( SndOut->Init() == -1 ) _InitFail();
 }
 
 void SndBuffer::Cleanup()
 {
-	mods[OutputModule]->Close();
+	SndOut->Close();
 
 	soundtouchCleanup();
 
@@ -435,7 +407,7 @@ void SndBuffer::Write( const StereoOut32& Sample )
 
 	if( WavRecordEnabled ) RecordWrite( Sample.DownSample() );
 
-	if(mods[OutputModule] == &NullOut) // null output doesn't need buffering or stretching! :p
+	if(SndOut == &NullOut) // null output doesn't need buffering or stretching! :p
 		return;
 
 	sndTempBuffer[sndTempProgress++] = Sample;
@@ -493,8 +465,8 @@ void SndBuffer::Write( const StereoOut32& Sample )
 
 s32 SndBuffer::Test()
 {
-	if( mods[OutputModule] == NULL )
+	if( SndOut == NULL )
 		return -1;
 
-	return mods[OutputModule]->Test();
+	return SndOut->Test();
 }
