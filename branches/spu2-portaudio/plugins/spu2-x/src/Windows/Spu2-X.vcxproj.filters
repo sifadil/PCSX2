@@ -11,15 +11,6 @@
     <Filter Include="Source Files\Sound Output">
       <UniqueIdentifier>{ed4df93e-4e4b-4675-a181-c5084146df7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Sound Output\Windows">
-      <UniqueIdentifier>{1cb77247-dec9-4a0a-867f-7353b14decac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Sound Output\Linux">
-      <UniqueIdentifier>{f87cf8e1-d654-4214-b7f4-6fb697f3941a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Sound Output\Crossplatform">
-      <UniqueIdentifier>{10ccccc1-642a-42ec-900c-801f707bd776}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\decoder">
       <UniqueIdentifier>{03be4765-f627-4c0a-9d40-f3c0f86f1e57}</UniqueIdentifier>
     </Filter>
@@ -72,9 +63,6 @@
     </ClInclude>
     <ClInclude Include="..\SndOut.h">
       <Filter>Source Files\Sound Output</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Linux\Alsa.h">
-      <Filter>Source Files\Sound Output\Linux</Filter>
     </ClInclude>
     <ClInclude Include="..\spdif.h">
       <Filter>Source Files\decoder</Filter>
@@ -162,21 +150,6 @@
     <ClCompile Include="..\Timestretcher.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
-    <ClCompile Include="SndOut_DSound.cpp">
-      <Filter>Source Files\Sound Output\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="SndOut_waveOut.cpp">
-      <Filter>Source Files\Sound Output\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="SndOut_XAudio2.cpp">
-      <Filter>Source Files\Sound Output\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Linux\Alsa.cpp">
-      <Filter>Source Files\Sound Output\Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SndOut_Portaudio.cpp">
-      <Filter>Source Files\Sound Output\Crossplatform</Filter>
-    </ClCompile>
     <ClCompile Include="..\dma.cpp">
       <Filter>Source Files\SPU2</Filter>
     </ClCompile>
@@ -241,6 +214,9 @@
       <Filter>Source Files\PluginInterface</Filter>
     </ClCompile>
     <ClCompile Include="..\DplIIdecoder.cpp">
+      <Filter>Source Files\Sound Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Portaudio.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
   </ItemGroup>
