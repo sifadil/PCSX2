@@ -42,41 +42,49 @@ BEGIN
     CTEXT           "Brought to you by the collaborative efforts of the Pcsx2 Development Team.",IDC_STATIC,9,141,273,10
 END
 
-IDD_CONFIG DIALOGEX 0, 0, 319, 302
+IDD_CONFIG DIALOGEX 0, 0, 425, 275
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "SPU2-X Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    PUSHBUTTON      "OK",IDOK,200,276,54,15,NOT WS_TABSTOP
-    PUSHBUTTON      "Cancel",IDCANCEL,259,276,54,15,NOT WS_TABSTOP
-    GROUPBOX        "Mixing Settings",IDC_STATIC,6,5,130,115
-    GROUPBOX        "Output Settings",IDC_STATIC,142,0,172,268
-    PUSHBUTTON      "Configure...",IDC_OUTCONF,164,27,134,14
-    COMBOBOX        IDC_INTERPOLATE,14,26,114,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,166,94,116,10
-    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,223,126,11
-    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,14,47,112,10
-    LTEXT           "Latency:",IDC_STATIC,189,84,29,8,NOT WS_GROUP
-    LTEXT           "Interpolation:",IDC_STATIC,12,16,55,10,NOT WS_GROUP
-    LTEXT           "Module:",IDC_STATIC,161,16,50,9,NOT WS_GROUP
-    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
-    LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,236,146,20
-    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,86,58,9
-    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP,6,213,119,55,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,149,84,12
-    PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,167,108,14
-    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,153,104,10,NOT WS_TABSTOP
-    GROUPBOX        "",IDC_STATIC,6,143,129,46
-    LTEXT           "Audio Expansion Mode:",IDC_STATIC,161,176,135,9,NOT WS_GROUP
-    COMBOBOX        IDC_SPEAKERS,163,185,133,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "WIP - XAudio2 Only",IDC_STATIC,161,204,135,9,NOT WS_GROUP
-    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,161,116,131,8
-    COMBOBOX        IDC_SYNCHMODE,163,125,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Volume:",IDC_STATIC,192,59,26,8,NOT WS_GROUP
-    CTEXT           "100%",IDC_VOLUME_LABEL,224,59,58,9
-    CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,166,69,116,10
-    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,112,10
-    LTEXT           "(overemphasizes the highs)",IDC_STATIC,26,104,100,12,NOT WS_GROUP
+    PUSHBUTTON      "OK",IDOK,198,258,54,15,NOT WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDCANCEL,258,258,54,15,NOT WS_TABSTOP
+    GROUPBOX        "Mixing Settings",IDC_STATIC,6,6,130,114
+    GROUPBOX        "Output Settings",IDC_STATIC,138,6,282,246
+    COMBOBOX        IDC_INTERPOLATE,12,30,120,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,156,226,116,10
+    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,12,48,112,10
+    RTEXT           "Latency:",IDC_STATIC,162,217,54,8,NOT WS_GROUP
+    LTEXT           "Interpolation:",IDC_STATIC,12,18,55,10,NOT WS_GROUP
+    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,24,60,104,24
+    LTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,222,216,46,9
+    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP,6,174,119,55,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,150,108,14
+    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,137,104,10,NOT WS_TABSTOP
+    GROUPBOX        "",IDC_STATIC,6,126,129,46
+    LTEXT           "Audio Expansion Mode:",IDC_STATIC,156,192,84,9,NOT WS_GROUP
+    COMBOBOX        IDC_SPEAKERS,240,192,168,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,156,174,84,12
+    COMBOBOX        IDC_SYNCHMODE,240,174,84,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,330,174,78,14
+    RTEXT           "Amplification:",IDC_STATIC,294,216,54,8,NOT WS_GROUP
+    LTEXT           "100%",IDC_VOLUME_LABEL,354,216,46,9
+    CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,288,228,116,10
+    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,90,112,10
+    LTEXT           "(overemphasizes the highs)",IDC_STATIC,24,102,100,12,NOT WS_GROUP
+    COMBOBOX        IDC_PA_HOSTAPI,216,24,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Host Api",IDC_STATIC,150,24,60,12
+    COMBOBOX        IDC_PA_DEVICE,216,42,198,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Device Name",IDC_STATIC,150,42,60,12
+    CONTROL         "",IDC_LATENCY_PORTAUDIO,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,210,108,155,10
+    LTEXT           "NOTE: Depending on the hardware and drivers, the suggested manual latency might not be used, and portaudio will choose the closest possible value.",IDC_STATIC,150,120,258,19
+    CTEXT           "20ms",IDC_LATENCY_LABEL2,366,108,41,11
+    GROUPBOX        "Output Latency",IDC_STATIC,144,60,270,86
+    CONTROL         "Use smallest possible (may cause issues if the actual value is too small)",IDC_MINIMIZE,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,156,78,240,10
+    CONTROL         "Use this latency:",IDC_MANUAL,"Button",BS_AUTORADIOBUTTON,156,90,69,10
+    CONTROL         "WASAPI Exclusive Mode",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,318,24,93,12
+    GROUPBOX        "Output Processing Settings",IDC_STATIC,144,150,270,96
 END
 
 IDD_DEBUG DIALOGEX 0, 0, 303, 473
@@ -85,53 +93,6 @@ CAPTION "SPU2-X Debug"
 FONT 9, "Lucida Console", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,246,451,50,14
-END
-
-IDD_DSOUND DIALOGEX 0, 0, 196, 218
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "DirectSound Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,83,200,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,141,200,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,146,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "DirectSound Device",IDC_STATIC,4,3,63,8
-    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,38,137,108,10
-    LTEXT           "Increase the buffer count if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,11,157,169,27
-    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,44,123,95,11
-    LTEXT           "The options above are useful for compatibility with older and/or buggy sound drivers ONLY, and should not be checked unless you experience sound problems (such as crackly audio or silence).",IDC_STATIC,16,68,175,38
-    CONTROL         "Disable Global Focus",IDC_GLOBALFOCUS_DISABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,4,38,140,10
-    CONTROL         "Use a crappy alternate buffering mode",IDC_USE_HARDWARE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,53,140,10
-    GROUPBOX        "Output Buffers",IDC_STATIC,4,111,185,79
-END
-
-IDD_WAVEOUT DIALOGEX 0, 0, 170, 122
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "waveOut Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,52,104,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,115,104,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,161,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "waveOut Device",IDC_STATIC,4,3,54,8
-    LTEXT           "Number of Buffers",IDC_STATIC,4,39,61,11
-    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,71,48,94,10
-    LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,8,66,151,27
-    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
-END
-
-IDD_XAUDIO2 DIALOGEX 0, 0, 202, 116
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "XAudio2 Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,88,98,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,147,98,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,193,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "XAudio Device",IDC_STATIC,4,3,46,8
-    CONTROL         "Use Triple Buffering",IDC_XA2_TRIBLE_BUFFER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,109,10
-    LTEXT           "Increases latency by a few milliseconds.  Enable triple buffering you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,20,53,175,35
 END
 
 IDD_CONFIG_SOUNDTOUCH DIALOGEX 0, 0, 206, 223
@@ -205,11 +166,11 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 314
+        RIGHTMARGIN, 420
         VERTGUIDE, 218
         VERTGUIDE, 282
-        VERTGUIDE, 296
-        BOTTOMMARGIN, 292
+        VERTGUIDE, 408
+        BOTTOMMARGIN, 265
         HORZGUIDE, 268
     END
 
@@ -219,30 +180,6 @@ BEGIN
         RIGHTMARGIN, 296
         TOPMARGIN, 7
         BOTTOMMARGIN, 465
-    END
-
-    IDD_DSOUND, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 191
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 214
-    END
-
-    IDD_WAVEOUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 165
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 118
-    END
-
-    IDD_XAUDIO2, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 197
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 112
     END
 
     IDD_CONFIG_SOUNDTOUCH, DIALOG
@@ -312,62 +249,6 @@ BEGIN
 END
 
 #endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (United Kingdom) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_PORTAUDIO DIALOGEX 0, 0, 316, 166
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Portaudio Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,145,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,259,145,50,14
-    COMBOBOX        IDC_PA_HOSTAPI,7,18,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Host Api",IDC_STATIC,7,7,28,8
-    COMBOBOX        IDC_PA_DEVICE,108,18,201,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Device Name",IDC_STATIC,107,7,42,8
-    CONTROL         "",IDC_LATENCY,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,96,93,155,10
-    LTEXT           "NOTE: Depending on the hardware and drivers, the suggested manual latency might not be used, and portaudio will choose the closest possible value.",IDC_STATIC,12,111,286,19
-    CTEXT           "20ms",IDC_LATENCY_LABEL,264,93,35,11
-    GROUPBOX        "Output Latency",IDC_STATIC,7,57,302,82
-    CONTROL         "Use smallest possible (may cause issues if the actual value is too small)",IDC_MINIMIZE,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,75,258,10
-    CONTROL         "Use this latency:",IDC_MANUAL,"Button",BS_AUTORADIOBUTTON,12,93,69,10
-    CONTROL         "WASAPI Exclusive Mode",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,39,93,10
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_PORTAUDIO, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 159
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
