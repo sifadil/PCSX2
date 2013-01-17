@@ -49,39 +49,6 @@ StereoOut32 StereoOut16::UpSample() const
 
 }
 
-class NullOutModule: public SndOutModule
-{
-public:
-	s32  Init()  { return 0; }
-	void Close() { }
-	s32  Test() const { return 0; }
-	void Configure(uptr parent)  { }
-	int GetEmptySampleCount()  { return 0; }
-
-	const wchar_t* GetIdent() const
-	{
-		return L"nullout";
-	}
-
-	const wchar_t* GetLongName() const
-	{
-		return L"No Sound (Emulate SPU2 only)";
-	}
-
-	void ReadSettings()
-	{
-	}
-
-	void SetApiSettings(wxString api)
-	{
-	}
-
-	void WriteSettings() const
-	{
-	}
-
-} NullOut;
-
 StereoOut32 *SndBuffer::m_buffer;
 s32 SndBuffer::m_size;
 __aligned(4) volatile s32 SndBuffer::m_rpos;
@@ -141,8 +108,7 @@ void SndBuffer::_InitFail()
 {
 	// If a failure occurs, just initialize the NoSound driver.  This'll allow
 	// the game to emulate properly (hopefully), albeit without sound.
-	//OutputModule = NullOut;
-	SndOut->Init();
+	SndOut = NULL;
 }
 
 int SndBuffer::_GetApproximateDataInBuffer()
@@ -335,8 +301,7 @@ void SndBuffer::Init()
 {
 	if( SndOut == NULL )
 	{
-		_InitFail();
-		return;
+		SndOutReassign();
 	}
 
 	// initialize sound buffer
@@ -380,7 +345,8 @@ void SndBuffer::Init()
 
 void SndBuffer::Cleanup()
 {
-	SndOut->Close();
+	if (SndOut != NULL)
+		SndOut->Close();
 
 	soundtouchCleanup();
 
@@ -407,7 +373,7 @@ void SndBuffer::Write( const StereoOut32& Sample )
 
 	if( WavRecordEnabled ) RecordWrite( Sample.DownSample() );
 
-	if(SndOut == &NullOut) // null output doesn't need buffering or stretching! :p
+	if (SndOut == NULL)
 		return;
 
 	sndTempBuffer[sndTempProgress++] = Sample;

@@ -227,7 +227,6 @@ struct Stereo51Out32DplII
 	}
 };
 
-
 struct Stereo51Out16Dpl
 {
 	s16 Left;
@@ -443,42 +442,73 @@ public:
 	static void ReadSamples( T* bData );
 };
 
-class SndOutModule
+class Portaudio
 {
-public:
-	// Virtual destructor, because it helps fight C+++ funny-business.
-	virtual ~SndOutModule() {}
+private:
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Configuration Vars
 
-	// Returns a unique identification string for this driver.
-	// (usually just matches the driver's cpp filename)
-	virtual const wchar_t* GetIdent() const=0;
-
-	// Returns the long name / description for this driver.
-	// (for use in configuration screen)
-	virtual const wchar_t* GetLongName() const=0;
-
-	virtual s32  Init()=0;
-	virtual void Close()=0;
-	virtual s32  Test() const=0;
-
-	// Gui function: Used to open the configuration box for this driver.
-	virtual void Configure(uptr parent)=0;
-
-	// Loads settings from the INI file for this driver
-	virtual void ReadSettings()=0;
-
-	// Set output API for this driver
-	virtual void SetApiSettings(wxString api) =0;
-
-	// Saves settings to the INI file for this driver
-	virtual void WriteSettings() const=0;
+	int m_ApiId;
+	wxString m_Device;
 	
-	// Returns the number of empty samples in the output buffer.
-	// (which is effectively the amount of data played since the last update)
-	virtual int GetEmptySampleCount() =0;
+	bool m_WasapiExclusiveMode;
+	
+	bool m_SuggestedLatencyMinimal;
+	int m_SuggestedLatencyMS;
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Instance vars
+
+	int writtenSoFar;
+	int writtenLastTime;
+	int availableLastTime;
+
+	int actualUsedChannels;
+
+	bool started;
+	void* stream;
+
+public:
+	void* SampleReader;
+
+	Portaudio();
+
+	s32 Init();
+
+	void Close();
+
+	int GetApiId() { return m_ApiId; }
+	wxString GetDevice () {return m_Device; }
+	int GetSuggestedLatencyMS() { return m_SuggestedLatencyMS; }
+	bool GetSuggestedLatencyMinimal() { return m_SuggestedLatencyMinimal; }
+	bool GetWasapiExclusiveMode() { return m_WasapiExclusiveMode; }
+
+	void SetApiId (int apiId) { m_ApiId = apiId; }
+	void SetDevice (wxString deviceName) { m_Device = deviceName; }
+	void SetSuggestedLatencyMS (int ms) { m_SuggestedLatencyMS = ms; }
+	void SetSuggestedLatencyMinimal (bool latencyMinimal) { m_SuggestedLatencyMinimal = latencyMinimal; }
+	void SetWasapiExclusiveMode (bool exclusiveMode) { m_WasapiExclusiveMode = exclusiveMode; }
+
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+
+	virtual void Configure(uptr parent);
+	
+	s32 Test() const { return 0; }
+
+	int GetEmptySampleCount();
+
+	void ReadSettings();
+
+	void SetApiSettings(wxString api);
+
+	void WriteSettings() const;
 };
 
-extern SndOutModule* SndOut;
+extern Portaudio *SndOut;
+
+extern void SndOutReassign();
 
 // =====================================================================================================
 
