@@ -86,6 +86,7 @@ void ReadSettings()
 	CfgReadStr( L"WAVEOUT", L"Device", Config_WaveOut.Device, L"default" );
 	Config_WaveOut.NumBuffers = CfgReadInt( L"WAVEOUT", L"Buffer_Count", 4 );
 
+	SndOutReassign();
 	SndOut->ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
