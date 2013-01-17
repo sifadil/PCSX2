@@ -488,13 +488,7 @@ public:
 	void SetSuggestedLatencyMS (int ms) { m_SuggestedLatencyMS = ms; }
 	void SetSuggestedLatencyMinimal (bool latencyMinimal) { m_SuggestedLatencyMinimal = latencyMinimal; }
 	void SetWasapiExclusiveMode (bool exclusiveMode) { m_WasapiExclusiveMode = exclusiveMode; }
-
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-
-	virtual void Configure(uptr parent);
-	
+		
 	s32 Test() const { return 0; }
 
 	int GetEmptySampleCount();
