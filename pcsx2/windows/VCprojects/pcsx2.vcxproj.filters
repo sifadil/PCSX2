@@ -219,9 +219,6 @@
     <None Include="..\..\x86\microVU_Upper.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\Vif_Unpack.inl">
-      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
-    </None>
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl">
       <Filter>AppHost\Dialogs</Filter>
     </None>
@@ -840,9 +837,6 @@
     <ClInclude Include="..\..\Utilities\AsciiFile.h">
       <Filter>Misc\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\StringUtils.h">
-      <Filter>Misc\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Elfheader.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
@@ -862,12 +856,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\NakedAsm.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\System\PageFaultSource.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Paths.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
@@ -958,9 +946,6 @@
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
     </ClInclude>
     <ClInclude Include="..\..\x86\newVif.h">
-      <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\newVif_BlockBuffer.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClInclude>
     <ClInclude Include="..\..\x86\newVif_HashBucket.h">
@@ -1143,9 +1128,6 @@
     <ClInclude Include="..\..\gui\Panels\LogOptionsPanels.h">
       <Filter>AppHost\Panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\Panels\MemoryCardListView.h">
-      <Filter>AppHost\Panels</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\gui\App.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
@@ -1174,12 +1156,6 @@
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\Resources\EmbeddedImage.h">
-      <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\HostGui.h">
-      <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\gui\IniInterface.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\IsoDropTarget.h">
