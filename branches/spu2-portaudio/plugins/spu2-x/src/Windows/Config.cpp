@@ -88,8 +88,7 @@ void ReadSettings()
 	CfgReadStr( L"WAVEOUT", L"Device", Config_WaveOut.Device, L"default" );
 	Config_WaveOut.NumBuffers = CfgReadInt( L"WAVEOUT", L"Buffer_Count", 4 );
 
-	SndOutReassign();
-	SndOut->ReadSettings();
+	SndOut::ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
@@ -123,7 +122,7 @@ void WriteSettings()
 	CfgWriteInt(L"DSP PLUGIN",L"ModuleNum",dspPluginModule);
 	CfgWriteBool(L"DSP PLUGIN",L"Enabled",dspPluginEnabled);
 	
-	SndOut->WriteSettings();
+	SndOut::WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 
@@ -197,7 +196,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			PaError init = Pa_Initialize();
 
-			int apiId = SndOut->GetApiId();
+			int apiId = SndOut::GetApiId();
 			int idx = 0;
 			for(int i=0;i<Pa_GetHostApiCount();i++)
 			{
@@ -226,7 +225,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					{
 						SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)info->name);
 						SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);			
-						if(wxString::FromAscii(info->name) == SndOut->GetDevice())
+						if(wxString::FromAscii(info->name) == SndOut::GetDevice())
 						{
 							_idx = i;
 						}
@@ -240,16 +239,16 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				Pa_Terminate();
 
 			INIT_SLIDER( IDC_LATENCY_PORTAUDIO, 10, 200, 10, 1, 1 );
-			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_PORTAUDIO),TBM_SETPOS,TRUE,SndOut->GetSuggestedLatencyMS());
-			swprintf_s(temp, L"%d ms", SndOut->GetSuggestedLatencyMS());
+			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_PORTAUDIO),TBM_SETPOS,TRUE,SndOut::GetSuggestedLatencyMS());
+			swprintf_s(temp, L"%d ms", SndOut::GetSuggestedLatencyMS());
 			SetWindowText(GetDlgItem(hWnd,IDC_LATENCY_LABEL2),temp);
 
-			if(SndOut->GetSuggestedLatencyMinimal())
+			if(SndOut::GetSuggestedLatencyMinimal())
 				SET_CHECK( IDC_MINIMIZE, true );
 			else
 				SET_CHECK( IDC_MANUAL, true );
 				
-			SET_CHECK( IDC_EXCLUSIVE, SndOut->GetWasapiExclusiveMode() );
+			SET_CHECK( IDC_EXCLUSIVE, SndOut::GetWasapiExclusiveMode() );
 
 		}
 		break;
@@ -272,25 +271,25 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					numSpeakers = (int)SendDialogMsg( hWnd, IDC_SPEAKERS, CB_GETCURSEL,0,0 );
 
 					int idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETCURSEL,0,0);
-					SndOut->SetApiId (SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETITEMDATA,idx,0));
+					SndOut::SetApiId (SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETITEMDATA,idx,0));
 
 					idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETCURSEL,0,0);
 					const PaDeviceInfo * info = (const PaDeviceInfo *)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETITEMDATA,idx,0);
 					if(info)
-						SndOut->SetDevice (wxString::FromAscii( info->name ));
+						SndOut::SetDevice (wxString::FromAscii( info->name ));
 					else
-						SndOut->SetDevice (L"default");
+						SndOut::SetDevice (L"default");
 														
 					int m_SuggestedLatencyMS = (int)SendMessage( GetDlgItem( hWnd, IDC_LATENCY_PORTAUDIO ), TBM_GETPOS, 0, 0 );
 
 					if( m_SuggestedLatencyMS < 10 ) m_SuggestedLatencyMS = 10;
 					if( m_SuggestedLatencyMS > 200 ) m_SuggestedLatencyMS = 200;
 
-					SndOut->SetSuggestedLatencyMS (m_SuggestedLatencyMS);
+					SndOut::SetSuggestedLatencyMS (m_SuggestedLatencyMS);
 
-					SndOut->SetSuggestedLatencyMinimal (SendMessage(GetDlgItem(hWnd,IDC_MINIMIZE),BM_GETCHECK,0,0)==BST_CHECKED);
+					SndOut::SetSuggestedLatencyMinimal (SendMessage(GetDlgItem(hWnd,IDC_MINIMIZE),BM_GETCHECK,0,0)==BST_CHECKED);
 						
-					SndOut->SetWasapiExclusiveMode (SendMessage(GetDlgItem(hWnd,IDC_EXCLUSIVE),BM_GETCHECK,0,0)==BST_CHECKED);
+					SndOut::SetWasapiExclusiveMode (SendMessage(GetDlgItem(hWnd,IDC_EXCLUSIVE),BM_GETCHECK,0,0)==BST_CHECKED);
 					
 					WriteSettings();
 					EndDialog(hWnd,0);

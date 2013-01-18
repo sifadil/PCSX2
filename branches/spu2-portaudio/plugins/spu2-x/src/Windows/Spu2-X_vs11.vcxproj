@@ -269,6 +269,8 @@
   <ItemGroup>
     <ClInclude Include="..\Config.h" />
     <ClInclude Include="..\Global.h" />
+    <ClInclude Include="..\SampleConverters.h" />
+    <ClInclude Include="..\SndBuffer.h" />
     <ClInclude Include="..\spu2replay.h" />
     <ClInclude Include="..\Lowpass.h" />
     <ClInclude Include="..\SndOut.h" />
@@ -321,6 +323,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</CompileAs>
     </ClCompile>
     <ClCompile Include="..\RegLog.cpp" />
+    <ClCompile Include="..\SampleConverters.cpp" />
     <ClCompile Include="..\spu2replay.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">Default</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</CompileAs>
@@ -339,7 +342,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\SndOut.cpp">
+    <ClCompile Include="..\SndBuffer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'">
       </PrecompiledHeader>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'">true</BrowseInformation>
@@ -356,7 +359,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</CompileAs>
     </ClCompile>
     <ClCompile Include="..\Timestretcher.cpp" />
-    <ClCompile Include="..\Portaudio.cpp" />
+    <ClCompile Include="..\SndOut.cpp" />
     <ClCompile Include="..\dma.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugStrict|Win32'">
       </PrecompiledHeader>
