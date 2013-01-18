@@ -82,7 +82,7 @@ BEGIN
     CONTROL         "Use smallest possible (may cause issues if the actual value is too small)",IDC_MINIMIZE,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,24,258,240,10
     CONTROL         "Use this latency:",IDC_MANUAL,"Button",BS_AUTORADIOBUTTON,24,276,69,10
-    CONTROL         "WASAPI Exclusive Mode",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,204,93,12
+    CONTROL         "Exclusive Mode (WASAPI)",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,204,93,12
     GROUPBOX        "Post-Processing Settings",IDC_STATIC,6,84,318,96
 END
 

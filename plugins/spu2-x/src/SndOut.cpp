@@ -28,6 +28,7 @@
 
 #ifdef __WIN32__
 #include "pa_win_wasapi.h"
+#include "pa_win_ds.h"
 #endif
 
 int SndOut::m_ApiId=-1;
@@ -134,26 +135,74 @@ s32 SndOut::Init()
 
 	int deviceIndex = -1;
 
-	fprintf(stderr,"* SPU2-X: Enumerating PortAudio devices:\n");
+	int apiId = m_ApiId;
+
+	// Assume linux and mac won't have WASAPI, windows won't have ALSA, etc.
+	// Since I don't know if OSX has ALSA, I chose to put it last on the list.
+	// Prefer the configured api first.
+	int preferenceOrder[] = { m_ApiId, paWASAPI, paDirectSound, paCoreAudio, paALSA };
+	bool preferenceSeen[] = { false,   false,    false,         false,       false  };
+	const int prefs = ARRAYSIZE(preferenceOrder);
+
+	// First API seen in the list, in case none of the preferred APIs are available
+	// or unsupported by the current platform
+	int  firstId   = -1;
+
+	// Scan the Host Api list for preferences
+	for(int i=0;i<Pa_GetHostApiCount();i++)
+	{
+		const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(i);
+		const int apiType = apiinfo->type;
+		if(apiType > 0)
+		{
+			if(apiinfo->deviceCount > 0)
+			{
+				for(int j=0;j<prefs;j++)
+				{
+					if(apiType == preferenceOrder[j])
+					{
+						preferenceSeen[j] = true; 
+					}
+				}
+				if (firstId < 0)
+					firstId = apiinfo->type;
+			}
+		}
+	}
+
+	if(apiId <= 0)
+	{
+		for(int j=0;j<prefs;j++)
+		{
+			if(preferenceSeen[j])
+			{
+				apiId = preferenceOrder[j];
+				break;
+			}
+		}
+		if(apiId <= 0) // was not found
+			apiId = firstId;
+	}
+
+	fprintf(stderr,"* SPU2-X: Enumerating PortAudio Output Devices:\n");
 	for(int i=0, j=0;i<Pa_GetDeviceCount();i++)
 	{
 		const PaDeviceInfo * info = Pa_GetDeviceInfo(i);
+		const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(info->hostApi);
 
 		if(info->maxOutputChannels > 0)
 		{
-			const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(info->hostApi);
-
-			fprintf(stderr," *** Device %d: '%s' (%s)", j, info->name, apiinfo->name);
-
-			if(apiinfo->type == m_ApiId)
+			fprintf(stderr," *** Device #%d: '%s' (%s)", i, info->name, apiinfo->name);
+			
+			if(apiinfo->type == apiId)
 			{
 				if(m_Device == wxString::FromAscii(info->name))
 				{
 					deviceIndex = i;
 					fprintf(stderr," (selected)");
 				}
-
 			}
+
 			fprintf(stderr,"\n");
 
 			j++;
@@ -161,126 +210,141 @@ s32 SndOut::Init()
 	}
 	fflush(stderr);
 
-	if(deviceIndex<0 && m_ApiId>=0)
+	if(deviceIndex<0)
 	{
+		fprintf(stderr,"* SPU2-X: Device name not specified or device not found, choosing default.\n");
+		
 		for(int i=0;i<Pa_GetHostApiCount();i++)
 		{
 			const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(i);
-			if(apiinfo->type == m_ApiId)
+			if(apiinfo->type == apiId)
 			{
 				deviceIndex = apiinfo->defaultOutputDevice;
 			}
 		}
 	}
+				
+	const PaDeviceInfo * devinfo = Pa_GetDeviceInfo(deviceIndex);
+	const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(devinfo->hostApi);
+	
+	fprintf(stderr, "* SPU2-X: Selected Device #%d: %s (%s)\n", deviceIndex, devinfo->name, apiinfo->name);
 
-	if(deviceIndex>=0)
+	apiId = apiinfo->type;
+			
+	int speakers;		
+	switch(numSpeakers) // speakers = (numSpeakers + 1) *2; ?
 	{
-		void* infoPtr = NULL;
-			
-		const PaDeviceInfo * devinfo = Pa_GetDeviceInfo(deviceIndex);
-		const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(devinfo->hostApi);
-			
-		int speakers;		
-		switch(numSpeakers) // speakers = (numSpeakers + 1) *2; ?
-		{
-			case 0: speakers = 2; break; // Stereo
-			case 1: speakers = 4; break; // Quadrafonic
-			case 2: speakers = 6; break; // Surround 5.1
-			case 3: speakers = 8; break; // Surround 7.1
-			default: speakers = 2;
-		}
-		actualUsedChannels = std::min(speakers, devinfo->maxOutputChannels);
+		case 0: speakers = 2; break; // Stereo
+		case 1: speakers = 4; break; // Quadrafonic
+		case 2: speakers = 6; break; // Surround 5.1
+		case 3: speakers = 8; break; // Surround 7.1
+		default: speakers = 2;
+	}
+	actualUsedChannels = std::min(speakers, devinfo->maxOutputChannels);
 
-		switch( actualUsedChannels )
-		{
+	switch( actualUsedChannels )
+	{
+		case 0:
+		case 1:
+		case 2:
+			fprintf(stderr, "* SPU2 > Using normal 2 speaker stereo output.\n" );
+			SampleReader = new ConvertedSampleReader<Stereo20Out32>(&writtenSoFar);
+			actualUsedChannels = 2;
+		break;
+
+		case 3:
+			fprintf(stderr, "* SPU2 > 2.1 speaker expansion enabled.\n" );
+			SampleReader = new ConvertedSampleReader<Stereo21Out32>(&writtenSoFar);
+		break;
+
+		case 4:
+			fprintf(stderr, "* SPU2 > 4 speaker expansion enabled [quadraphonic]\n" );
+			SampleReader = new ConvertedSampleReader<Stereo40Out32>(&writtenSoFar);
+		break;
+
+		case 5:
+			fprintf(stderr, "* SPU2 > 4.1 speaker expansion enabled.\n" );
+			SampleReader = new ConvertedSampleReader<Stereo41Out32>(&writtenSoFar);
+		break;
+
+		case 6:
+		case 7:
+			switch(dplLevel)
+			{
+			case 0:
+				fprintf(stderr, "* SPU2 > 5.1 speaker expansion enabled.\n" );
+				SampleReader = new ConvertedSampleReader<Stereo51Out32>(&writtenSoFar);   //"normal" stereo upmix
+				break;
+			case 1:
+				fprintf(stderr, "* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n" );
+				SampleReader = new ConvertedSampleReader<Stereo51Out32Dpl>(&writtenSoFar); // basic Dpl decoder without rear stereo balancing
+				break;
 			case 2:
-				ConLog( "* SPU2 > Using normal 2 speaker stereo output.\n" );
-				SampleReader = new ConvertedSampleReader<Stereo20Out32>(&writtenSoFar);
-			break;
+				fprintf(stderr, "* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n" );
+				SampleReader = new ConvertedSampleReader<Stereo51Out32DplII>(&writtenSoFar); //gigas PLII
+				break;
+			}
+			actualUsedChannels = 6; // we do not support 7.0 or 6.2 configurations, downgrade to 5.1
+		break;
 
-			case 3:
-				ConLog( "* SPU2 > 2.1 speaker expansion enabled.\n" );
-				SampleReader = new ConvertedSampleReader<Stereo21Out32>(&writtenSoFar);
-			break;
-
-			case 4:
-				ConLog( "* SPU2 > 4 speaker expansion enabled [quadraphenia]\n" );
-				SampleReader = new ConvertedSampleReader<Stereo40Out32>(&writtenSoFar);
-			break;
-
-			case 5:
-				ConLog( "* SPU2 > 4.1 speaker expansion enabled.\n" );
-				SampleReader = new ConvertedSampleReader<Stereo41Out32>(&writtenSoFar);
-			break;
-
-			case 6:
-			case 7:
-				switch(dplLevel)
-				{
-				case 0:
-					ConLog( "* SPU2 > 5.1 speaker expansion enabled.\n" );
-					SampleReader = new ConvertedSampleReader<Stereo51Out32>(&writtenSoFar);   //"normal" stereo upmix
-					break;
-				case 1:
-					ConLog( "* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n" );
-					SampleReader = new ConvertedSampleReader<Stereo51Out32Dpl>(&writtenSoFar); // basic Dpl decoder without rear stereo balancing
-					break;
-				case 2:
-					ConLog( "* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n" );
-					SampleReader = new ConvertedSampleReader<Stereo51Out32DplII>(&writtenSoFar); //gigas PLII
-					break;
-				}
-				actualUsedChannels = 6; // we do not support 7.0 or 6.2 configurations, downgrade to 5.1
-			break;
-
-			default:	// anything 8 or more gets the 7.1 treatment!
-				ConLog( "* SPU2 > 7.1 speaker expansion enabled.\n" );
-				SampleReader = new ConvertedSampleReader<Stereo71Out32>(&writtenSoFar);
-				actualUsedChannels = 8; // we do not support 7.2 or more, downgrade to 7.1
-			break;
-		}
+		default:	// anything 8 or more gets the 7.1 treatment!
+			fprintf(stderr, "* SPU2 > 7.1 speaker expansion enabled.\n" );
+			SampleReader = new ConvertedSampleReader<Stereo71Out32>(&writtenSoFar);
+			actualUsedChannels = 8; // we do not support 7.2 or more, downgrade to 7.1
+		break;
+	}
 
 #ifdef __WIN32__
-		PaWasapiStreamInfo info = {
-			sizeof(PaWasapiStreamInfo),
-			paWASAPI,
-			1,
-			paWinWasapiExclusive
-		};
 
-		if((m_ApiId == paWASAPI) && m_WasapiExclusiveMode)
-		{
-			// Pass it the Exclusive mode enable flag
-			infoPtr = &info;
-		}
+	int channelMask = 0;	
+	switch( actualUsedChannels )
+	{
+		case 2: channelMask = PAWIN_SPEAKER_STEREO; break;
+		case 3: channelMask = PAWIN_SPEAKER_STEREO | PAWIN_SPEAKER_LOW_FREQUENCY; break;
+		case 4: channelMask = PAWIN_SPEAKER_QUAD; break;
+		case 5: channelMask = PAWIN_SPEAKER_QUAD | PAWIN_SPEAKER_LOW_FREQUENCY; break;
+		case 6: channelMask = PAWIN_SPEAKER_5POINT1; break;		
+		case 8: channelMask = PAWIN_SPEAKER_7POINT1; break;
+	}
+		
+	void* infoPtr = NULL;
+	
+	PaWasapiStreamInfo infoWasapi = {
+		sizeof(PaWasapiStreamInfo),
+		paWASAPI,
+		1,
+		m_WasapiExclusiveMode ? paWinWasapiExclusive | paWinWasapiUseChannelMask
+								: paWinWasapiUseChannelMask,
+		channelMask
+	};
+		
+	PaWinDirectSoundStreamInfo infoDS = {
+		sizeof(PaWinDirectSoundStreamInfo),
+		paDirectSound,
+		2,
+		paWinDirectSoundUseChannelMask,
+		0,
+		channelMask
+	};
+
+	if(apiId == paWASAPI)
+	{
+		infoPtr = &infoWasapi;
+	}
+	else if(apiId == paDirectSound)
+	{
+		infoPtr = &infoDS;
+	}
 #endif
 
-		PaStreamParameters outParams = {
-			deviceIndex,
-			actualUsedChannels,
-			paInt32,
-			m_SuggestedLatencyMinimal ?
-						    (SndOutPacketSize/(float)SampleRate)
-						  : (m_SuggestedLatencyMS/1000.0f),
+	PaStreamParameters outParams = {
+			deviceIndex, actualUsedChannels, paInt32,
+			m_SuggestedLatencyMinimal ?	(SndOutPacketSize/(float)SampleRate)
+									  : (m_SuggestedLatencyMS/1000.0f),
 			infoPtr
 		};
 
-		err = Pa_OpenStream(&stream,
-			NULL, &outParams, SampleRate,
-			SndOutPacketSize,
-			paNoFlag,
-			PaCallback,
-
-			NULL);
-	}
-	else
-	{
-		err = Pa_OpenDefaultStream( &stream,
-			0, actualUsedChannels, paInt32, 48000,
-			SndOutPacketSize,
-			PaCallback,
-			NULL );
-	}
+	err = Pa_OpenStream(&stream, NULL, &outParams, SampleRate, SndOutPacketSize, paNoFlag, PaCallback, NULL);
 	if( err != paNoError )
 	{
 		fprintf(stderr,"* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText( err ) );

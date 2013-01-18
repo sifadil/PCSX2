@@ -191,26 +191,40 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,0,0);
 
 			SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_RESETCONTENT,0,0);
-			SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_ADDSTRING,0,(LPARAM)"Unspecified");
+			SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_ADDSTRING,0,(LPARAM)"Developer's Choice");
 			SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,0,0);
 
 			PaError init = Pa_Initialize();
 
 			int apiId = SndOut::GetApiId();
 			int idx = 0;
+			int wasapiIdx = -1;
+			int count = 0;
 			for(int i=0;i<Pa_GetHostApiCount();i++)
 			{
 				const PaHostApiInfo * apiinfo = Pa_GetHostApiInfo(i);
 				if(apiinfo->deviceCount > 0)
 				{
+					count++;
+
 					SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_ADDSTRING,0,(LPARAM)apiinfo->name);
 					SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_SETITEMDATA,i+1,apiinfo->type);
-				}
-				if(apiinfo->type == apiId)
-				{
-					idx = i+1;
+
+					if(apiinfo->type == paWASAPI)
+					{
+						wasapiIdx = count;
+					}
+
+					if(apiinfo->type == apiId)
+					{
+						idx = count;
+					}
 				}
 			}
+
+			if(idx <= 0 && wasapiIdx > 0)
+				idx = wasapiIdx;
+
 			SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_SETCURSEL,idx,0);
 				
 			if(idx > 0)
