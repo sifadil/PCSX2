@@ -11,9 +11,6 @@
     <Filter Include="Source Files\Sound Output">
       <UniqueIdentifier>{ed4df93e-4e4b-4675-a181-c5084146df7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Sound Output\Crossplatform">
-      <UniqueIdentifier>{10ccccc1-642a-42ec-900c-801f707bd776}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\decoder">
       <UniqueIdentifier>{03be4765-f627-4c0a-9d40-f3c0f86f1e57}</UniqueIdentifier>
     </Filter>
@@ -127,6 +124,12 @@
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="..\SampleConverters.h">
+      <Filter>Source Files\Sound Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SndBuffer.h">
+      <Filter>Source Files\Sound Output</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\PrecompiledHeader.cpp">
@@ -145,9 +148,6 @@
       <Filter>Source Files\debug</Filter>
     </ClCompile>
     <ClCompile Include="..\Lowpass.cpp">
-      <Filter>Source Files\Sound Output</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SndOut.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
     <ClCompile Include="..\Timestretcher.cpp">
@@ -219,7 +219,13 @@
     <ClCompile Include="..\DplIIdecoder.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\Portaudio.cpp">
+    <ClCompile Include="..\SndBuffer.cpp">
+      <Filter>Source Files\Sound Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SndOut.cpp">
+      <Filter>Source Files\Sound Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SampleConverters.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
   </ItemGroup>
