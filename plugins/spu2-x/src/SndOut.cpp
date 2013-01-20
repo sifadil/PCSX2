@@ -146,7 +146,7 @@ s32 SndOut::Init()
 	// Prefer the configured api first.
 	int preferenceOrder[] = { m_ApiId, paWASAPI, paDirectSound, paCoreAudio, paALSA };
 	bool preferenceSeen[] = { false,   false,    false,         false,       false  };
-	const int prefs = ARRAYSIZE(preferenceOrder);
+	const int prefs = sizeof(preferenceOrder)/sizeof(preferenceOrder[0]);
 
 	// First API seen in the list, in case none of the preferred APIs are available
 	// or unsupported by the current platform
@@ -341,6 +341,9 @@ s32 SndOut::Init()
 	{
 		infoPtr = &infoDS;
 	}
+#elif __LINUX__
+	// I don't think we need extra extensions -- Gregory
+	void* infoPtr = NULL;
 #endif
 
 	PaStreamParameters outParams = {

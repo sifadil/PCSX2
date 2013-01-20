@@ -48,7 +48,6 @@ bool postprocess_filter_dealias = false;
 bool _visual_debug_enabled = false; // windows only feature
 
 // OUTPUT
-u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 static u32 OutputAPI = 0;
@@ -73,11 +72,8 @@ void ReadSettings()
 	FinalVolume = ((float)CfgReadInt( L"MIXING", L"FinalVolume", 100 )) / 100;
 		if ( FinalVolume > 1.0f) FinalVolume = 1.0f;
 
-	wxString temp;
-	CfgReadStr( L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent() );
-	OutputModule = FindOutputModuleById( temp.c_str() );// find the driver index of this module
-
 	// find current API
+	wxString temp;
 	CfgReadStr( L"PORTAUDIO", L"HostApi", temp, L"ALSA" );
 	OutputAPI = -1;
 	if (temp == L"ALSA") OutputAPI = 0;
@@ -87,7 +83,7 @@ void ReadSettings()
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 300);
 	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 
-	PortaudioOut->ReadSettings();
+	SndOut::ReadSettings();
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
 
@@ -115,11 +111,10 @@ void WriteSettings()
 	CfgWriteBool(L"MIXING",L"DealiasFilter",postprocess_filter_dealias);
 	CfgWriteInt(L"MIXING",L"FinalVolume",(int)(FinalVolume * 100 +0.5f));
 
-	CfgWriteStr(L"OUTPUT",L"Output_Module", mods[OutputModule]->GetIdent() );
 	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
 
-	PortaudioOut->WriteSettings();
+	SndOut::WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }
@@ -149,7 +144,6 @@ void DisplayDialog()
     GtkWidget *debug_button;
 
     GtkWidget *output_frame, *output_box;
-    GtkWidget *mod_label, *mod_box;
     GtkWidget *api_label, *api_box;
     GtkWidget *latency_label, *latency_slide;
     GtkWidget *sync_label, *sync_box;
@@ -180,13 +174,6 @@ void DisplayDialog()
 
     debug_check = gtk_check_button_new_with_label("Enable Debug Options");
 	debug_button = gtk_button_new_with_label("Debug...");
-
-    mod_label = gtk_label_new ("Module:");
-    mod_box = gtk_combo_box_new_text ();
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "0 - No Sound (emulate SPU2 only)");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "1 - PortAudio (cross-platform)");
-    //gtk_combo_box_append_text(GTK_COMBO_BOX(mod_box), "2 - Alsa (probably doesn't work)");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
     api_label = gtk_label_new ("PortAudio API:");
     api_box = gtk_combo_box_new_text ();
@@ -228,8 +215,6 @@ void DisplayDialog()
 	gtk_container_add(GTK_CONTAINER(mixing_box), debug_check);
 	gtk_container_add(GTK_CONTAINER(mixing_box), debug_button);
 
-	gtk_container_add(GTK_CONTAINER(output_box), mod_label);
-	gtk_container_add(GTK_CONTAINER(output_box), mod_box);
 	gtk_container_add(GTK_CONTAINER(output_box), api_label);
 	gtk_container_add(GTK_CONTAINER(output_box), api_box);
 	gtk_container_add(GTK_CONTAINER(output_box), sync_label);
@@ -264,16 +249,13 @@ void DisplayDialog()
     	EffectsDisabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(effects_check));
 		//FinalVolume;
 
-    	if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
-			OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
-
     	if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
 			OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
 			switch(OutputAPI) {
-				case 0: PortaudioOut->SetApiSettings(L"ALSA"); break;
-				case 1: PortaudioOut->SetApiSettings(L"OSS"); break;
-				case 2: PortaudioOut->SetApiSettings(L"JACK"); break;
-				default: PortaudioOut->SetApiSettings(L"Unknown");
+				case 0: SndOut::SetApiSettings(L"ALSA"); break;
+				case 1: SndOut::SetApiSettings(L"OSS"); break;
+				case 2: SndOut::SetApiSettings(L"JACK"); break;
+				default: SndOut::SetApiSettings(L"Unknown");
 			}
 		}
 
