@@ -72,14 +72,13 @@ bool SndBuffer::CheckUnderrunStatus( int& nSamples, int& quietSampleCount )
 	return true;
 }
 
-
-
 bool outputOk = false;
-bool nullOutput = false;
 
 void SndBuffer::_InitFail()
 {
-	nullOutput = true;
+	// If a failure occurs, just initialize the NoSound driver.  This'll allow
+	// the game to emulate properly (hopefully), albeit without sound.
+	outputOk = false;
 }
 
 int SndBuffer::_GetApproximateDataInBuffer()
@@ -270,6 +269,8 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 
 void SndBuffer::Init()
 {
+	outputOk = true;
+
 	// initialize sound buffer
 	// Buffer actually attempts to run ~50%, so allocate near double what
 	// the requested latency is:
@@ -302,14 +303,11 @@ void SndBuffer::Init()
 	memset( sndTempBuffer16, 0, sizeof(StereoOut16) * SndOutPacketSize );
 
 	sndTempProgress = 0;
-	
+
 	soundtouchInit();		// initializes the timestretching
 
 	// initialize module
-	outputOk = SndOut::Init() == 0;
-
-	if( !outputOk )
-		_InitFail();
+	if( SndOut::Init() == -1 ) _InitFail();
 }
 
 void SndBuffer::Cleanup()
@@ -342,7 +340,7 @@ void SndBuffer::Write( const StereoOut32& Sample )
 
 	if( WavRecordEnabled ) RecordWrite( Sample.DownSample() );
 
-	if (!outputOk || nullOutput )
+	if (!outputOk)
 		return;
 
 	sndTempBuffer[sndTempProgress++] = Sample;
