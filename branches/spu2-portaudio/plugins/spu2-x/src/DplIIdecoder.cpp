@@ -35,95 +35,37 @@ const float GainLFE= 0.95f;
 
 const float AddCLR = 0.20f;	// Stereo expansion
 
-const int RearDelay = 120; // in Samples
-float RearL[RearDelay];
-float RearR[RearDelay];
-int RP;
-
 static float AccL=0;
 static float AccR=0;
-static float AccB=0;
 
 extern void ResetDplIIDecoder()
 {
 	AccL=0;
 	AccR=0;
-	AccB=0;
-	memset(RearL, 0, sizeof(RearL));
-	memset(RearR, 0, sizeof(RearR));
-	RP = 0;
-}
-
-static float inline Lerp(float a, float b, float p)
-{
-	return a + (b-a) * p;
 }
 
 static void Decode(float IL, float IR, float& L, float& R, float& C, float& SUB, float& SL, float& SR)
 {
-	// Rate at which the new power values affect the previous
-	const float AlphaDown = 0.2f;
-	const float AlphaUp = 0.5f;
-	
-	// 1.73+1.22 = 2.94; 2.94 * 0.34 = 0.9996; Close enough.
-	// The range for VL/VR is approximately 0..1,
-	// But in the cases where VL/VR are > 0.5, Rearness is 0 so it should never overflow.
-	const float RearScale = 0.34f;
-	const float FrontScale = 0.2f;
-	const float SideScale = 0.6f;
-
-	float IC = (IL+IR) * 0.5f;
-
 	// Peak L/R
 	float PL = abs(IL);
 	float PR = abs(IR);
-	float PB = abs(IC);
 
-	float a = (PL > AccL || PR > AccR || PB > AccB) ? AlphaUp : AlphaDown;
-
-	AccL = Lerp(AccL, PL, a); // Crest of the Left channel
-	AccR = Lerp(AccR, PR, a); // Crest of the Right channel
-	AccB = Lerp(AccR, PB, a); // Crest of the Bias (center) channel
+	AccL += (PL-AccL)*0.1f;
+	AccR += (PR-AccR)*0.1f;
 	
-	float Volume = std::max(AccL, AccR);
-	
-	float CoefL = 1;
-	float CoefR = 1;
-	float CoefC = 0;
-	float CoefSL = 0;
-	float CoefSR = 0;
-	float Balance = 0;
-	if(Volume > 0)
-	{
-		Balance = (AccR-AccL); // -1 .. 1
+	// Calculate power balance
+	float Balance = (AccR-AccL); // -1 .. 1
 
-		float Sideness = SideScale * abs(Balance) / Volume;
-		float Centerness = 1 - Sideness; 
-		
-		float Frontness = FrontScale * AccB / Volume;
-		float Rearness = 1 - Frontness;
-				
-		// Center: PB > 0, PL = PR
-		// Left:   PB > 0, PL > 0, PR = 0
-		// Right:  PB > 0, PL = 0, PR > 0
-		// SC:     PB = 0, PL > 0, PR > 0
-		// SL:     PB > 0, PL > PR
-		// SR:     PB > 0, PL < PR
+	// If the power levels are different, then the audio is meant for the front speakers
+	float Frontness = abs(Balance);
+	float Rearness = 1-Frontness; // And the other way around
 
-		CoefC = Centerness;
-		CoefL = Frontness;
-		CoefR = Frontness;
-
-		CoefSL = Rearness * RearScale;
-		CoefSR = Rearness * RearScale;
-	}
-		
 	// Calculate center channel and LFE
-	C = IC * CoefC;
-	SUB = (IL-IR) * 0.5f; // no need to lowpass, the speaker amplifier should take care of it
+	C = (IL + IR) * 0.5f;
+	SUB = C; // no need to lowpass, the speaker amplifier should take care of it
 
-	L = IL - C; // Effective L/R data
-	R = IR - C;
+	L = (IL - C) * Frontness; // Effective L/R data
+	R = (IR - C) * Frontness;
 
 	// Equalize the power levels for L/R
 	float B = std::min(0.9f,std::max(-0.9f,Balance));
@@ -131,30 +73,15 @@ static void Decode(float IL, float IR, float& L, float& R, float& C, float& SUB,
 	float VL = L / (1-B); // if B>0, it means R>L, so increase L, else decrease L 
 	float VR = R / (1+B); // vice-versa
 
-	float sl = (VR*1.73f - VL*1.22f) * CoefSL;
-	float sr = (VR*1.22f - VL*1.73f) * CoefSR;
-	
-	if(RearDelay > 0)
-	{
-		SL = RearL[RP];
-		SR = RearR[RP];
+	// 1.73+1.22 = 2.94; 2.94 = 0.34 = 0.9996; Close enough.
+	// The range for VL/VR is approximately 0..1,
+	// But in the cases where VL/VR are > 0.5, Rearness is 0 so it should never overflow.
+	const float RearScale = 0.34f * 2;
 
-		RearL[RP] = sl;
-		RearR[RP] = sr;
-		
-		RP = (RP + 1) % RearDelay;
-	}
-	else
-	{
-		SL = sl;
-		SR = sr;
-	}
-
+	SL = (VR*1.73f - VL*1.22f) * RearScale * Rearness;
+	SR = (VR*1.22f - VL*1.73f) * RearScale * Rearness;
 	// Possible experiment: Play with stereo expension levels on rear
 
-	// Adjust the volume of the front speakers based on what we calculated above
-	L *= CoefL;
-	R *= CoefR;	
 }
 
 void ProcessDplIISample32( const StereoOut32& src, Stereo51Out32DplII * s)

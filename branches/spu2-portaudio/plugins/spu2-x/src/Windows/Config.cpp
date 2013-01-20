@@ -128,6 +128,7 @@ void WriteSettings()
 
 }
 
+int pa_init=0;
 BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int wmId,wmEvent;
@@ -194,11 +195,11 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_ADDSTRING,0,(LPARAM)"Developer's Choice");
 			SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,0,0);
 
-			PaError init = Pa_Initialize();
+			PaError err = Pa_Initialize();
+			pa_init = (err = paNoError);
 
 			int apiId = SndOut::GetApiId();
 			int idx = 0;
-			int wasapiIdx = -1;
 			int count = 0;
 			for(int i=0;i<Pa_GetHostApiCount();i++)
 			{
@@ -208,12 +209,6 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					count++;
 
 					SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_ADDSTRING,0,(LPARAM)apiinfo->name);
-					SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_SETITEMDATA,i+1,apiinfo->type);
-
-					if(apiinfo->type == paWASAPI)
-					{
-						wasapiIdx = count;
-					}
 
 					if(apiinfo->type == apiId)
 					{
@@ -222,15 +217,12 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 			}
 
-			if(idx <= 0 && wasapiIdx > 0)
-				idx = wasapiIdx;
-
 			SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_SETCURSEL,idx,0);
 				
 			if(idx > 0)
 			{
 				int api_idx = idx-1;
-				int _idx=0;
+				int dev_idx=0;
 				int i=1;
 				for(int j=0;j<Pa_GetDeviceCount();j++)
 				{
@@ -241,17 +233,14 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);			
 						if(wxString::FromAscii(info->name) == SndOut::GetDevice())
 						{
-							_idx = i;
+							dev_idx = i;
 						}
 						i++;
 					}
 				}
-				SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,_idx,0);
+				SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,dev_idx,0);
 			}
 			
-			if(init == 0)
-				Pa_Terminate();
-
 			INIT_SLIDER( IDC_LATENCY_PORTAUDIO, 10, 200, 10, 1, 1 );
 			SendMessage(GetDlgItem(hWnd,IDC_LATENCY_PORTAUDIO),TBM_SETPOS,TRUE,SndOut::GetSuggestedLatencyMS());
 			swprintf_s(temp, L"%d ms", SndOut::GetSuggestedLatencyMS());
@@ -285,7 +274,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					numSpeakers = (int)SendDialogMsg( hWnd, IDC_SPEAKERS, CB_GETCURSEL,0,0 );
 
 					int idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETCURSEL,0,0);
-					SndOut::SetApiId (SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETITEMDATA,idx,0));
+					
+					SndOut::SetApiId (idx > 0 ? Pa_GetHostApiInfo(idx-1)->type : 0);
 
 					idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETCURSEL,0,0);
 					const PaDeviceInfo * info = (const PaDeviceInfo *)SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_GETITEMDATA,idx,0);
@@ -305,12 +295,19 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						
 					SndOut::SetWasapiExclusiveMode (SendMessage(GetDlgItem(hWnd,IDC_EXCLUSIVE),BM_GETCHECK,0,0)==BST_CHECKED);
 					
+					if(pa_init > 0)
+						Pa_Terminate();
+
 					WriteSettings();
 					EndDialog(hWnd,0);
 				}
 				break;
 
 				case IDCANCEL:
+
+					if(pa_init > 0)
+						Pa_Terminate();
+
 					EndDialog(hWnd,0);
 				break;
 				
@@ -369,21 +366,25 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				{
 					if(wmEvent == CBN_SELCHANGE)
 					{
-						int api_idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETCURSEL,0,0)-1;
-						int apiId = SendMessageA(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETITEMDATA,api_idx,0);
 						SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_RESETCONTENT,0,0);
 						SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)"Default Device");
 						SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,0,0);
+
+						int api_idx = (int)SendMessage(GetDlgItem(hWnd,IDC_PA_HOSTAPI),CB_GETCURSEL,0,0)-1;
+
 						int idx=0;
-						int i=1;
-						for(int j=0;j<Pa_GetDeviceCount();j++)
+						if(api_idx >= 0)
 						{
-							const PaDeviceInfo * info = Pa_GetDeviceInfo(j);
-							if(info->hostApi == api_idx && info->maxOutputChannels > 0)
+							int i=1;
+							for(int j=0;j<Pa_GetDeviceCount();j++)
 							{
-								SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)info->name);
-								SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);
-								i++;
+								const PaDeviceInfo * info = Pa_GetDeviceInfo(j);
+								if(info->hostApi == api_idx && info->maxOutputChannels > 0)
+								{
+									SendMessageA(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_ADDSTRING,0,(LPARAM)info->name);
+									SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETITEMDATA,i,(LPARAM)info);
+									i++;
+								}
 							}
 						}
 						SendMessage(GetDlgItem(hWnd,IDC_PA_DEVICE),CB_SETCURSEL,idx,0);

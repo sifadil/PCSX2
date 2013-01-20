@@ -133,6 +133,10 @@ s32 SndOut::Init()
 	}
 	started=true;
 
+#ifdef __WIN32__
+	CoInitialize(NULL);
+#endif
+
 	int deviceIndex = -1;
 
 	int apiId = m_ApiId;
@@ -297,14 +301,16 @@ s32 SndOut::Init()
 #ifdef __WIN32__
 
 	int channelMask = 0;	
-	switch( actualUsedChannels )
+	if (actualUsedChannels > 2)
 	{
-		case 2: channelMask = PAWIN_SPEAKER_STEREO; break;
-		case 3: channelMask = PAWIN_SPEAKER_STEREO | PAWIN_SPEAKER_LOW_FREQUENCY; break;
-		case 4: channelMask = PAWIN_SPEAKER_QUAD; break;
-		case 5: channelMask = PAWIN_SPEAKER_QUAD | PAWIN_SPEAKER_LOW_FREQUENCY; break;
-		case 6: channelMask = PAWIN_SPEAKER_5POINT1; break;		
-		case 8: channelMask = PAWIN_SPEAKER_7POINT1; break;
+		switch( actualUsedChannels )
+		{
+			case 3: channelMask = PAWIN_SPEAKER_STEREO | PAWIN_SPEAKER_LOW_FREQUENCY; break;
+			case 4: channelMask = PAWIN_SPEAKER_QUAD; break;
+			case 5: channelMask = PAWIN_SPEAKER_QUAD | PAWIN_SPEAKER_LOW_FREQUENCY; break;
+			case 6: channelMask = PAWIN_SPEAKER_5POINT1; break;		
+			case 8: channelMask = PAWIN_SPEAKER_7POINT1; break;
+		}
 	}
 		
 	void* infoPtr = NULL;
@@ -313,8 +319,8 @@ s32 SndOut::Init()
 		sizeof(PaWasapiStreamInfo),
 		paWASAPI,
 		1,
-		m_WasapiExclusiveMode ? paWinWasapiExclusive | paWinWasapiUseChannelMask
-								: paWinWasapiUseChannelMask,
+		m_WasapiExclusiveMode ? paWinWasapiExclusive : 0 |
+		channelMask ? paWinWasapiUseChannelMask : 0,
 		channelMask
 	};
 		
@@ -322,16 +328,16 @@ s32 SndOut::Init()
 		sizeof(PaWinDirectSoundStreamInfo),
 		paDirectSound,
 		2,
-		paWinDirectSoundUseChannelMask,
+		channelMask ? paWinDirectSoundUseChannelMask : 0,
 		0,
 		channelMask
 	};
 
-	if(apiId == paWASAPI)
+	if(apiId == paWASAPI && (m_WasapiExclusiveMode || channelMask))
 	{
 		infoPtr = &infoWasapi;
 	}
-	else if(apiId == paDirectSound)
+	else if(apiId == paDirectSound && channelMask)
 	{
 		infoPtr = &infoDS;
 	}
@@ -367,6 +373,10 @@ s32 SndOut::Init()
 
 void SndOut::Close()
 {
+#ifdef __WIN32__
+	CoUninitialize();
+#endif
+
 	PaError err;
 	if(started)
 	{
