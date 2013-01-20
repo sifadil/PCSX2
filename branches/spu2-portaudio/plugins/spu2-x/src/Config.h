@@ -70,7 +70,6 @@ extern bool postprocess_filter_dealias;
 
 extern int dplLevel;
 
-extern u32 OutputModule;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
