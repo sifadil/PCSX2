@@ -216,7 +216,10 @@ s32 SndOut::Init()
 
 	if(deviceIndex<0)
 	{
-		fprintf(stderr,"* SPU2-X: Device name not specified or device not found, choosing default.\n");
+		if(m_Device == L"default")
+			fprintf(stderr,"* SPU2-X: Default device requested.\n");
+		else
+			fprintf(stderr,"* SPU2-X: Device name not specified or device not found, choosing default.\n");
 		
 		for(int i=0;i<Pa_GetHostApiCount();i++)
 		{
@@ -346,10 +349,12 @@ s32 SndOut::Init()
 	void* infoPtr = NULL;
 #endif
 
+	PaTime minimalSuggestedLatency = devinfo->defaultLowOutputLatency;
 	PaStreamParameters outParams = {
 			deviceIndex, actualUsedChannels, paInt32,
-			m_SuggestedLatencyMinimal ?	(SndOutPacketSize/(float)SampleRate)
-									  : (m_SuggestedLatencyMS/1000.0f),
+			std::max((float)minimalSuggestedLatency , 
+				m_SuggestedLatencyMinimal ?	(SndOutPacketSize/(float)SampleRate)
+										  : (m_SuggestedLatencyMS/1000.0f)),
 			infoPtr
 		};
 
