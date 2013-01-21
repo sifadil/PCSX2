@@ -356,21 +356,26 @@ s32 SndOut::Init()
 	err = Pa_OpenStream(&stream, NULL, &outParams, SampleRate, SndOutPacketSize, paNoFlag, PaCallback, NULL);
 	if( err != paNoError )
 	{
-		fprintf(stderr,"* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText( err ) );
+		fprintf(stderr,"* SPU2-X: PortAudio error creating output stream: %s\n", Pa_GetErrorText( err ) );
 		Pa_Terminate();
 		return -1;
 	}
-
+	
+	const PaStreamInfo * info = Pa_GetStreamInfo(stream);
+	if(info)
+	{
+		fprintf(stderr,"* SPU2-X: Output stream latency: %f ms\n", info->outputLatency * 1000 );
+	}
+	
 	err = Pa_StartStream( stream );
 	if( err != paNoError )
 	{
-		fprintf(stderr,"* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText( err ) );
+		fprintf(stderr,"* SPU2-X: PortAudio error starting the stream: %s\n", Pa_GetErrorText( err ) );
 		Pa_CloseStream(stream);
 		stream=NULL;
 		Pa_Terminate();
 		return -1;
 	}
-
 	return 0;
 }
 

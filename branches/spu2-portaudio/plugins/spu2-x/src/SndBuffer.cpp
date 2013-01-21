@@ -27,6 +27,13 @@ StereoOut32* SndBuffer::sndTempBuffer = NULL;
 StereoOut16* SndBuffer::sndTempBuffer16 = NULL;
 int SndBuffer::sndTempProgress = 0;
 
+int SndBuffer::m_dsp_progress = 0;
+
+int SndBuffer::m_timestretch_progress = 0;
+int SndBuffer::ssFreeze = 0;
+
+static bool nullOutput = false;
+
 int GetAlignedBufferSize( int comp )
 {
 	return (comp + SndOutPacketSize-1) & ~(SndOutPacketSize-1);
@@ -72,13 +79,71 @@ bool SndBuffer::CheckUnderrunStatus( int& nSamples, int& quietSampleCount )
 	return true;
 }
 
-bool outputOk = false;
-
 void SndBuffer::_InitFail()
 {
-	// If a failure occurs, just initialize the NoSound driver.  This'll allow
-	// the game to emulate properly (hopefully), albeit without sound.
-	outputOk = false;
+	nullOutput = true;
+}
+
+void SndBuffer::Init()
+{
+	// initialize sound buffer
+	// Buffer actually attempts to run ~50%, so allocate near double what
+	// the requested latency is:
+	
+	m_rpos = 0;
+	m_wpos = 0;
+
+	try
+	{
+		const float latencyMS = SndOutLatencyMS * 16;
+		m_size = GetAlignedBufferSize( (int)(latencyMS * SampleRate / 1000.0f ) );
+		m_buffer = new StereoOut32[m_size];
+		m_underrun_freeze = false;
+
+		sndTempBuffer = new StereoOut32[SndOutPacketSize];
+		sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
+	}
+	catch( std::bad_alloc& )
+	{
+		// out of memory exception (most likely)
+
+		SysMessage( "Out of memory error occurred while initializing SPU2." );
+		_InitFail();
+		return;
+	}
+
+	// clear buffers!
+	// Fixes loopy sounds on emu resets.
+	memset( sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize );
+	memset( sndTempBuffer16, 0, sizeof(StereoOut16) * SndOutPacketSize );
+
+	sndTempProgress = 0;
+	
+	soundtouchInit();		// initializes the timestretching
+
+	nullOutput = DisableOutput;
+	if(nullOutput)
+	{
+		return;
+	}
+
+	// initialize module
+	nullOutput = SndOut::Init() != 0;
+
+	if( nullOutput )
+		_InitFail();
+}
+
+void SndBuffer::Cleanup()
+{
+	if (!nullOutput)
+		SndOut::Close();
+
+	soundtouchCleanup();
+
+	safe_delete_array( m_buffer );
+	safe_delete_array( sndTempBuffer );
+	safe_delete_array( sndTempBuffer16 );
 }
 
 int SndBuffer::_GetApproximateDataInBuffer()
@@ -193,27 +258,6 @@ template<typename T> void SndBuffer::ReadSamples(T* bData)
 	memset( bData, 0, quietSamples * sizeof(T) );
 }
 
-template void SndBuffer::ReadSamples(StereoOut16*);
-template void SndBuffer::ReadSamples(StereoOut32*);
-
-//template void SndBuffer::ReadSamples(StereoOutFloat*);
-template void SndBuffer::ReadSamples(Stereo21Out16*);
-template void SndBuffer::ReadSamples(Stereo40Out16*);
-template void SndBuffer::ReadSamples(Stereo41Out16*);
-template void SndBuffer::ReadSamples(Stereo51Out16*);
-template void SndBuffer::ReadSamples(Stereo51Out16Dpl*);
-template void SndBuffer::ReadSamples(Stereo51Out16DplII*);
-template void SndBuffer::ReadSamples(Stereo71Out16*);
-
-template void SndBuffer::ReadSamples(Stereo20Out32*);
-template void SndBuffer::ReadSamples(Stereo21Out32*);
-template void SndBuffer::ReadSamples(Stereo40Out32*);
-template void SndBuffer::ReadSamples(Stereo41Out32*);
-template void SndBuffer::ReadSamples(Stereo51Out32*);
-template void SndBuffer::ReadSamples(Stereo51Out32Dpl*);
-template void SndBuffer::ReadSamples(Stereo51Out32DplII*);
-template void SndBuffer::ReadSamples(Stereo71Out32*);
-
 void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 {
 	m_predictData = 0;
@@ -267,66 +311,6 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 	_WriteSamples_Safe(bData, nSamples);
 }
 
-void SndBuffer::Init()
-{
-	outputOk = true;
-
-	// initialize sound buffer
-	// Buffer actually attempts to run ~50%, so allocate near double what
-	// the requested latency is:
-	
-	m_rpos = 0;
-	m_wpos = 0;
-
-	try
-	{
-		const float latencyMS = SndOutLatencyMS * 16;
-		m_size = GetAlignedBufferSize( (int)(latencyMS * SampleRate / 1000.0f ) );
-		m_buffer = new StereoOut32[m_size];
-		m_underrun_freeze = false;
-
-		sndTempBuffer = new StereoOut32[SndOutPacketSize];
-		sndTempBuffer16 = new StereoOut16[SndOutPacketSize * 2]; // in case of leftovers.
-	}
-	catch( std::bad_alloc& )
-	{
-		// out of memory exception (most likely)
-
-		SysMessage( "Out of memory error occurred while initializing SPU2." );
-		_InitFail();
-		return;
-	}
-
-	// clear buffers!
-	// Fixes loopy sounds on emu resets.
-	memset( sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize );
-	memset( sndTempBuffer16, 0, sizeof(StereoOut16) * SndOutPacketSize );
-
-	sndTempProgress = 0;
-
-	soundtouchInit();		// initializes the timestretching
-
-	// initialize module
-	if( SndOut::Init() == -1 ) _InitFail();
-}
-
-void SndBuffer::Cleanup()
-{
-	if (outputOk)
-		SndOut::Close();
-
-	soundtouchCleanup();
-
-	safe_delete_array( m_buffer );
-	safe_delete_array( sndTempBuffer );
-	safe_delete_array( sndTempBuffer16 );
-}
-
-int SndBuffer::m_dsp_progress = 0;
-
-int SndBuffer::m_timestretch_progress = 0;
-int SndBuffer::ssFreeze = 0;
-
 void SndBuffer::ClearContents()
 {
 	SndBuffer::soundtouchClearContents();
@@ -340,7 +324,7 @@ void SndBuffer::Write( const StereoOut32& Sample )
 
 	if( WavRecordEnabled ) RecordWrite( Sample.DownSample() );
 
-	if (!outputOk)
+	if (nullOutput )
 		return;
 
 	sndTempBuffer[sndTempProgress++] = Sample;
@@ -395,3 +379,24 @@ void SndBuffer::Write( const StereoOut32& Sample )
 			_WriteSamples(sndTempBuffer, SndOutPacketSize);
 	}
 }
+
+template void SndBuffer::ReadSamples(StereoOut16*);
+template void SndBuffer::ReadSamples(StereoOut32*);
+
+//template void SndBuffer::ReadSamples(StereoOutFloat*);
+template void SndBuffer::ReadSamples(Stereo21Out16*);
+template void SndBuffer::ReadSamples(Stereo40Out16*);
+template void SndBuffer::ReadSamples(Stereo41Out16*);
+template void SndBuffer::ReadSamples(Stereo51Out16*);
+template void SndBuffer::ReadSamples(Stereo51Out16Dpl*);
+template void SndBuffer::ReadSamples(Stereo51Out16DplII*);
+template void SndBuffer::ReadSamples(Stereo71Out16*);
+
+template void SndBuffer::ReadSamples(Stereo20Out32*);
+template void SndBuffer::ReadSamples(Stereo21Out32*);
+template void SndBuffer::ReadSamples(Stereo40Out32*);
+template void SndBuffer::ReadSamples(Stereo41Out32*);
+template void SndBuffer::ReadSamples(Stereo51Out32*);
+template void SndBuffer::ReadSamples(Stereo51Out32Dpl*);
+template void SndBuffer::ReadSamples(Stereo51Out32DplII*);
+template void SndBuffer::ReadSamples(Stereo71Out32*);
