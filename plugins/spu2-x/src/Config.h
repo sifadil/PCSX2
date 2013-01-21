@@ -73,6 +73,8 @@ extern int dplLevel;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
+extern bool DisableOutput;
+
 #ifndef __LINUX__
 extern wchar_t dspPlugin[];
 extern int  dspPluginModule;

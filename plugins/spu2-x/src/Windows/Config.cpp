@@ -48,6 +48,8 @@ bool postprocess_filter_dealias = false;
 int SndOutLatencyMS = 150;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 
+bool DisableOutput = false;
+
 CONFIG_WAVEOUT Config_WaveOut;
 CONFIG_XAUDIO2 Config_XAudio2;
 
@@ -64,17 +66,20 @@ int dplLevel = 0;
 
 void ReadSettings()
 {
-	Interpolation = CfgReadInt( L"MIXING",L"Interpolation", 4 );
-
-	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
+	Interpolation = CfgReadInt( L"MIXING",L"Interpolation", 4 );	
 	EffectsDisabled = CfgReadBool( L"MIXING", L"Disable_Effects", false );
 	postprocess_filter_dealias = CfgReadBool( L"MIXING", L"DealiasFilter", false );
 	FinalVolume = ((float)CfgReadInt( L"MIXING", L"FinalVolume", 100 )) / 100;
-		if ( FinalVolume > 1.0f) FinalVolume = 1.0f;
+		
+	if ( FinalVolume > 1.0f)
+		FinalVolume = 1.0f;
+
+	SynchMode = CfgReadInt( L"OUTPUT", L"Synch_Mode", 0);
 	numSpeakers = CfgReadInt( L"OUTPUT", L"SpeakerConfiguration", 0);
 	dplLevel = CfgReadInt( L"OUTPUT", L"DplDecodingLevel", 0);
 	SndOutLatencyMS = CfgReadInt(L"OUTPUT",L"Latency", 150);
-
+	DisableOutput = CfgReadBool(L"OUTPUT",L"DisableOutput", false);
+	
 	if((SynchMode == 0) && (SndOutLatencyMS < LATENCY_MIN_TS)) // can't use low-latency with timestretcher atm
 		SndOutLatencyMS = LATENCY_MIN_TS;
 	else if(SndOutLatencyMS < LATENCY_MIN)
@@ -112,7 +117,8 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT",L"Latency", SndOutLatencyMS);
 	CfgWriteInt(L"OUTPUT",L"Synch_Mode", SynchMode);
 	CfgWriteInt(L"OUTPUT",L"SpeakerConfiguration", numSpeakers);
-	CfgWriteInt( L"OUTPUT", L"DplDecodingLevel", dplLevel);
+	CfgWriteInt(L"OUTPUT",L"DplDecodingLevel", dplLevel);
+	CfgWriteBool(L"OUTPUT",L"DisableOutput", DisableOutput);
 
 	if( Config_WaveOut.Device.empty() ) Config_WaveOut.Device = L"default";
 	CfgWriteStr(L"WAVEOUT",L"Device",Config_WaveOut.Device);
