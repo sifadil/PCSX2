@@ -48,6 +48,7 @@
 #define IDC_OPEN_CONFIG_DEBUG           1059
 #define IDC_GLOBALFOCUS_DISABLE2        1061
 #define IDC_COMBO1                      1063
+#define IDC_DISABLE_OUTPUT              1063
 #define IDC_SYNCHMODE                   1064
 #define IDC_DEBUG_OTHERS                1065
 #define IDC_DEBUG_VISUAL                1066
@@ -59,7 +60,6 @@
 #define IDC_LATENCY                     1072
 #define IDC_LATENCY_PORTAUDIO           1072
 #define IDC_EXCLUSIVE                   1073
-#define IDC_CHECK1                      1074
 
 // Next default values for new objects
 // 

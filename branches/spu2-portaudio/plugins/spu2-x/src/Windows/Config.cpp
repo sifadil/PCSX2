@@ -258,6 +258,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SET_CHECK( IDC_MANUAL, true );
 				
 			SET_CHECK( IDC_EXCLUSIVE, SndOut::GetWasapiExclusiveMode() );
+			
+			SET_CHECK( IDC_DISABLE_OUTPUT, DisableOutput );
 
 		}
 		break;
@@ -355,6 +357,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				HANDLE_CHECK(IDC_EFFECTS_DISABLE,EffectsDisabled);
 				HANDLE_CHECK(IDC_DEALIASFILTER,postprocess_filter_dealias);
 				HANDLE_CHECK(IDC_DSP_ENABLE,dspPluginEnabled);
+				HANDLE_CHECK(IDC_DISABLE_OUTPUT,DisableOutput);
 				
 				// Fixme : Eh, how to update this based on drop list selections? :p
 				// IDC_TS_ENABLE already deleted!
