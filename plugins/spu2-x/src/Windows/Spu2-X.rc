@@ -95,27 +95,31 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,246,451,50,14
 END
 
-IDD_CONFIG_SOUNDTOUCH DIALOGEX 0, 0, 206, 223
+IDD_CONFIG_SOUNDTOUCH DIALOGEX 0, 0, 302, 129
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Soundtouch Advanced Configuration - SPU2-X"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,50,205,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,104,205,50,14
-    CTEXT           "These are advanced configuration options for fine tuning time stretching behavior.  Larger values are better for slowdown, while smaller values are better for speed-up (better than 60fps).\n\nAll options are in milliseconds (ms).",IDC_STATIC,5,5,196,52
-    CONTROL         "",IDC_SEQLEN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,98,105,10
-    CTEXT           "Sequence Length",IDC_STATIC,72,88,64,9
-    CONTROL         "",IDC_SEEKWIN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,136,105,10
-    CTEXT           "Seekwindow Size",IDC_STATIC,70,125,66,9
-    CONTROL         "",IDC_OVERLAP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,170,105,10
-    CTEXT           "Overlap",IDC_STATIC,86,162,34,9
-    LTEXT           "20",IDC_STATIC,50,112,9,8
-    LTEXT           "100",IDC_STATIC,146,112,13,8
-    LTEXT           "10",IDC_STATIC,50,149,9,8
-    LTEXT           "30",IDC_STATIC,146,149,9,8
-    LTEXT           "5",IDC_STATIC,52,184,8,8
-    LTEXT           "15",IDC_STATIC,146,184,9,8
-    PUSHBUTTON      "Reset Defaults",IDC_RESET_DEFAULTS,61,62,82,12
+    DEFPUSHBUTTON   "OK",IDOK,195,110,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,247,110,50,14
+    CTEXT           "These are advanced configuration options for fine tuning time stretching behavior.",IDC_STATIC,5,5,292,11
+    CONTROL         "",IDC_SEQLEN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,88,29,163,10
+    RTEXT           "Sequence Length",IDC_STATIC,5,28,64,9
+    CONTROL         "",IDC_SEEKWIN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,88,45,163,10
+    RTEXT           "Seekwindow Size",IDC_STATIC,5,44,64,9
+    CONTROL         "",IDC_OVERLAP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,88,61,163,10
+    RTEXT           "Overlap",IDC_STATIC,5,61,64,9
+    RTEXT           "20",IDC_STATIC,78,28,9,8
+    LTEXT           "100",IDC_STATIC,252,28,13,8
+    RTEXT           "10",IDC_STATIC,78,44,9,8
+    LTEXT           "30",IDC_STATIC,252,44,13,8
+    RTEXT           "5",IDC_STATIC,78,61,9,8
+    LTEXT           "15",IDC_STATIC,252,61,13,8
+    PUSHBUTTON      "Reset Defaults",IDC_RESET_DEFAULTS,5,112,82,12
+    CTEXT           ":O",IDC_SEQLEN_TXT,272,28,17,9,0,WS_EX_STATICEDGE
+    CTEXT           ":O",IDC_SEEKWIN_TXT,272,44,17,9,0,WS_EX_STATICEDGE
+    CTEXT           ":O",IDC_OVERLAP_TXT,272,61,17,9,0,WS_EX_STATICEDGE
+    CTEXT           "Larger values are better for slowdown, while smaller values are better for speed-up (better than 60fps). All options are in milliseconds (ms).",IDC_STATIC,5,84,292,21
 END
 
 IDD_CONFIG_DEBUG DIALOGEX 0, 0, 292, 239
@@ -185,9 +189,9 @@ BEGIN
     IDD_CONFIG_SOUNDTOUCH, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 201
+        RIGHTMARGIN, 297
         TOPMARGIN, 5
-        BOTTOMMARGIN, 218
+        BOTTOMMARGIN, 124
     END
 
     IDD_CONFIG_DEBUG, DIALOG
