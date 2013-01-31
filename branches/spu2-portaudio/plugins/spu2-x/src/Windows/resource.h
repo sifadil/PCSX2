@@ -60,6 +60,9 @@
 #define IDC_LATENCY                     1072
 #define IDC_LATENCY_PORTAUDIO           1072
 #define IDC_EXCLUSIVE                   1073
+#define IDC_SEQLEN_TXT                  1074
+#define IDC_SEEKWIN_TXT                 1075
+#define IDC_OVERLAP_TXT                 1076
 
 // Next default values for new objects
 // 
@@ -67,7 +70,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1075
+#define _APS_NEXT_CONTROL_VALUE         1077
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
