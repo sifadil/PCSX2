@@ -37,25 +37,27 @@ Note: This is still a rough draft, and subject to change.
    * g++-4.5, g++-4.5-multilib
    * cmake
  # 32 bits libraries on x86
-   * libasound2-dev
-   * libbz2-dev
-   * libcg
-   * libcggl
-   * libegl1-mesa
-   * libgl1-mesa-dev
-   * libglew1.6-dev
-   * libglu1-mesa-dev
-   * libgtk2.0-dev
-   * libjpeg-dev
-   * libsdl1.2-dev
-   * libsoundtouch0-dev
+   * libaio-dev:i386
+   * libasound2-dev:i386
+   * libbz2-dev:i386
+   * libcg:i386
+   * libcggl:i386
+   * libegl1-mesa-dev:i386
+   * libgl1-mesa-dev:i386
+   * libglew-dev:i386
+   * libglu1-mesa-dev:i386
+   * libgtk2.0-dev:i386
+   * libjpeg-dev:i386
+   * libsdl1.2-dev:i386
+   * libsoundtouch-dev:i386
    * libsparsehash-dev
-   * libwxbase2.8-dev
-   * libwxgtk2.8-dev
-   * libx11-dev
+   * libwxbase2.8-dev:i386
+   * libwxgtk2.8-dev:i386
+   * libx11-dev:i386
+   * nvidia-cg-dev:i386
    * nvidia-cg-toolkit
-   * portaudio19-dev
-   * zlib1g-dev
+   * portaudio19-dev:i386
+   * zlib1g-dev:i386
 
 === Archlinux build dependencies for version 1.0 and later ===
 Some of the required packages to build PCSX2 are available only in [http://aur.archlinux.org/ AUR unsupported].
