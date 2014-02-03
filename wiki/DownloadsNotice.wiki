@@ -1,0 +1,9 @@
+= Notice =
+
+Google is phasing out the Downloads service of Google Code. The contents of this section are out of date.
+
+To obtain the latest installers and binary packages head to the main website: http://pcsx2.net/download.html
+
+To obtain source packages for any tag or commit, head to the Github mirror: https://github.com/PCSX2/pcsx2/releases
+
+[https://code.google.com/p/pcsx2/downloads/list Continue to the Downloads section]
