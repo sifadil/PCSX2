@@ -98,12 +98,13 @@ bool GSRendererCS::CreateDevice(GSDevice* dev_unk)
 	memset(&sd, 0, sizeof(sd));
 
 	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.MinLOD = -FLT_MAX;
+
 	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	sd.MaxAnisotropy = 16;
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
 	hr = (*dev)->CreateSamplerState(&sd, &m_ss);
