@@ -499,13 +499,6 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 	return ret;
 }
 
-static void cdvdDetectDisk()
-{
-	wxString str;
-	cdvd.Type = DoCDVDdetectDiskType();
-	cdvdReloadElfInfo();
-}
-
 s32 cdvdCtrlTrayOpen()
 {
 	DevCon.WriteLn( Color_Green, L"Open virtual disk tray");
@@ -522,10 +515,6 @@ s32 cdvdCtrlTrayClose()
 	cdvd.Status = CDVD_STATUS_PAUSE;
 	cdvd.Ready = CDVD_READY1;
 	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
-	
-	cdvdDetectDisk();
-	GetCoreThread().ApplySettings(g_Conf->EmuOptions);
-	
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
@@ -620,6 +609,13 @@ void SaveStateBase::cdvdFreeze()
 		if( cdvd.Reading )
 			cdvd.RErr = DoCDVDreadTrack( cdvd.Readed ? cdvd.Sector : cdvd.SeekToSector, cdvd.ReadMode);
 	}
+}
+
+static void cdvdDetectDisk()
+{
+	wxString str;
+	cdvd.Type = DoCDVDdetectDiskType();
+    cdvdReloadElfInfo();
 }
 
 void cdvdNewDiskCB()

@@ -179,10 +179,11 @@ static wxLanguage i18n_FallbackToAnotherLang( wxLanguage wxLangId )
 		case wxLANGUAGE_ARABIC_SYRIA         :
 		case wxLANGUAGE_ARABIC_TUNISIA       :
 		case wxLANGUAGE_ARABIC_UAE           :
-		case wxLANGUAGE_ARABIC_YEMEN         : return wxLANGUAGE_ARABIC_SAUDI_ARABIA;
+		case wxLANGUAGE_ARABIC_YEMEN         : return wxLANGUAGE_ARABIC;
 
 		case wxLANGUAGE_CHINESE_HONGKONG     : 
 		case wxLANGUAGE_CHINESE_MACAU        : return wxLANGUAGE_CHINESE_TRADITIONAL;
+
 		case wxLANGUAGE_CHINESE_SINGAPORE    : return wxLANGUAGE_CHINESE_SIMPLIFIED;
 
 		// case wxLANGUAGE_SAMI_INARI_FINLAND    :

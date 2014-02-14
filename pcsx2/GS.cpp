@@ -32,7 +32,7 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 	GetMTGS().SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate.Raw, newTickrate, 0 );
 }
 
-bool			gsIsInterlaced	= false;
+static bool		gsIsInterlaced	= false;
 GS_RegionMode	gsRegionMode	= Region_NTSC;
 
 
