@@ -1,0 +1,6 @@
+#summary We are moving to git.
+
+= WE ARE MOVING TO GIT! =
+See: https://github.com/PCSX2/pcsx2
+
+[http://code.google.com/p/pcsx2/source/list Continue to the old SVN]
