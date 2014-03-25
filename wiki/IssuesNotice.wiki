@@ -1,0 +1,7 @@
+#summary We are moving to git.
+
+= WE ARE MOVING TO GIT =
+
+Use the new issue tracker at: https://github.com/PCSX2/pcsx2/issues
+
+[http://code.google.com/p/pcsx2/issues/list Continue to the old issue tracker]
